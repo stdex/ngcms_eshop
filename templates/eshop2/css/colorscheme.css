@@ -636,3 +636,92 @@ li.clear-pag-item{border: 0;}
 
 .tabs-compare-diferent > li button:before{content: ""; position: absolute;width: 14px; height: 14px; background-position: -980px 0px; top: 1px; left: 2px;}
 .tabs-compare-diferent > li.active button:before{background-position: -980px -20px;}
+
+/*
+.frame-type-company {
+    border-color: #dfe4eb;
+}
+
+.frame-type-company {
+    padding: 17px 0 19px;
+    border-top: 1px solid transparent!important;
+}
+
+
+.f_r {
+    float: right!important;
+}
+
+.icon-imagecms {
+    width: 16px;
+    height: 16px;
+    margin-left: 6px;
+    background-position: -220px -100px;
+    vertical-align: top;
+}
+
+footer .footer-title {
+    color: #000;
+}
+
+footer .footer-title {
+    margin-bottom: 9px;
+}
+
+.f-s_0, .f-s_0 .f-s_0 {
+    font-size: 0;
+}
+
+.footer-social a {
+    margin-right: 5px;
+}
+
+.icon-vk-link {
+    width: 37px;
+    height: 37px;
+    background-position: -560px 0;
+}
+
+.icon-fb-link {
+    width: 37px;
+    height: 37px;
+    background-position: -600px 0;
+}
+
+.icon-tw-link {
+    width: 37px;
+    height: 37px;
+    background-position: -640px 0;
+}
+
+.content-footer + .footer-footer .inside-padd {
+    border-top-color: #dfe4eb;
+}
+
+.content-footer + .footer-footer .inside-padd {
+    border-top: 1px solid transparent;
+}
+
+.t-a_j > * {
+    display: inline-block;
+    vertical-align: middle;
+    float: none !important;
+    text-align: left;
+}
+
+.footer-payment span {
+    margin-right: 4px;
+}
+
+.icon-visa {
+    width: 67px;
+    height: 37px;
+    background-position: -560px -40px;
+}
+
+.icon-mastercard {
+    width: 67px;
+    height: 37px;
+    background-position: -560px -80px;
+}
+*/

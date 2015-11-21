@@ -176,7 +176,13 @@ var el = $('<div/>').appendTo(body).css({
     'width': 100,
     'overflow': 'scroll'
 }).wrap($('<div style="width:0;height:0;overflow:hidden;"></div>'));
-constructAdaptive.prototype.widthScroll = el.width() - el.get(0).clientWidth;
+
+if(el.get(0) != undefined) {
+    constructAdaptive.prototype.widthScroll = el.width() - el.get(0).clientWidth;
+}
+else {
+    constructAdaptive.prototype.widthScroll = el.width();
+}
 el.parent().remove();
 
 constructAdaptive.prototype.resize = function(wWidth) {
@@ -276,14 +282,12 @@ $(document).ready(function() {
         moveContent.update(wWidth);
         $('.menu-main').menuImageCms('refresh');
     });
-    $(document).on('scriptDefer', function() {
         setTimeout(function() {
             window.rowViewMenu = optionsMenu.sub2Frame;
             Adaptive.resize(wWidth);
             elemPoll.update(wWidth);
             Adaptive.cloudZoom(wWidth, 960);
         }, 200);
-    });
 
     /*photoTovar*/
     $('.photo-main-carousel .arrow').click(function() {

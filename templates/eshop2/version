@@ -3,11 +3,11 @@
 ;
 
 ; UNIQ template ID
-ID: eshop2
+ID: default_template
 ; Author name
-Author: fluid
+Author: Qesoart
 ; Author site page
-Author_URI: http://imagecms.com/
+Author_URI: http://cargocollective.com/Qesoart
 ; Version number
 Version: 01
 ; Release date
