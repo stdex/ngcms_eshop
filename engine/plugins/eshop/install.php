@@ -10,10 +10,22 @@ function plugin_eshop_install($action) {
     if(!file_exists(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop'))
         if(!@mkdir(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/', 0777))
             msg(array("type" => "error", "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/images/eshop'), 1);
+            
+    if(!file_exists(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products'))
+        if(!@mkdir(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/', 0777))
+            msg(array("type" => "error", "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/images/eshop/products'), 1);
+            
+    if(!file_exists(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/thumb'))
+        if(!@mkdir(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/thumb/', 0777))
+            msg(array("type" => "error", "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/images/eshop/products/thumb'), 1);
 
-    if(!file_exists(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/thumb'))
-        if(!@mkdir(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/thumb', 0777))
-            msg(array("type" => "error", "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/images/eshop/thumb'), 1);
+    if(!file_exists(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories'))
+        if(!@mkdir(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/', 0777))
+            msg(array("type" => "error", "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/images/eshop/categories'), 1);
+            
+    if(!file_exists(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/thumb'))
+        if(!@mkdir(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/thumb/', 0777))
+            msg(array("type" => "error", "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/images/eshop/categories/thumb'), 1);
 
     if ($action != 'autoapply')
         loadPluginLang('eshop', 'config', '', '', ':');
@@ -137,6 +149,17 @@ function plugin_eshop_install($action) {
             array('action'	=> 'cmodify', 'name' => 'meta_description', 'type' => 'varchar(500)', 'params' => 'NOT NULL default \'\''),
             
             array('action'	=> 'cmodify', 'name' => 'active', 'type' => 'tinyint(1)', 'params' => 'NOT NULL default \'1\''),
+        )
+    ),
+
+    array(
+        'table'		=> 'eshop_products_categories',
+        'action'	=> 'cmodify',
+        'engine'	=> 'MyISAM',
+        'key'		=> 'primary key(`category_id`, `product_id`)',
+        'fields'	=> array(
+            array('action'	=> 'cmodify', 'name' => 'product_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
+            array('action'	=> 'cmodify', 'name' => 'category_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
         )
     ),
 
@@ -276,17 +299,29 @@ function plugin_eshop_install($action) {
 
             $params = array(
                 'count' => '10',
+                'count_search' => '20',
+                'views_count' => '1',
+                
                 'max_image_size' => '5',
                 'width' => '2000',
                 'height' => '2000',
                 'width_thumb' => '350',
                 'ext_image' => '*.jpg;*.jpeg;*.gif;*.png',
-                'admin_count' => '10',
-                'date' => 'j.m.Y - H:i',
-                'use_recaptcha' => '1',
-                'views_count' => '1',
-                'count_list' => '20',
-                'count_search' => '20',
+                
+                'catz_max_image_size' => '5',
+                'catz_width' => '2000',
+                'catz_height' => '2000',
+                'catz_width_thumb' => '350',
+                'catz_ext_image' => '*.jpg;*.jpeg;*.gif;*.png',
+                
+                'email_notify_orders' => '',
+                'email_notify_comments' => '',
+                'email_notify_back' => '',
+                
+                'description_delivery' => '',
+                'description_order' => '',
+                'description_phones' => '',
+
             );
             foreach ($params as $k => $v) {
                 extra_set_param('eshop', $k, $v);
