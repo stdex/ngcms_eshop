@@ -15,6 +15,11 @@ switch ($_REQUEST['action']) {
     case 'add_product':     add_product();                         break;
     case 'edit_product':    edit_product();                        break;
     case 'modify_product':  modify(); list_product();              break;
+    
+    case 'list_feature':    list_feature();                        break;
+    case 'add_feature':     add_feature();                         break;
+    case 'edit_feature':    edit_feature();                        break;
+    case 'modify_feature':  modify_feature(); list_feature();      break;
         
     case 'list_cat':        list_cat();                            break;
     case 'add_cat':         add_cat();                             break;
@@ -480,6 +485,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     print $xg->render($tVars);
 }
 
+
 function list_cat($params)
 {
 global $tpl, $mysql, $twig;
@@ -526,43 +532,7 @@ global $tpl, $mysql, $twig;
     );
     
     print $xg->render($tVars);
-    
-    /*
-    foreach ($mysql->select('SELECT cat_id, COUNT(id) as num FROM '.prefix.'_eshop GROUP BY cat_id') as $rows)
-    {
-        $cat[$rows['cat_id']] .= $rows['num'];
-    }
-    
 
-    foreach ($mysql->select('SELECT * from '.prefix.'_eshop_cat ORDER BY position ASC') as $row)
-    {
-        $gvars['vars'] = array (
-            'num' => $cat[$row['id']],
-            'id' => $row['id'],
-            'cat_name' => '<a href="?mod=extra-config&plugin=eshop&action=cat_edit&id='.$row['id'].'"  />'.$row['cat_name'].'</a>',
-            'cat_name_del' => '<a href="?mod=extra-config&plugin=eshop&action=cat_name_del&id='.$row['id'].'"  /><img title="???????" alt="???????" src="/engine/skins/default/images/delete.gif"></a>',
-        );
-        
-        $tpl->template('list_cat_entries', $tpath['config/list_cat_entries'].'config');
-        $tpl->vars('list_cat_entries', $gvars);
-        $entries .= $tpl -> show('list_cat_entries');
-    }
-    
-    $count = $mysql->result('SELECT COUNT(id) FROM '.prefix.'_eshop WHERE active = \'0\' ');
-
-    $pvars['vars']['entries'] = isset($entries)?$entries:'';
-    $tpl->template('list_cat', $tpath['config/list_cat'].'config');
-    $tpl->vars('list_cat', $pvars);
-    $tvars['vars']= array (
-        'active' => !empty($count)?'[ '.$count.' ]':'',
-        'entries' => $tpl->show('list_cat'),
-        'global' => 'Список категорий'
-    );
-    
-    $tpl->template('main', $tpath['config/main'].'config');
-    $tpl->vars('main', $tvars);
-    print $tpl->show('main');
-    */
 }
 
 function del_cat($params)
@@ -658,6 +628,299 @@ function get_prefix($CategoryID)
     #var_dump($prefixed[$CategoryID]);
     return $add_prefix;
 }
+
+
+function list_feature($params)
+{
+global $tpl, $mysql, $twig;
+
+    $tpath = locatePluginTemplates(array('config/main', 'config/list_feature'), 'eshop', 1);
+    
+    $tVars = array();
+
+    //get all categories
+    $catz_array = array();
+    
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $row)
+    {
+        $tEntry[] = array (
+            'id' => $row['id'],
+            'name' => $row['name'],
+            'edit_link' => "?mod=extra-config&plugin=eshop&action=edit_feature&id=".$row['id'],
+            'del_link' => "?mod=extra-config&plugin=eshop&action=del_feature&id=".$row['id'],
+            'position' => $row['position'],
+            'in_filter' => $row['in_filter'],
+        );
+
+    }
+ 
+    $xt = $twig->loadTemplate($tpath['config/list_feature'].'config/'.'list_feature.tpl');
+    
+    $tVars = array(
+        'entries' => isset($tEntry)?$tEntry:'' 
+    );
+    
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Свойства',
+    );
+    
+    print $xg->render($tVars);
+
+}
+
+function add_feature($params)
+{
+global $tpl, $template, $config, $mysql, $lang, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_feature'), 'eshop', 1);
+    
+    if (isset($_REQUEST['submit']))
+    {
+
+        $name = input_filter_com(convert($_REQUEST['name']));
+        if(empty($name))
+        {
+            $error_text[] = 'Название свойства не задано';
+        }
+                  
+        $position = intval($_REQUEST['position']);
+        if(empty($position))
+        {
+            $position = 0;
+        }
+
+        $in_filter = "1";
+
+        if(empty($error_text))
+        {
+            $mysql->query('INSERT INTO '.prefix.'_eshop_features (name, position, in_filter) 
+                VALUES 
+                ('.db_squote($name).',
+                    '.db_squote($position).',
+                    '.intval($in_filter).'
+                )
+            ');
+            
+            $rowID = $mysql->record("select LAST_INSERT_ID() as id");
+
+            $ids = $_REQUEST['feature_categories'];
+
+            foreach($ids as $id)
+            {
+              $mysql->query('INSERT INTO '.prefix.'_eshop_categories_features (category_id, feature_id) 
+                VALUES 
+                ('.db_squote($id).',
+                 '.db_squote($rowID['id']).'
+                )
+               ');
+            }
+
+            #generate_catz_cache(true);
+            
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_feature');
+        }
+
+    }
+    
+    if(!empty($error_text))
+    {
+        foreach($error_text as $error)
+        {
+            $error_input .= msg(array("type" => "error", "text" => $error));
+        }
+    } else {
+        $error_input ='';
+    }
+        
+    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
+    $cats = getCats($res);
+
+    $tEntry = array (
+        'name' => $name,
+       
+        'position' => $position,
+
+        'in_filter' => $in_filter,
+        
+        'error' => $error_input,
+        'catz' => getTree($cats),
+    );
+
+    $xt = $twig->loadTemplate($tpath['config/add_feature'].'config/'.'add_feature.tpl');
+    
+    $tVars = array(
+        'entries' => isset($tEntry)?$tEntry:'' 
+    );
+    
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Свойства: Добавление свойства',
+    );
+    
+    print $xg->render($tVars);
+}
+
+function edit_feature($params)
+{
+global $tpl, $template, $config, $mysql, $lang, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_feature'), 'eshop', 1);
+    
+    $id = intval($_REQUEST['id']);
+    $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_features WHERE id = '.db_squote($id).' LIMIT 1');
+    
+    if (isset($_REQUEST['submit']))
+    {
+
+        $name = input_filter_com(convert($_REQUEST['name']));
+        if(empty($name))
+        {
+            $error_text[] = 'Название свойства не задано';
+        }
+                  
+        $position = intval($_REQUEST['position']);
+        if(empty($position))
+        {
+            $position = 0;
+        }
+
+        $in_filter = "1";
+
+        if(empty($error_text))
+        {
+
+            $mysql->query('UPDATE '.prefix.'_eshop_features SET  
+                name = '.db_squote($name).',
+                position = '.db_squote($position).', 
+                in_filter = '.intval($in_filter).'
+                WHERE id = '.$id.'
+            ');
+            
+            $mysql->query("delete from ".prefix."_eshop_categories_features where feature_id in ({$id})");
+            $ids = $_REQUEST['feature_categories'];
+
+            foreach($ids as $id_x)
+            {
+              $mysql->query('INSERT INTO '.prefix.'_eshop_categories_features (category_id, feature_id) 
+                VALUES 
+                ('.db_squote($id_x).',
+                 '.db_squote($id).'
+                )
+               ');
+            }
+            
+            #generate_catz_cache(true);
+            
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_feature');
+        }
+
+    }
+    
+    if(!empty($error_text))
+    {
+        foreach($error_text as $error)
+        {
+            $error_input .= msg(array("type" => "error", "text" => $error));
+        }
+    } else {
+        $error_input ='';
+    }
+
+        
+    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
+    $cats = getCats($res);
+
+    $cat_ids = array();
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories_features WHERE feature_id = ".db_squote($id)."") as $frow)
+    {
+        $cat_ids[] = $frow['category_id'];
+    }
+
+    $tEntry = array (
+        'name' => $row['name'],
+        'position' => $row['position'],
+        'in_filter' => $row['in_filter'],
+        'error' => $error_input,
+        'catz' => getMultiTree($cats, $cat_ids, 0),
+    );
+
+    $xt = $twig->loadTemplate($tpath['config/add_feature'].'config/'.'add_feature.tpl');
+    
+    $tVars = array(
+        'entries' => isset($tEntry)?$tEntry:'' 
+    );
+    
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Категории: Редактирование свойства',
+    );
+    
+    print $xg->render($tVars);
+}
+
+function getMultiTree($arr, $flg, $l){
+    $flg;
+    $out = '';
+    $ft = '&#8212; ';
+
+    foreach($arr as $k=>$v){
+        if(in_array($k, $flg)) { $out .= '<option value="'.$k.'" selected>'.str_repeat($ft, $l).$v['name'].'</option>'; }
+        else { $out .= '<option value="'.$k.'">'.str_repeat($ft, $l).$v['name'].'</option>'; }
+            if(!empty($v['children'])){     
+                //$l = $l + 1;
+                $out .= getMultiTree($v['children'], $flg, $l + 1);
+                //$l = $l - 1;
+            }
+    }
+    return $out;
+}
+
+function modify_feature()
+{
+global $mysql;
+    
+    $selected_feature = $_REQUEST['selected_feature'];
+    $subaction  =   $_REQUEST['subaction'];
+    
+    $id = implode( ',', $selected_feature );
+    
+    if( empty($id) )
+    {
+        return msg(array("type" => "error", "text" => "Вы выбран ID!"));
+    }
+    
+    switch($subaction) {
+        case 'mass_delete'       : $del = true; break;
+    }
+
+    if(isset($del))
+    {
+        $mysql->query("delete from ".prefix."_eshop_features where id in ({$id})");
+        $mysql->query("delete from ".prefix."_eshop_categories_features where feature_id in ({$id})");
+        msg(array("type" => "info", "info" => "Записи с ID${id} удалены!"));
+    }
+}
+
 
 function list_order()
 {
