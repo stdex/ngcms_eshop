@@ -84,7 +84,7 @@ function filter_attach_DateEdit(id) {
 <a href="#" align="right" id="suggestClose">close</a>
 </div>
 
-<form action="{{php_self}}?mod=extra-config&plugin=eshop" method="post" name="options_bar">
+<form action="{{php_self}}" method="post" name="options_bar">
 <table width="1000" border="0" cellspacing="0" cellpadding="0" class="editfilter">
   <tr>
 <!--Block 1--><td rowspan="2">
@@ -97,8 +97,8 @@ function filter_attach_DateEdit(id) {
   </tr>
   <tr>
     <td>
-    <label>Пользователь</label>
-    <input name="an" id="an" class="bfauthor" type="text"  value="{{an}}" autocomplete="off" /> <span id="suggestLoader" style="width: 20px; visibility: hidden;"><img src="{{skins_url}}/images/loading.gif"/></span>
+    <label>Название</label>
+    <input name="fname" id="fname" class="bfname" type="text"  value="{{an}}" autocomplete="off" /> <span id="suggestLoader" style="width: 20px; visibility: hidden;"><img src="{{skins_url}}/images/loading.gif"/></span>
     </td>
   </tr>
 </table>
@@ -110,14 +110,21 @@ function filter_attach_DateEdit(id) {
 <table border="0" cellspacing="0" cellpadding="0" class="filterblock2">
   <tr>
     <td colspan="2">
-    <label class="left">Plugin</label>&nbsp;&nbsp;
-	{{catPlugins}}
+    <label class="left">Категория</label>&nbsp;&nbsp;
+    <select name="fcategory">
+        <option value="0">Выберите категорию</option>
+        {{filter_cats}}
+    </select>
     </td>
   </tr>
   <tr>
     <td colspan="2">
-    <label class="left">Item</label>&nbsp;&nbsp;
-	{{catItems}}
+    <label class="left">Статус</label>&nbsp;&nbsp;
+    <select name="fstatus" class="bfstatus">
+        <option value="null" {% if fstatus  == 'null' %}selected{% endif %}>- Все -</option>
+        <option value="0" {% if fstatus == '0' %}selected{% endif %}>Не акивен</option>
+        <option value="1" {% if fstatus == '1' %}selected{% endif %}>Активен</option>
+    </select>
     </td>
   </tr>
 
@@ -130,24 +137,13 @@ function filter_attach_DateEdit(id) {
 <td rowspan="2">
 <table border="0" cellspacing="0" cellpadding="0" class="filterblock">
   <tr>
-    <td>
-    <label>Статус</label>
-    <select name="status" class="bfstatus">
-		<option value="null" {% if fstatus  == 'null' %}selected{% endif %}>- Все -</option>
-		<option value="0" {% if fstatus == '0' %}selected{% endif %}>0</option>
-		<option value="1" {% if fstatus == '1' %}selected{% endif %}>1</option>
-	</select>
-    </td>
-    <td>
+    <td colspan="2">
     <label>На странице</label>
     <input name="rpp" value="{{rpp}}" type="text" size="3" />
     </td>
   </tr>
   <tr>
-  <!--  <td colspan="2">
-    <label>Очистить данные</label>
-    <input type="button" name="clearbtn" value="Очистить" class="filterbutton"  />
-    </td> -->
+
   </tr>
 </table>
 
@@ -162,7 +158,7 @@ function filter_attach_DateEdit(id) {
 <!-- Конец блока фильтрации -->
 
 
-<form action="/engine/admin.php?mod=extra-config&plugin=basket_promocode&action=modify" method="post" name="check_promocode">
+<form action="/engine/admin.php?mod=extra-config&plugin=basket_promocode&action=modify" method="post" name="check_product">
 <table border="0" cellspacing="0" cellpadding="0" class="content" align="center">
 <tr  class="contHead" align="left">
 <td width="5%">ID</td>
@@ -177,12 +173,12 @@ function filter_attach_DateEdit(id) {
 {% for entry in entries %}
 <tr align="left">
 <td width="5%" class="contentEntry1">{{ entry.id }}</td>
-<td width="10%" class="contentEntry1"><a href="{{ entry.edit_link }}" >{{ entry.image }}</a></td>
+<td width="10%" class="contentEntry1"><a href="{{ entry.edit_link }}" ><img src="{% if (entry.image_filepath) %}{{home}}/uploads/eshop/products/thumb/{{entry.image_filepath}}{% else %}{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg{% endif %}" width="100" height="100"></a></td>
 <td width="20%" class="contentEntry1"><a href="{{ entry.edit_link }}" >{{ entry.name }}</a></td>
 <td width="15%" class="contentEntry1">{{ entry.category }}</td>
 <td width="15%" class="contentEntry1">{{ entry.current_price }}</td>
 <td width="15%" class="contentEntry1">{{ entry.old_price }}</td>
-<td width="10%" class="contentEntry1">{{ entry.active }}</td>
+<td width="10%" class="contentEntry1"><img src="{{home}}/engine/skins/default/images/{% if (entry.active == 1) %}yes.png{% else %}no.png{% endif %}" alt=""></td>
 <td width="5%" class="contentEntry1"><input name="selected_product[]" value="{{ entry.id }}" class="check" type="checkbox" /></td>
 </tr>
 {% else %}

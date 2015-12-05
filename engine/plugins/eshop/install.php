@@ -18,6 +18,14 @@ function plugin_eshop_install($action) {
     if(!file_exists(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/thumb'))
         if(!@mkdir(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/thumb/', 0777))
             msg(array("type" => "error", "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/images/eshop/products/thumb'), 1);
+            
+    if(!file_exists(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/temp'))
+        if(!@mkdir(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/temp/', 0777))
+            msg(array("type" => "error", "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/images/eshop/products/temp'), 1);
+            
+    if(!file_exists(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/temp/thumb'))
+        if(!@mkdir(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/temp/thumb/', 0777))
+            msg(array("type" => "error", "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/images/eshop/products/temp/thumb'), 1);
 
     if(!file_exists(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories'))
         if(!@mkdir(dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/', 0777))

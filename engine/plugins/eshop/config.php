@@ -41,12 +41,51 @@ global $tpl, $mysql, $lang, $twig;
     
     $tVars = array();
     
-    $news_per_page = 10;
+    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
+    $cats = getCats($res);
+    
+    // Load admin page based cookies
+    $admCookie = admcookie_get();
 
-    $fSort = "ORDER BY id DESC";
-    $sqlQPart = "FROM ".prefix."_eshop_products ".$fSort;
-    $sqlQCount = "SELECT COUNT(id) ".$sqlQPart;
-    $sqlQ = "SELECT * ".$sqlQPart;
+    $fName          = $_REQUEST['fname'];
+    $fStatus        = $_REQUEST['fstatus'];
+    $fCategory      = $_REQUEST['fcategory'];
+
+    $news_per_page  = isset($_REQUEST['rpp'])?intval($_REQUEST['rpp']):intval($admCookie['eshop']['pp']);
+    // - Set default value for `Records Per Page` parameter
+    if (($news_per_page < 2)||($news_per_page > 2000))
+        $news_per_page = 10;
+    
+    // - Save into cookies current value
+    $admCookie['eshop']['pp'] = $news_per_page;
+    admcookie_set($admCookie);
+
+    $conditions = array();
+    if ($fName) {
+        array_push($conditions, "p.name LIKE ".db_squote("%".$fName."%"));
+    }
+
+    if ($fStatus != "null") {
+        array_push($conditions, "p.active = ".db_squote($fStatus));
+    }
+    
+    if ($fCategory) {
+                
+        $out[] = $fCategory;
+        $catz_filter = array_merge($out, getChildIdsArray($cats, $fCategory, 0));
+        $catz_filter_comma_separated = implode(",", $catz_filter);
+ 
+        array_push($conditions, "pc.category_id IN (".$catz_filter_comma_separated.") ");
+    }
+
+    $fSort = " GROUP BY p.id ORDER BY p.id DESC";
+    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+    $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.name AS category, i.filepath AS image_filepath ".$sqlQPart;
+    
+    $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
+    
+    //$sqlQCount = "SELECT COUNT(p.id) FROM ng_eshop_products p ORDER BY p.id DESC";
+    //var_dump($sqlQ);
     
     $pageNo     = intval($_REQUEST['page'])?$_REQUEST['page']:0;
     if ($pageNo < 1)    $pageNo = 1;
@@ -62,8 +101,8 @@ global $tpl, $mysql, $lang, $twig;
             'code'                 => $row['code'],
             'name'                 => $row['name'],
             
-            'category'             => '',
-            'image'                => '',
+            'category'             => $row['category'],
+            'image_filepath'       => $row['image_filepath'],
 
             'current_price'        => '',
             'old_price'            => '',
@@ -81,9 +120,14 @@ global $tpl, $mysql, $lang, $twig;
     }
 
     $xt = $twig->loadTemplate($tpath['config/list_product'].'config/'.'list_product.tpl');
-    
+
     $tVars = array( 
-        'pagesss' => generateAdminPagelist( array('current' => $pageNo, 'count' => $countPages, 'url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop'.($news_per_page?'&rpp='.$news_per_page:'').'&page=%page%')),
+        'filter_cats' => getTree($cats, $row['category_id'], 0),
+        'pagesss' => generateAdminPagelist( array('current' => $pageNo, 'count' => $countPages, 'url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop'.($news_per_page?'&rpp='.$news_per_page:'').($fName?'&fname='.$fName:'').($fStatus?'&fstatus='.$fStatus:'').($fCategory?'&fcategory='.$fCategory:'').'&page=%page%')),
+        'rpp'			=>	$news_per_page,
+        'fname'			=>	secure_html($fName),
+        'fstatus'			=>	secure_html($fStatus),
+        'fcategory'			=>	secure_html($fCategory),
         'entries' => isset($tEntry)?$tEntry:'' 
     );
     
@@ -97,6 +141,328 @@ global $tpl, $mysql, $lang, $twig;
         'admin_url'     =>  admin_url,
         'home'          =>  home,
         'current_title' => 'Продукция',
+    );
+    
+    print $xg->render($tVars);
+}
+
+function add_product()
+{
+global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_product'), 'eshop', 1);
+
+    if (isset($_REQUEST['handler']))
+    {
+
+        $SQL['name'] = input_filter_com(convert($_REQUEST['name']));
+        if(empty($SQL['name']))
+        {
+            $error_text[] = 'Название продукта не задано';
+        }
+        
+        $SQL['code'] = input_filter_com(convert($_REQUEST['code']));
+
+        $SQL['url'] = input_filter_com(convert($_REQUEST['url']));
+        if(empty($SQL['url']))
+        {
+            $SQL['url'] = $parse->translit(trim($_REQUEST['url']),1, 1);
+        }
+
+        $SQL['meta_title'] = input_filter_com(convert($_REQUEST['meta_title']));
+        $SQL['meta_keywords'] = input_filter_com(convert($_REQUEST['meta_keywords']));
+        $SQL['meta_description'] = input_filter_com(convert($_REQUEST['meta_description']));
+        
+        $SQL['annotation'] = input_filter_com(convert($_REQUEST['annotation']));
+        $SQL['body'] = input_filter_com(convert($_REQUEST['body']));
+        
+        $SQL['active'] = intval($_REQUEST['active']);
+        $SQL['featured'] = intval($_REQUEST['featured']);
+        
+        $SQL['date'] = time() + ($config['date_adjust'] * 60);
+        $SQL['editdate'] = $SQL['date'];
+        
+        $features = $_REQUEST['data']['features'];
+        
+        $images = $_REQUEST['data']['images'];
+
+        if(empty($error_text))
+        {
+            $vnames = array();
+            foreach ($SQL as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
+            $mysql->query('INSERT INTO '.prefix.'_eshop_products SET '.implode(', ',$vnames).' ');
+            
+            $qid = $mysql->lastid('eshop_products');
+            
+            if($images != NULL) {
+                foreach ($images as $img) {
+                    $timestamp = time();
+                    $iname = $timestamp."-".$img;
+                    
+                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
+                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$iname;
+                    rename($temp_name, $current_name);
+                    
+                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
+                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/thumb/'.$iname;
+                    rename($temp_name, $current_name);
+                    
+                    $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`) VALUES ('$iname','$qid')");
+                }
+            }
+            
+            
+            if($features != NULL) {
+                foreach ($features as $f_key => $f_value) {
+                    
+                    $mysql->query("INSERT INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')");
+                }
+            }
+            
+            $category_id = intval($_REQUEST['parent']);
+            
+            if($category_id != 0) {
+                $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
+            }
+            
+            #generate_catz_cache(true);
+            
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_product');
+        }
+
+    }
+    
+    if(!empty($error_text))
+    {
+        foreach($error_text as $error)
+        {
+            $error_input .= msg(array("type" => "error", "text" => $error));
+        }
+    } else {
+        $error_input ='';
+    }
+
+    foreach ($SQL as $k => $v) { 
+        $tEntry[$k] = $v;
+    }
+        
+    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
+    $cats = getCats($res);
+    
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $frow)
+    {
+        $features_array[] = 
+            array(
+                'id' => $frow['id'],
+                'name' => $frow['name'],
+                'position' => $frow['position'],
+                'in_filter' => $frow['in_filter'],
+                'value' => ''
+                );
+    }
+
+    $tEntry['catz'] = getTree($cats);
+    $tEntry['features'] = $features_array;
+    $tEntry['error'] = $error_input;
+    $tEntry['mode'] = "add";
+
+    $xt = $twig->loadTemplate($tpath['config/add_product'].'config/'.'add_product.tpl');
+    
+    $tVars = array(
+        'entries' => isset($tEntry)?$tEntry:'' 
+    );
+    
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Категории: Добавление продукта',
+    );
+    
+    print $xg->render($tVars);
+}
+
+function edit_product()
+{
+global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_product'), 'eshop', 1);
+
+    $qid = intval($_REQUEST['id']);
+    $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_products LEFT JOIN '.prefix.'_eshop_products_categories ON '.prefix.'_eshop_products.id='.prefix.'_eshop_products_categories.product_id WHERE id = '.db_squote($qid).' LIMIT 1');
+    
+
+    if (isset($_REQUEST['handler']))
+    {
+
+        $SQL['name'] = input_filter_com(convert($_REQUEST['name']));
+        if(empty($SQL['name']))
+        {
+            $error_text[] = 'Название продукта не задано';
+        }
+        
+        $SQL['code'] = input_filter_com(convert($_REQUEST['code']));
+
+
+        $SQL['url'] = input_filter_com(convert($_REQUEST['url']));
+        if(empty($SQL['url']))
+        {
+            $SQL['url'] = $parse->translit(trim($_REQUEST['url']),1, 1);
+        }
+
+        $SQL['meta_title'] = input_filter_com(convert($_REQUEST['meta_title']));
+        $SQL['meta_keywords'] = input_filter_com(convert($_REQUEST['meta_keywords']));
+        $SQL['meta_description'] = input_filter_com(convert($_REQUEST['meta_description']));
+        
+        $SQL['annotation'] = input_filter_com(convert($_REQUEST['annotation']));
+        $SQL['body'] = input_filter_com(convert($_REQUEST['body']));
+        
+        $SQL['active'] = intval($_REQUEST['active']);
+        $SQL['featured'] = intval($_REQUEST['featured']);
+
+        $SQL['editdate'] = time() + ($config['date_adjust'] * 60);
+        
+        $features = $_REQUEST['data']['features'];
+        $images = $_REQUEST['data']['images'];
+
+        if(empty($error_text))
+        {
+            
+            $vnames = array();
+            foreach ($SQL as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
+            $mysql->query('UPDATE '.prefix.'_eshop_products SET '.implode(', ',$vnames).' WHERE id = \''.intval($qid).'\'  ');
+
+            if($images != NULL) {
+                foreach ($images as $img) {
+                    $timestamp = time();
+                    $iname = $timestamp."-".$img;
+                    
+                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
+                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$iname;
+                    rename($temp_name, $current_name);
+                    
+                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
+                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/thumb/'.$iname;
+                    rename($temp_name, $current_name);
+                    
+                    $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`) VALUES ('$iname','$qid')");
+                }
+            }
+            
+            
+            if($features != NULL) {
+                foreach ($features as $f_key => $f_value) {
+                    
+                    if($f_value != '')
+                        $mysql->query("REPLACE INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value') ");
+                    else
+                        $mysql->query("DELETE FROM ".prefix."_eshop_options WHERE feature_id='$f_key' AND product_id='$qid'");
+                }
+            }
+            
+            $category_id = intval($_REQUEST['parent']);
+            
+            if($category_id != 0) {
+                $mysql->query("DELETE FROM ".prefix."_eshop_products_categories WHERE product_id='$qid'");
+                $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
+            }
+            else {
+                $mysql->query("DELETE FROM ".prefix."_eshop_products_categories WHERE product_id='$qid'");
+            }
+            
+            #generate_catz_cache(true);
+            
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_product');
+        }
+
+    }
+    
+    if(!empty($error_text))
+    {
+        foreach($error_text as $error)
+        {
+            $error_input .= msg(array("type" => "error", "text" => $error));
+        }
+    } else {
+        $error_input ='';
+    }
+
+    foreach ($row as $k => $v) { 
+        $tEntry[$k] = $v;
+    }
+        
+    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
+    $cats = getCats($res);
+
+
+    $options_array = array();
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_options LEFT JOIN ".prefix."_eshop_features ON ".prefix."_eshop_features.id=".prefix."_eshop_options.feature_id WHERE ".prefix."_eshop_options.product_id = '$qid' ORDER BY position, id") as $orow)
+    {
+        $options_array[$orow['id']] = $orow['value'];
+    }
+    
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $frow)
+    {
+        $features_array[] = 
+            array(
+                'id' => $frow['id'],
+                'name' => $frow['name'],
+                'position' => $frow['position'],
+                'in_filter' => $frow['in_filter'],
+                'value' => $options_array[$frow['id']]
+                );
+    }
+
+    
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_images WHERE product_id = '$qid' ORDER BY position, id") as $irow)
+    {
+        $images_array[] = 
+            array(
+                'id' => $irow['id'],
+                'filepath' => $irow['filepath'],
+                'product_id' => $irow['product_id'],
+                'position' => $irow['position'],
+                'del_link' => home.'/engine/admin.php?mod=extra-config&plugin=eshop&action=edit_product&id='.$qid.'&delimg='.$irow['id'].'&filepath='.$irow['filepath'].'',
+                );
+    }
+    
+    if (isset($_REQUEST['delimg']) && isset($_REQUEST['filepath']))
+    {
+        $imgID = intval($_REQUEST['delimg']);
+        $imgPath = input_filter_com(convert($_REQUEST['filepath']));
+        $mysql->query("delete from ".prefix."_eshop_images where id = ".$imgID."");
+        //echo root . '/uploads/zboard/' . $imgPath;
+        unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/products/' . $imgPath);
+        unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/products/thumb/' . $imgPath);
+        redirect_eshop('?mod=extra-config&plugin=eshop&action=edit_product&id='.$qid.'');
+    }
+
+    $tEntry['catz'] = getTree($cats, $row['category_id'], 0);
+    $tEntry['features'] = $features_array;
+    $tEntry['entriesImg'] = $images_array;
+    
+    $tEntry['error'] = $error_input;
+    $tEntry['mode'] = "edit";
+
+    $xt = $twig->loadTemplate($tpath['config/add_product'].'config/'.'add_product.tpl');
+    
+    $tVars = array(
+        'entries' => isset($tEntry)?$tEntry:'' 
+    );
+    
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Категории: Редактирование продукта',
     );
     
     print $xg->render($tVars);
@@ -140,6 +506,118 @@ function getTree($arr, $flg, $l){
         }
     }
     return $out;
+}
+
+function getChildIdsArray($arr, $flg){
+    $out = array();
+    $flg;
+
+    foreach($arr as $k=>$v){
+
+        if($k==$flg) {
+            $out = array_merge($out, array_keys($v['children']));
+            /*
+            foreach($v['children'] as $k1=>$v1){
+                if(array_key_exists("children",$v1)) {
+                    getChildIdsArray($v, $k1);
+                }
+            }
+            */
+        }
+        
+        
+    }
+    
+    return $out;
+}
+
+function upload_cat_image()
+{
+global $tpl, $template, $config, $mysql, $lang, $twig;
+    
+    if (!empty($_FILES["image"])) {
+        
+        $myFile = $_FILES["image"];
+
+        if ($myFile["error"] !== UPLOAD_ERR_OK) {
+            return "";
+        }
+        
+        // ensure a safe filename
+        $img_name = preg_replace("/[^A-Z0-9._-]/i", "_", $myFile["name"]);
+        
+        // don't overwrite an existing file
+        $i = 0;
+        $parts = pathinfo($img_name);
+        $upload_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/';
+        $upload_thumbnail_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/thumb/';
+        
+        while (file_exists($upload_dir . $img_name)) {
+            $i++;
+            $img_name = $parts["filename"] . "-" . $i . "." . $parts["extension"];
+        }
+
+        // preserve file from temporary directory
+        $success = move_uploaded_file($myFile["tmp_name"], $upload_dir . $img_name);
+        
+        if (!$success) {
+             return "";
+        }
+        
+        $tempFile = $upload_dir . $img_name;
+        $extension = $parts["extension"];
+        
+        // CREATE THUMBNAIL
+        if ($extension == "jpg" || $extension == "jpeg") {
+            $src = imagecreatefromjpeg ( $tempFile );
+        } else if ($extension == "png") {
+            $src = imagecreatefrompng ( $tempFile );
+        } else {
+            $src = imagecreatefromgif ( $tempFile );
+        }
+
+        list ( $width, $height ) = getimagesize ( $tempFile );
+
+        $newwidth = pluginGetVariable('eshop', 'catz_width_thumb');
+        $newheight = ($height / $width) * $newwidth;
+        $tmp = imagecreatetruecolor ( $newwidth, $newheight );
+
+        imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
+
+        $thumbname = $upload_thumbnail_dir . $img_name;
+
+        if (file_exists ( $thumbname )) {
+            unlink ( $thumbname );
+        }
+
+        imagejpeg ( $tmp, $thumbname, 100 );
+
+        imagedestroy ( $src );
+        imagedestroy ( $tmp );
+        
+    }
+    
+    return $img_name;
+
+}
+
+function delete_cat_image($img_name)
+{
+global $tpl, $template, $config, $mysql, $lang, $twig;
+
+    $upload_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/';
+    $upload_thumbnail_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/thumb/';
+    
+    $imgname = $upload_dir . $img_name;
+    $thumbname = $upload_thumbnail_dir . $img_name;
+
+    if (file_exists ( $imgname )) {
+        unlink ( $imgname );
+    }
+    
+    if (file_exists ( $thumbname )) {
+        unlink ( $thumbname );
+    }
 }
 
 function add_cat($params)
@@ -259,95 +737,6 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     );
     
     print $xg->render($tVars);
-}
-
-function upload_cat_image()
-{
-global $tpl, $template, $config, $mysql, $lang, $twig;
-    
-    if (!empty($_FILES["image"])) {
-        
-        $myFile = $_FILES["image"];
-
-        if ($myFile["error"] !== UPLOAD_ERR_OK) {
-            return "";
-        }
-        
-        // ensure a safe filename
-        $img_name = preg_replace("/[^A-Z0-9._-]/i", "_", $myFile["name"]);
-        
-        // don't overwrite an existing file
-        $i = 0;
-        $parts = pathinfo($img_name);
-        $upload_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/';
-        $upload_thumbnail_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/thumb/';
-        
-        while (file_exists($upload_dir . $img_name)) {
-            $i++;
-            $img_name = $parts["filename"] . "-" . $i . "." . $parts["extension"];
-        }
-
-        // preserve file from temporary directory
-        $success = move_uploaded_file($myFile["tmp_name"], $upload_dir . $img_name);
-        
-        if (!$success) {
-             return "";
-        }
-        
-        $tempFile = $upload_dir . $img_name;
-        $extension = $parts["extension"];
-        
-        // CREATE THUMBNAIL
-        if ($extension == "jpg" || $extension == "jpeg") {
-            $src = imagecreatefromjpeg ( $tempFile );
-        } else if ($extension == "png") {
-            $src = imagecreatefrompng ( $tempFile );
-        } else {
-            $src = imagecreatefromgif ( $tempFile );
-        }
-
-        list ( $width, $height ) = getimagesize ( $tempFile );
-
-        $newwidth = pluginGetVariable('eshop', 'catz_width_thumb');
-        $newheight = ($height / $width) * $newwidth;
-        $tmp = imagecreatetruecolor ( $newwidth, $newheight );
-
-        imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
-
-        $thumbname = $upload_thumbnail_dir . $img_name;
-
-        if (file_exists ( $thumbname )) {
-            unlink ( $thumbname );
-        }
-
-        imagejpeg ( $tmp, $thumbname, 100 );
-
-        imagedestroy ( $src );
-        imagedestroy ( $tmp );
-        
-    }
-    
-    return $img_name;
-
-}
-
-function delete_cat_image($img_name)
-{
-global $tpl, $template, $config, $mysql, $lang, $twig;
-
-    $upload_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/';
-    $upload_thumbnail_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/thumb/';
-    
-    $imgname = $upload_dir . $img_name;
-    $thumbname = $upload_thumbnail_dir . $img_name;
-
-    if (file_exists ( $imgname )) {
-        unlink ( $imgname );
-    }
-    
-    if (file_exists ( $thumbname )) {
-        unlink ( $thumbname );
-    }
 }
 
 function edit_cat($params)
@@ -485,6 +874,30 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     print $xg->render($tVars);
 }
 
+function del_cat($params)
+{global $mysql;
+    
+    $id = intval($_REQUEST['id']);
+    
+    if( empty($id) )
+    {
+        return msg(array("type" => "error", "text" => "Ошибка, вы не выбрали что хотите удалить"));
+    }
+    
+    $cnt_products_in_cat = $mysql->record('SELECT COUNT(*) AS cnt FROM '.prefix.'_eshop_products_categories WHERE category_id = '.db_squote($id).'');
+
+    if($cnt_products_in_cat['cnt'] == 0) {
+        $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_categories WHERE id = '.db_squote($id).' LIMIT 1');
+        delete_cat_image($row['image']);
+        $mysql->query("DELETE FROM ".prefix."_eshop_categories WHERE id = {$id}");
+        msg(array("type" => "info", "info" => "Категория удалена"));
+    }
+    else {
+        msg(array("type" => "info", "info" => "Категория не может быть удалена, т.к. в ней есть продукция"));
+    }
+
+    
+}
 
 function list_cat($params)
 {
@@ -533,31 +946,6 @@ global $tpl, $mysql, $twig;
     
     print $xg->render($tVars);
 
-}
-
-function del_cat($params)
-{global $mysql;
-    
-    $id = intval($_REQUEST['id']);
-    
-    if( empty($id) )
-    {
-        return msg(array("type" => "error", "text" => "Ошибка, вы не выбрали что хотите удалить"));
-    }
-    
-    $cnt_products_in_cat = $mysql->record('SELECT COUNT(*) AS cnt FROM '.prefix.'_eshop_products_categories WHERE category_id = '.db_squote($id).'');
-
-    if($cnt_products_in_cat['cnt'] == 0) {
-        $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_categories WHERE id = '.db_squote($id).' LIMIT 1');
-        delete_cat_image($row['image']);
-        $mysql->query("DELETE FROM ".prefix."_eshop_categories WHERE id = {$id}");
-        msg(array("type" => "info", "info" => "Категория удалена"));
-    }
-    else {
-        msg(array("type" => "info", "info" => "Категория не может быть удалена, т.к. в ней есть продукция"));
-    }
-
-    
 }
 
 //function that lists categories
