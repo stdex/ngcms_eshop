@@ -310,6 +310,8 @@ function plugin_eshop_install($action) {
                 'count_search' => '20',
                 'views_count' => '1',
                 
+                'url' => '0',
+                
                 'max_image_size' => '5',
                 'width' => '2000',
                 'height' => '2000',

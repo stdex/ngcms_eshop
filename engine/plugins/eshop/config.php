@@ -14,7 +14,7 @@ switch ($_REQUEST['action']) {
     case 'list_product':    list_product();                        break;
     case 'add_product':     add_product();                         break;
     case 'edit_product':    edit_product();                        break;
-    case 'modify_product':  modify(); list_product();              break;
+    case 'modify_product':  modify_product(); list_product();      break;
     
     case 'list_feature':    list_feature();                        break;
     case 'add_feature':     add_feature();                         break;
@@ -28,7 +28,7 @@ switch ($_REQUEST['action']) {
     
     case 'options':         options();                             break;
 
-    case 'url':             url();                                 break;
+    case 'urls':            urls();                                break;
     
     default:                list_product();
 }
@@ -65,22 +65,21 @@ global $tpl, $mysql, $lang, $twig;
         array_push($conditions, "p.name LIKE ".db_squote("%".$fName."%"));
     }
 
-    if ($fStatus != "null") {
+    if ($fStatus == '0' || $fStatus == '1') {
         array_push($conditions, "p.active = ".db_squote($fStatus));
     }
     
     if ($fCategory) {
-                
-        $out[] = $fCategory;
-        $catz_filter = array_merge($out, getChildIdsArray($cats, $fCategory, 0));
+        $catz_filter = array();
+        $catz_filter = getChildIdsArray($cats, $fCategory, 0);
+        $catz_filter[] = $fCategory;
         $catz_filter_comma_separated = implode(",", $catz_filter);
- 
         array_push($conditions, "pc.category_id IN (".$catz_filter_comma_separated.") ");
     }
 
     $fSort = " GROUP BY p.id ORDER BY p.id DESC";
-    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-    $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.name AS category, i.filepath AS image_filepath ".$sqlQPart;
+    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+    $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
     
     $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
     
@@ -104,8 +103,9 @@ global $tpl, $mysql, $lang, $twig;
             'category'             => $row['category'],
             'image_filepath'       => $row['image_filepath'],
 
-            'current_price'        => '',
-            'old_price'            => '',
+            'price'                => $row['price'],
+            'compare_price'        => $row['compare_price'],
+            'stock'                => $row['stock'],
             
             'active'               => $row['active'],
             'featured'             => $row['featured'],
@@ -122,7 +122,7 @@ global $tpl, $mysql, $lang, $twig;
     $xt = $twig->loadTemplate($tpath['config/list_product'].'config/'.'list_product.tpl');
 
     $tVars = array( 
-        'filter_cats' => getTree($cats, $row['category_id'], 0),
+        'filter_cats' => getTree($cats, $fCategory, 0),
         'pagesss' => generateAdminPagelist( array('current' => $pageNo, 'count' => $countPages, 'url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop'.($news_per_page?'&rpp='.$news_per_page:'').($fName?'&fname='.$fName:'').($fStatus?'&fstatus='.$fStatus:'').($fCategory?'&fcategory='.$fCategory:'').'&page=%page%')),
         'rpp'			=>	$news_per_page,
         'fname'			=>	secure_html($fName),
@@ -182,8 +182,12 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         $SQL['editdate'] = $SQL['date'];
         
         $features = $_REQUEST['data']['features'];
-        
         $images = $_REQUEST['data']['images'];
+        $linked_products = $_REQUEST['linked-products'];
+        
+        $price = $_REQUEST['price'];
+        $compare_price = $_REQUEST['compare_price'];
+        $stock = $_REQUEST['stock'];
 
         if(empty($error_text))
         {
@@ -222,6 +226,18 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
             
             if($category_id != 0) {
                 $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
+            }
+            
+            if($linked_products != NULL) {
+                $mysql->query("DELETE FROM ".prefix."_eshop_related_products WHERE product_id='$qid'");
+                foreach ($linked_products as $p_key => $p_value) {
+                    $mysql->query("INSERT INTO ".prefix."_eshop_related_products (`product_id`, `related_id`, `position`) VALUES ('$qid','$p_value','0')");
+                }
+            }
+            
+            if(isset($stock)) {
+                $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id='$qid'");
+                $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `compare_price`, `stock`) VALUES ('$qid', '$price', '$compare_price', '$stock')");
             }
             
             #generate_catz_cache(true);
@@ -293,8 +309,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
 
     $qid = intval($_REQUEST['id']);
     $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_products LEFT JOIN '.prefix.'_eshop_products_categories ON '.prefix.'_eshop_products.id='.prefix.'_eshop_products_categories.product_id WHERE id = '.db_squote($qid).' LIMIT 1');
-    
-
+ 
     if (isset($_REQUEST['handler']))
     {
 
@@ -327,6 +342,11 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         
         $features = $_REQUEST['data']['features'];
         $images = $_REQUEST['data']['images'];
+        $linked_products = $_REQUEST['linked-products'];
+        
+        $price = $_REQUEST['price'];
+        $compare_price = $_REQUEST['compare_price'];
+        $stock = $_REQUEST['stock'];
 
         if(empty($error_text))
         {
@@ -363,6 +383,13 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                 }
             }
             
+            if($linked_products != NULL) {
+                $mysql->query("DELETE FROM ".prefix."_eshop_related_products WHERE product_id='$qid'");
+                foreach ($linked_products as $p_key => $p_value) {
+                    $mysql->query("INSERT INTO ".prefix."_eshop_related_products (`product_id`, `related_id`, `position`) VALUES ('$qid','$p_value','0')");
+                }
+            }
+            
             $category_id = intval($_REQUEST['parent']);
             
             if($category_id != 0) {
@@ -372,10 +399,15 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
             else {
                 $mysql->query("DELETE FROM ".prefix."_eshop_products_categories WHERE product_id='$qid'");
             }
+
+            if(isset($stock)) {
+                $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id='$qid'");
+                $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `compare_price`, `stock`) VALUES ('$qid', '$price', '$compare_price', '$stock')");
+            }
             
             #generate_catz_cache(true);
             
-            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_product');
+            //redirect_eshop('?mod=extra-config&plugin=eshop&action=list_product');
         }
 
     }
@@ -415,7 +447,6 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                 'value' => $options_array[$frow['id']]
                 );
     }
-
     
     foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_images WHERE product_id = '$qid' ORDER BY position, id") as $irow)
     {
@@ -426,6 +457,28 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                 'product_id' => $irow['product_id'],
                 'position' => $irow['position'],
                 'del_link' => home.'/engine/admin.php?mod=extra-config&plugin=eshop&action=edit_product&id='.$qid.'&delimg='.$irow['id'].'&filepath='.$irow['filepath'].'',
+                );
+    }
+    
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_related_products rp LEFT JOIN ".prefix."_eshop_products p ON p.id=rp.related_id WHERE rp.product_id = '$qid' ORDER BY rp.position") as $rrow)
+    {
+        $related_array[] = 
+            array(
+                'name' => $rrow['name'],
+                'product_id' => $rrow['product_id'],
+                'related_id' => $rrow['related_id'],
+                'position' => $rrow['position']
+                );
+    }
+    
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_variants WHERE product_id = '$qid' ORDER BY position, id") as $vrow)
+    {
+        $price_array[] = 
+            array(
+                'id' => $vrow['id'],
+                'price' => $vrow['price'],
+                'compare_price' => $vrow['compare_price'],
+                'stock' => $vrow['stock']
                 );
     }
     
@@ -443,6 +496,8 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     $tEntry['catz'] = getTree($cats, $row['category_id'], 0);
     $tEntry['features'] = $features_array;
     $tEntry['entriesImg'] = $images_array;
+    $tEntry['related'] = $related_array;
+    $tEntry['prices'] = $price_array;
     
     $tEntry['error'] = $error_input;
     $tEntry['mode'] = "edit";
@@ -467,6 +522,42 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     
     print $xg->render($tVars);
 }
+
+
+function modify_product()
+{
+global $mysql;
+    
+    $selected_product = $_REQUEST['selected_product'];
+    $subaction  =   $_REQUEST['subaction'];
+    
+    $id = implode( ',', $selected_product );
+    
+    if( empty($id) )
+    {
+        return msg(array("type" => "error", "text" => "Вы выбран ID!"));
+    }
+    
+    switch($subaction) {
+        case 'mass_delete'       : $del = true; break;
+    }
+
+    if(isset($del))
+    {
+        $mysql->query("delete from ".prefix."_eshop_products where id in ({$id})");
+        $mysql->query("delete from ".prefix."_eshop_options where product_id in ({$id})");
+        
+        foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_images WHERE product_id in ({$id})") as $irow)
+        {
+            delete_product_image($irow['filepath']);
+        }
+        $mysql->query("delete from ".prefix."_eshop_images where product_id in ({$id})");
+        
+        msg(array("type" => "info", "info" => "Записи с ID ${id} удалены!"));
+    }
+}
+
+
 
 function getCats($res){
 
@@ -607,6 +698,25 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
 
     $upload_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/';
     $upload_thumbnail_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/categories/thumb/';
+    
+    $imgname = $upload_dir . $img_name;
+    $thumbname = $upload_thumbnail_dir . $img_name;
+
+    if (file_exists ( $imgname )) {
+        unlink ( $imgname );
+    }
+    
+    if (file_exists ( $thumbname )) {
+        unlink ( $thumbname );
+    }
+}
+
+function delete_product_image($img_name)
+{
+global $tpl, $template, $config, $mysql, $lang, $twig;
+
+    $upload_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/';
+    $upload_thumbnail_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/thumb/';
     
     $imgname = $upload_dir . $img_name;
     $thumbname = $upload_thumbnail_dir . $img_name;
@@ -1310,234 +1420,9 @@ global $mysql;
 }
 
 
-function list_order()
-{
-global $tpl, $mysql;
-    $tpath = locatePluginTemplates(array('config/main', 'config/list_order', 'config/list_order_entries'), 'eshop', 1);
-
-    foreach ($mysql->select('SELECT *, po.id as id, zb.id as zid from '.prefix.'_eshop_pay_order po LEFT JOIN '.prefix.'_eshop zb  ON po.zid = zb.id ORDER BY po.id ASC') as $row)
-    {
-        $gvars['vars'] = array (
-            'id' => $row['id'],
-            'dt' => (empty($row['dt']))?'Дата не указана':date(pluginGetVariable('eshop', 'date'), $row['dt']),
-            'price' => $row['amount']." ".$row['currency'],
-            'discr' => $row['description'],
-            'status' => $row['status'],
-            'announce' => '<a href="?mod=extra-config&plugin=eshop&action=edit_announce&id='.$row['zid'].'"  />'.$row['announce_name'].'</a>',
-        );
-        
-        $tpl->template('list_order_entries', $tpath['config/list_order_entries'].'config');
-        $tpl->vars('list_order_entries', $gvars);
-        $entries .= $tpl -> show('list_order_entries');
-    }
-    
-    $count = $mysql->result('SELECT COUNT(id) FROM '.prefix.'_eshop WHERE active = \'0\' ');
-    
-    $pvars['vars']['entries'] = isset($entries)?$entries:'';
-    $tpl->template('list_order', $tpath['config/list_order'].'config');
-    $tpl->vars('list_order', $pvars);
-    $tvars['vars']= array (
-        'active' => !empty($count)?'[ '.$count.' ]':'',
-        'entries' => $tpl->show('list_order'),
-        'global' => 'Прайс'
-    );
-    
-    $tpl->template('main', $tpath['config/main'].'config');
-    $tpl->vars('main', $tvars);
-    print $tpl->show('main');
-}
-
-function list_price()
-{
-global $tpl, $mysql;
-    $tpath = locatePluginTemplates(array('config/main', 'config/list_price', 'config/list_price_entries'), 'eshop', 1);
-
-    foreach ($mysql->select('SELECT * from '.prefix.'_eshop_pay_price ORDER BY id ASC') as $row)
-    {
-        $gvars['vars'] = array (
-            'id' => $row['id'],
-            'time' => $row['time'],
-            'price' => '<a href="?mod=extra-config&plugin=eshop&action=price_edit&id='.$row['id'].'"  />'.$row['price'].'</a>',
-            'price_del' => '<a href="?mod=extra-config&plugin=eshop&action=price_del&id='.$row['id'].'"  /><img src="/engine/skins/default/images/delete.gif"></a>',
-        );
-        
-        $tpl->template('list_price_entries', $tpath['config/list_price_entries'].'config');
-        $tpl->vars('list_price_entries', $gvars);
-        $entries .= $tpl -> show('list_price_entries');
-    }
-    
-    $count = $mysql->result('SELECT COUNT(id) FROM '.prefix.'_eshop WHERE active = \'0\' ');
-    
-    $pvars['vars']['entries'] = isset($entries)?$entries:'';
-    $tpl->template('list_price', $tpath['config/list_price'].'config');
-    $tpl->vars('list_price', $pvars);
-    $tvars['vars']= array (
-        'active' => !empty($count)?'[ '.$count.' ]':'',
-        'entries' => $tpl->show('list_price'),
-        'global' => 'Прайс'
-    );
-    
-    $tpl->template('main', $tpath['config/main'].'config');
-    $tpl->vars('main', $tvars);
-    print $tpl->show('main');
-}
-
-function send_price($params)
-{
-global $tpl, $template, $config, $mysql, $lang;
-    $tpath = locatePluginTemplates(array('config/main', 'config/send_price'), 'eshop', 1);
-    
-    if (isset($_REQUEST['submit']))
-    {
-    
-        $price = input_filter_com(convert($_REQUEST['price']));
-        $time = intval($_REQUEST['time']);
-        
-        if(empty($price))
-        {
-            $error_text[] = 'Прайс не задан';
-        }
-
-        if(empty($time))
-        {
-            $error_text[] = 'Время не задано';
-        }
-
-        if(empty($error_text))
-        {
-            $mysql->query('INSERT INTO '.prefix.'_eshop_pay_price (time, price) 
-                VALUES 
-                ('.db_squote($time).',
-                '.db_squote($price).'
-                )
-            ');
-            
-            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_price');
-        }
-
-    }
-    
-        if(!empty($error_text))
-        {
-            foreach($error_text as $error)
-            {
-                $error_input .= msg(array("type" => "error", "text" => $error));
-            }
-        } else {
-            $error_input ='';
-        }
-
-    $count = $mysql->result('SELECT COUNT(id) FROM '.prefix.'_eshop WHERE active = \'0\' ');
-    
-    $pvars['vars'] = array (
-        'time' => $time,
-        'price' => $price,
-        'error' => $error_input,
-    );
-    
-    
-    $tpl->template('send_price', $tpath['config/send_price'].'config');
-    $tpl->vars('send_price', $pvars);
-    $tvars['vars']= array (
-        'active' => !empty($count)?'[ '.$count.' ]':'',
-        'entries' => $tpl->show('send_price'),
-        'global' => 'Добавить категорию'
-    );
-    
-    $tpl->template('main', $tpath['config/main'].'config');
-    $tpl->vars('main', $tvars);
-    print $tpl->show('main');
-}
-
-function price_edit()
-{
-global $tpl, $mysql;
-    $tpath = locatePluginTemplates(array('config/main', 'config/send_price'), 'eshop', 1);
-    
-    $id = intval($_REQUEST['id']);
-    
-    $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_pay_price WHERE id = '.db_squote($id).' LIMIT 1');
-    
-    if (isset($_REQUEST['submit']))
-    {
-        $time = intval($_REQUEST['time']);
-        $price = input_filter_com(convert($_REQUEST['price']));
-        
-        if(empty($price))
-        {
-            $error_text[] = 'Прайс не задан';
-        }
-
-        if(empty($time))
-        {
-            $error_text[] = 'Время не задано';
-        }
-        
-        if(empty($error_text))
-        {
-            //  position = '.intval($position).'
-            
-            $mysql->query('UPDATE '.prefix.'_eshop_pay_price SET  
-                time = '.db_squote($time).',
-                price = '.db_squote($price).'
-                WHERE id = '.$id.'
-            ');
-
-            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_price');
-        }
-    }
-    
-    if(!empty($error_text))
-    {
-        foreach($error_text as $error)
-        {
-            $error_input .= msg(array("type" => "error", "text" => $error), 0, 2);
-        }
-    } else {
-        $error_input ='';
-    }
-    
-    $count = $mysql->result('SELECT COUNT(id) FROM '.prefix.'_eshop WHERE active = \'0\' ');
-    
-    $pvars['vars'] = array (
-        'time' => $row['time'],
-        'price' => $row['price'],
-        'error' => $error_input,
-    );
-    
-    $tpl->template('send_price', $tpath['config/send_price'].'config');
-    $tpl->vars('send_price', $pvars);
-    $tvars['vars']= array (
-        'active' => !empty($count)?'[ '.$count.' ]':'',
-        'entries' => $tpl->show('send_price'),
-        'global' => 'Редактировать прайс'
-    );
-    
-    $tpl->template('main', $tpath['config/main'].'config');
-    $tpl->vars('main', $tvars);
-    print $tpl->show('main');
-}
-
-function price_del()
-{global $mysql;
-    
-    $id = intval($_REQUEST['id']);
-    
-    if( empty($id) )
-    {
-        return msg(array("type" => "error", "text" => "Ошибка, вы не выбрали что хотите удалить"));
-    }
-    
-    $mysql->query("delete from ".prefix."_eshop_pay_price where id = {$id}");
-
-    msg(array("type" => "info", "info" => "Прайс удален"));
-    
-}
-
-
-function url()
-{global $tpl, $mysql;
-    $tpath = locatePluginTemplates(array('config/main', 'config/url'), 'eshop', 1);
+function urls()
+{global $tpl, $mysql, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/urls'), 'eshop', 1);
     
     if (isset($_REQUEST['submit']))
     {
@@ -1557,59 +1442,19 @@ function url()
             
             $ULIB->registerCommand('eshop', 'show',
                 array ('vars' =>
-                        array(  'id' => array('matchRegex' => '\d+', 'descr' => array('russian' => 'ID объявления')),
+                        array(  'id' => array('matchRegex' => '\d+', 'descr' => array('russian' => 'ID продукта')),
                         ),
-                        'descr' => array ('russian' => 'Ссылка на объявление'),
+                        'descr' => array ('russian' => 'Ссылка на продукт'),
                 )
             );
-            
-            $ULIB->registerCommand('eshop', 'send',
-                array ('vars' =>
-                        array(),
-                        'descr' => array ('russian' => 'Добавить объявлдение'),
-                )
-            );
-            
+                       
             $ULIB->registerCommand('eshop', 'search',
                 array ('vars' =>
                         array(),
-                        'descr' => array ('russian' => 'Поиск по объявлениям'),
+                        'descr' => array ('russian' => 'Поиск по продукции'),
                 )
             );
-            
-            $ULIB->registerCommand('eshop', 'list',
-                array ('vars' =>
-                        array( 'page' => array('matchRegex' => '\d{1,4}', 'descr' => array('russian' => 'Постраничная навигация'))
-                        ),
-                        'descr' => array ('russian' => 'Список объявлений добавленных пользователем'),
-                )
-            );
-            
-            $ULIB->registerCommand('eshop', 'edit',
-                array ('vars' =>
-                        array(  'id' => array('matchRegex' => '\d+', 'descr' => array('russian' => 'ID объявления')),
-                        ),
-                        'descr' => array ('russian' => 'Ссылка для редактирования'),
-                )
-            );
-            
-            $ULIB->registerCommand('eshop', 'del',
-                array ('vars' =>
-                        array(  'id' => array('matchRegex' => '\d+', 'descr' => array('russian' => 'ID объявления')),
-                        ),
-                        'descr' => array ('russian' => 'Ссылка для удаления'),
-                )
-            );
-            
-            $ULIB->registerCommand('eshop', 'expend',
-                array ('vars' =>
-                        array(  'id' => array('matchRegex' => '\d+', 'descr' => array('russian' => 'ID объявления')),
-                                'hashcode' => array('matchRegex' => '.+?', 'descr' => array('russian' => 'Hashcode объявления')),
-                        ),
-                        'descr' => array ('russian' => 'Ссылка для продления'),
-                )
-            );
-            
+
             $ULIB->saveConfig();
             
             $UHANDLER = new urlHandler();
@@ -1735,39 +1580,6 @@ function url()
             $UHANDLER->registerHandler(0,
                 array (
                 'pluginName' => 'eshop',
-                'handlerName' => 'send',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/eshop/send/',
-                  'regex' => '#^/eshop/send/$#',
-                  'regexMap' => 
-                  array (
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/eshop/send/',
-                      2 => 0,
-                    ),
-                  ),
-                ),
-              )
-            );
-            
-            $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
                 'handlerName' => 'search',
                 'flagPrimary' => true,
                 'flagFailContinue' => false,
@@ -1798,598 +1610,52 @@ function url()
               )
             );
             
-            $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
-                'handlerName' => 'list',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/eshop/list/[page/{page}/]',
-                  'regex' => '#^/eshop/list/(?:page/(\\d{1,4})/){0,1}$#',
-                  'regexMap' => 
-                  array (
-                    1 => 'page',
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/eshop/list/',
-                      2 => 0,
-                    ),
-                    1 => 
-                    array (
-                      0 => 0,
-                      1 => 'page/',
-                      2 => 1,
-                    ),
-                    2 => 
-                    array (
-                      0 => 1,
-                      1 => 'page',
-                      2 => 1,
-                    ),
-                    3 => 
-                    array (
-                      0 => 0,
-                      1 => '/',
-                      2 => 1,
-                    ),
-                  ),
-                ),
-              )
-            );
-            
-            $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
-                'handlerName' => 'edit',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/eshop/edit/{id}/',
-                  'regex' => '#^/eshop/edit/(\\d+)/$#',
-                  'regexMap' => 
-                  array (
-                    1 => 'id',
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/eshop/edit/',
-                      2 => 0,
-                    ),
-                    1 => 
-                    array (
-                      0 => 1,
-                      1 => 'id',
-                      2 => 0,
-                    ),
-                    2 => 
-                    array (
-                      0 => 0,
-                      1 => '/',
-                      2 => 0,
-                    ),
-                  ),
-                ),
-              )
-            );
-            
-            $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
-                'handlerName' => 'del',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/eshop/del/{id}/',
-                  'regex' => '#^/eshop/del/(\\d+)/$#',
-                  'regexMap' => 
-                  array (
-                    1 => 'id',
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/eshop/del/',
-                      2 => 0,
-                    ),
-                    1 => 
-                    array (
-                      0 => 1,
-                      1 => 'id',
-                      2 => 0,
-                    ),
-                    2 => 
-                    array (
-                      0 => 0,
-                      1 => '/',
-                      2 => 0,
-                    ),
-                  ),
-                ),
-              )
-            );
-            
-            
-            $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
-                'handlerName' => 'expend',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/eshop/expend/[id/{id}/][hashcode/{hashcode}/]',
-                  'regex' => '#^/eshop/expend/(?:id/(\\d+)/){0,1}(?:hashcode/(.+?)/){0,1}$#',
-                  'regexMap' => 
-                  array (
-                    1 => 'id',
-                    2 => 'hashcode',
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/eshop/',
-                      2 => 0,
-                    ),
-                    1 => 
-                    array (
-                      0 => 0,
-                      1 => 'id/',
-                      2 => 1,
-                    ),
-                    2 => 
-                    array (
-                      0 => 1,
-                      1 => 'id',
-                      2 => 1,
-                    ),
-                    3 => 
-                    array (
-                      0 => 0,
-                      1 => '/',
-                      2 => 1,
-                    ),
-                    4 => 
-                    array (
-                      0 => 0,
-                      1 => 'hashcode/',
-                      2 => 3,
-                    ),
-                    5 => 
-                    array (
-                      0 => 1,
-                      1 => 'hashcode',
-                      2 => 3,
-                    ),
-                    6 => 
-                    array (
-                      0 => 0,
-                      1 => '/',
-                      2 => 3,
-                    ),
-                  ),
-                ),
-              )
-            );
-            
             $UHANDLER->saveConfig();
         } else {
             $ULIB = new urlLibrary();
             $ULIB->loadConfig();
             $ULIB->removeCommand('eshop', '');
             $ULIB->removeCommand('eshop', 'show');
-            $ULIB->removeCommand('eshop', 'send');
             $ULIB->removeCommand('eshop', 'search');
-            $ULIB->removeCommand('eshop', 'list');
-            $ULIB->removeCommand('eshop', 'edit');
-            $ULIB->removeCommand('eshop', 'del');
-            $ULIB->removeCommand('eshop', 'expend');
             $ULIB->saveConfig();
             $UHANDLER = new urlHandler();
             $UHANDLER->loadConfig();
             $UHANDLER->removePluginHandlers('eshop', '');
             $UHANDLER->removePluginHandlers('eshop', 'show');
-            $UHANDLER->removePluginHandlers('eshop', 'send');
             $UHANDLER->removePluginHandlers('eshop', 'search');
-            $UHANDLER->removePluginHandlers('eshop', 'list');
-            $UHANDLER->removePluginHandlers('eshop', 'edit');
-            $UHANDLER->removePluginHandlers('eshop', 'del');
-            $UHANDLER->removePluginHandlers('eshop', 'expend');
             $UHANDLER->saveConfig();
         }
         
         pluginSetVariable('eshop', 'url', intval($_REQUEST['url']));
         pluginsSaveConfig();
         
-        redirect_eshop('?mod=extra-config&plugin=eshop&action=url');
+        redirect_eshop('?mod=extra-config&plugin=eshop&action=urls');
     }
     $url = pluginGetVariable('eshop', 'url');
     $url = '<option value="0" '.(empty($url)?'selected':'').'>Нет</option><option value="1" '.(!empty($url)?'selected':'').'>Да</option>';
-    $pvars['vars']['info'] = $url;
+
+    $xt = $twig->loadTemplate($tpath['config/urls'].'config/'.'urls.tpl');
     
-    $count = $mysql->result('SELECT COUNT(id) FROM '.prefix.'_eshop WHERE active = \'0\' ');
-    
-    $tpl->template('url', $tpath['config/url'].'config');
-    $tpl->vars('url', $pvars);
-    $tvars['vars']= array (
-        'active' => !empty($count)?'[ '.$count.' ]':'',
-        'entries' => $tpl->show('url'),
-        'global' => 'Настройка ЧПУ'
+    $tVars = array(
+        'info' => $url 
     );
     
-    $tpl->template('main', $tpath['config/main'].'config');
-    $tpl->vars('main', $tvars);
-    print $tpl->show('main');
-}
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
 
-function list_announce()
-{
-global $tpl, $mysql, $lang;
-    $tpath = locatePluginTemplates(array('config/main', 'config/list_announce', 'config/list_entries'), 'eshop', 1);
-    
-    $news_per_page = pluginGetVariable('eshop', 'admin_count');
-    
-    if (($news_per_page < 2)||($news_per_page > 2000)) $news_per_page = 2;
-    
-    $pageNo     = intval($_REQUEST['page'])?$_REQUEST['page']:0;
-    if ($pageNo < 1)    $pageNo = 1;
-    if (!$start_from)   $start_from = ($pageNo - 1)* $news_per_page;
-    
-    $count = $mysql->result('SELECT count(id) from '.prefix.'_eshop');
-    $countPages = ceil($count / $news_per_page);
-    
-    foreach ($mysql->select('SELECT * from '.prefix.'_eshop ORDER BY editdate DESC LIMIT '.$start_from.', '.$news_per_page) as $row)
-    {
-        switch ($row['active'])
-        {
-            case 1: $active = 'Да'; break;
-            case 0: $active = 'Нет'; break;
-            default: $active = 'Ошибка';
-        }
-        
-        foreach ($mysql->select('SELECT id, cat_name FROM '.prefix.'_eshop_cat where id='.$row['cat_id'].'') as $cat)
-        {
-            $options = $cat['cat_name'];
-        }
-        
-        $gvars['vars'] = array (
-            'id' => $row['id'],
-            'announce_name' => '<a href="?mod=extra-config&plugin=eshop&action=edit_announce&id='.$row['id'].'"  />'.$row['announce_name'].'</a>',
-            'announce_period' => $row['announce_period'],
-            'announce_description' => $row['announce_description'],
-            'announce_contacts' => $row['announce_contacts'],
-            'vip_added'             =>  $row['vip_added'],
-            'vip_expired'           =>  $row['vip_expired'],
-            'date' => (empty($row['date']))?'Дата не указана':date(pluginGetVariable('eshop', 'date'), $row['date']),
-            'category' => $options,
-            'active' => $active,
-            'author' => $row['author'],
-        );
-        
-        $tpl->template('list_entries', $tpath['config/list_entries'].'config');
-        $tpl->vars('list_entries', $gvars);
-        $entries .= $tpl -> show('list_entries');
-    }
-    
-    $count = $mysql->result('SELECT COUNT(id) FROM '.prefix.'_eshop WHERE active = \'0\' ');
-    
-    $pvars['vars']['pagesss'] = generateAdminPagelist( array('current' => $pageNo, 'count' => $countPages, 'url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop&action=list_announce'.($_REQUEST['news_per_page']?'&news_per_page='.$news_per_page:'').($_REQUEST['author']?'&author='.$_REQUEST['author']:'').($_REQUEST['sort']?'&sort='.$_REQUEST['sort']:'').($postdate?'&postdate='.$postdate:'').($author?'&author='.$author:'').($status?'&status='.$status:'').'&page=%page%'));
-    $pvars['vars']['entries'] = $entries;
-    $tpl->template('list_announce', $tpath['config/list_announce'].'config');
-    $tpl->vars('list_announce', $pvars);
-    $tvars['vars']= array (
-        'active' => !empty($count)?'[ '.$count.' ]':'',
-        'entries' => $tpl->show('list_announce'),
-        'global' => 'Список объявлений'
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Настройка ЧПУ',
     );
     
-    $tpl->template('main', $tpath['config/main'].'config');
-    $tpl->vars('main', $tvars);
-    print $tpl->show('main');
+    print $xg->render($tVars);
+
 }
 
-function edit_announce()
-{
-global $tpl, $lang, $mysql, $config;
-    $tpath = locatePluginTemplates(array('config/main', 'config/edit_announce', 'config/list_images'), 'eshop', 1);
-    
-    $id = intval($_REQUEST['id']);
-    if (!empty($id))
-    {
-        
-        $row = $mysql->record('SELECT * FROM '.prefix.'_eshop WHERE id = '.db_squote($id).' LIMIT 1');
-        
-        foreach (explode("|",pluginGetVariable('eshop', 'list_period')) as $line) {
-            $list_period .= str_replace( array('{line}', '{activ}'), array($line, ($line==$row['announce_period']?'selected':'')), $lang['eshop']['list_period']);
-        }
-        /*
-        $options = '<option disabled>---------</option>';
-        foreach ($mysql->select('SELECT id, cat_name FROM '.prefix.'_eshop_cat') as $cat)
-        {
-            $options .= '<option value="' . $cat['id'] . '"'.(($row['cat_id']==$cat['id'])?'selected':'').'>' . $cat['cat_name'] . '</option>';
-        }
-        */
-            $res = mysql_query("SELECT * FROM ".prefix."_eshop_cat ORDER BY id");
-            $cats = getCats($res);
-            $options = getTree($cats, $row['cat_id'], 0);
-    
-        if (isset($_REQUEST['submit']))
-        {
-            $SQL['editdate'] = time() + ($config['date_adjust'] * 60);
-            
-            $SQL['announce_name'] = input_filter_com(convert($_REQUEST['announce_name']));
-            if(empty($SQL['announce_name']))
-                $error_text[] = 'Название объявления пустое';
-
-            
-            $SQL['author'] = input_filter_com(convert($_REQUEST['author']));
-            if(empty($SQL['author']))
-                $error_text[] = 'Поле автор не заполнено';
-            
-            $SQL['announce_period'] = input_filter_com(convert($_REQUEST['announce_period']));
-            if(!empty($SQL['announce_period']))
-            {
-                if(!in_array($SQL['announce_period'], explode("|",pluginGetVariable('eshop', 'list_period'))))
-                {
-                    $error_text[] = 'Поле период задано неверно '.$SQL['announce_period'];
-                }
-                
-            } else {
-                $error_text[] = 'Поле период не заполнено';
-            }
-            
-            $SQL['cat_id'] = intval($_REQUEST['cat_id']);
-            if(!empty($SQL['cat_id']))
-            {
-                $cat = $mysql->result('SELECT 1 FROM '.prefix.'_eshop_cat WHERE id = \'' . $SQL['cat_id'] . '\' LIMIT 1');
-                
-                if(empty($cat))
-                {
-                    $error_text[] = 'Такой категории не существует';
-                }
-            } else {
-                $error_text[] = 'Вы не выбрали категорию';
-            }
-            
-            
-            $SQL['announce_description'] = str_replace(array("\r\n", "\r"), "\n",input_filter_com(convert($_REQUEST['announce_description'])));
-            if(empty($SQL['announce_description']))
-            {
-                $error_text[] = 'Нет описания к объявлению';
-            }
-            
-            $SQL['announce_contacts'] = str_replace(array("\r\n", "\r"), "\n",input_filter_com(convert($_REQUEST['announce_contacts'])));
-            if(empty($SQL['announce_contacts']))
-            {
-                $error_text[] = 'Нет контактов к объявлению';
-            }
-            
-            $SQL['active'] = $_REQUEST['announce_activeme'];
-            
-            if(is_array($SQLi)){
-                $vnamess = array();
-                foreach ($SQLi as $k => $v) { $vnamess[] = $k.' = '.db_squote($v); }
-                $mysql->query('update '.prefix.'_eshop set '.implode(', ',$vnamess).' where  id = \''.intval($id).'\'');
-            }
-            
-            if(empty($error_text))
-            {
-                $vnames = array();
-                foreach ($SQL as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
-                $mysql->query('update '.prefix.'_eshop set '.implode(', ',$vnames).' where  id = \''.intval($id).'\'');
-                
-                generate_entries_cnt_cache(true);
-                generate_catz_cache(true);
-                
-                sleep(5);
-                
-                redirect_eshop('?mod=extra-config&plugin=eshop&action=list_announce');
-            }
-            
-        }
-        
-        if(!empty($error_text))
-        {
-            foreach($error_text as $error)
-            {
-                $error_input .= msg(array("type" => "error", "text" => $error));
-            }
-        } else {
-            $error_input ='';
-        }
-        
-        if($row['active'] == 1) { $checked = 'checked'; } else  { $checked = ''; }
-
-        $pvars['vars'] = array (
-            'images_url' => str_replace( array( '{url_images}', '{url_images_thumb}'), 
-                            array(images_url.'/eshop/'.$row['plugin_images'], images_url.'/eshop/thumb/'.$row['plugin_images']), $lang['eshop']['images_url']),
-            'options' => $options,
-            'announce_activeme' => $checked,
-            'announce_name' => $row['announce_name'],
-            'list_period' => $list_period,
-            'announce_contacts' =>$row['announce_contacts'],
-            'author' => $row['author'],
-            'announce_description' => $row['announce_description'],
-            'vip_added'             =>  $row['vip_added'],
-            'vip_expired'           =>  $row['vip_expired'],
-            'tpl_url' => home.'/eshop/'.$config['theme'],
-            'tpl_home' => admin_url,
-            'id' => $id,
-            'error' => $error_input,
-        );
-    } else {
-        msg(array("type" => "error", "text" => "Вы выбрали неверное id"));
-    }
-    
-    
-        foreach ($mysql->select('select * from '.prefix.'_eshop_images where zid='.$id.'') as $row2)
-        {
-        $gvars['vars'] = array (
-            'home' => home,
-            'del' => home.'/engine/admin.php?mod=extra-config&plugin=eshop&action=edit_announce&id='.$id.'&delimg='.$row2['pid'].'&filepath='.$row2['filepath'].'',
-            'pid' => $row2['pid'],
-            'filepath' => $row2['filepath'],
-            'zid' => $row2['zid'],
-        );
-        
-        $tpl->template('list_images', $tpath['config/list_images'].'config');
-        $tpl->vars('list_images', $gvars);
-        $entriesImg .= $tpl -> show('list_images');
-        }
-        
-        $pvars['vars']['entriesImg'] = $entriesImg;
-        
-    if (isset($_REQUEST['delimg']) && isset($_REQUEST['filepath']))
-        {
-        $imgID = intval($_REQUEST['delimg']);
-        $imgPath = $_REQUEST['filepath'];
-        $mysql->query("delete from ".prefix."_eshop_images where pid = ".$imgID."");
-        //echo root . '/uploads/eshop/' . $imgPath;
-        unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/' . $imgPath);
-        unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/thumb/' . $imgPath);
-        redirect_eshop('?mod=extra-config&plugin=eshop&action=edit_announce&id='.$id.'');
-        }
-    
-    if (isset($_REQUEST['delme']))
-        {
-        
-        foreach ($mysql->select('select * from '.prefix.'_eshop_images where zid='.db_squote($id).'') as $row2)
-        {
-        unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/' . $row2['filepath']);
-        unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/thumb/' . $row2['filepath']);
-        }
-        $mysql->query("delete from ".prefix."_eshop_images where zid = ".db_squote($id)."");
-
-        $mysql->query('delete from '.prefix.'_eshop where id = '.db_squote($id));
-        
-        generate_entries_cnt_cache(true);
-        
-        redirect_eshop('?mod=extra-config&plugin=eshop&action=list_announce');
-        }
-    
-    $count = $mysql->result('SELECT COUNT(id) FROM '.prefix.'_eshop WHERE active = \'0\' ');
-    
-    $tpl->template('edit_announce', $tpath['config/edit_announce'].'config');
-    $tpl->vars('edit_announce', $pvars);
-    $tvars['vars']= array (
-        'active' => !empty($count)?'[ '.$count.' ]':'',
-        'entries' => $tpl->show('edit_announce'),
-        'entriesImg' => $tpl->show('list_images'),
-        'global' => 'Редактирование: '.$row['announce_name']
-    );
-    
-    $tpl->template('main', $tpath['config/main'].'config');
-    $tpl->vars('main', $tvars);
-    print $tpl->show('main');
-}
-
-
-function cat_name_del()
-{global $mysql;
-    
-    $id = intval($_REQUEST['id']);
-    
-    if( empty($id) )
-    {
-        return msg(array("type" => "error", "text" => "Ошибка, вы не выбрали что хотите удалить"));
-    }
-    
-    $mysql->query("delete from ".prefix."_eshop_cat where id = {$id}");
-    
-    generate_catz_cache(true);
-    
-    msg(array("type" => "info", "info" => "Категория удалена"));
-    
-}
-
-function modify()
-{
-global $mysql;
-    
-    $selected_news = $_REQUEST['selected_files'];
-    $subaction  =   $_REQUEST['subaction'];
-    
-    if( empty($selected_news) )
-    {
-        return msg(array("type" => "error", "text" => "Ошибка, вы не выбрали объявление"));
-    }
-    
-    switch($subaction) {
-        case 'mass_approve'      : $active = 'active = 1'; break;
-        case 'mass_forbidden'    : $active = 'active = 0'; break;
-        case 'mass_delete'       : $del = true; break;
-    }
-    
-    foreach ($selected_news as $id)
-    {
-        if(isset($active))
-        {
-            $mysql->query('update '.prefix.'_eshop 
-                    set '.$active.'
-                    WHERE id = '.db_squote($id).'
-                    ');
-            $result = 'Объявления Активированы/Деактивированы';
-        }
-        if(isset($del))
-        {
-        
-        foreach ($mysql->select('select * from '.prefix.'_eshop_images where zid='.db_squote($id).'') as $row2)
-        {
-        unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/' . $row2['filepath']);
-        unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/thumb/' . $row2['filepath']);
-        }
-        $mysql->query("delete from ".prefix."_eshop_images where zid = ".db_squote($id)."");
-
-            $mysql->query('delete from '.prefix.'_eshop where id = '.db_squote($id));
-            $result = 'Объявления удалены';
-        }
-    }
-    generate_entries_cnt_cache(true);
-    generate_catz_cache(true);
-    msg(array("type" => "info", "info" => $result));
-}
 
 function options()
 {
@@ -2525,6 +1791,7 @@ global $tpl, $mysql, $cron, $twig;
     print $xg->render($tVars);
 }
 
+/*
 function eshop_upload_files($files_del){
     $max_file_size = pluginGetVariable('eshop', 'max_file_size') * 1024 * 1024;
     $extensions = explode(',', pluginGetVariable('eshop', 'ext_file'));
@@ -2653,6 +1920,7 @@ function eshop_upload_images($images_del, $w, $h, $quality = 100){
     }
     return array($new, $error_text);
 }
+*/
 
 function redirect_eshop($url)
 {

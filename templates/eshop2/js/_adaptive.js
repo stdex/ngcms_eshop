@@ -320,6 +320,7 @@ $(document).ready(function() {
         Adaptive.resize(wWidth);
     });
 });
+
 wnd.load(function() {
     var isFixedSupported = (function() {
         var isSupported = null;

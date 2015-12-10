@@ -66,12 +66,9 @@
   text.plurComments = ['отзыв', 'отзыва', 'отзывов'];
       </script>
       
-      <script src="{{ tpl_url }}/js/settings.js">
-      </script>
-      <script src="{{ tpl_url }}/js/_adaptive.js">
-      </script>
-      <script src="{{ tpl_url }}/js/jquery.cycle.all.min.js">
-      </script>
+      <script src="{{ tpl_url }}/js/settings.js"></script>
+      <script src="{{ tpl_url }}/js/_adaptive.js"></script>
+      <script src="{{ tpl_url }}/js/jquery.cycle.all.min.js"></script>
       
       <script type="text/javascript" src="{{ scriptLibrary }}/functions.js">
       </script>
@@ -386,15 +383,18 @@
                                         <td>
                                           <div class="frame-item-menu frameItemMenu">
                                             <div class="frame-title is-sub">
-                                              <a href="{{home}}/shop/category/telefoniia-pleery-gps" title="Телефония, МР3-плееры, GPS" class="title">
+                                              <a class="title">
                                                 <span class="helper" style="height: 49px;">
                                                 </span>
                                                 <span class="text-el">
-                                                  Телефония, МР3-плееры, GPS
+                                                  Категории
                                                 </span>
                                               </a>
                                             </div>
                                             <div class="frame-drop-menu left-drop" style="display: none; left: 0px;">
+                                            
+                                              {{ callPlugin('eshop.show_catz_tree') }}
+                                              <!--
                                               <ul class="items">
                                                 <li class="column_0">
                                                   <a href="{{home}}/shop/category/telefoniia-pleery-gps/telefony" title="Телефоны" class="title-category-l1  is-sub">
@@ -411,100 +411,12 @@
                                                           Мобильные телефоны
                                                         </a>
                                                       </li>
-                                                      <li class="column2_0">
-                                                        <a href="{{home}}/shop/category/telefoniia-pleery-gps/telefony/smartfony" title="Смартфоны">
-                                                          Смартфоны
-                                                        </a>
-                                                      </li>
-                                                      <li class="column2_0">
-                                                        <a href="{{home}}/shop/category/telefoniia-pleery-gps/telefony/chehly-dlia-telefonov" title="Чехлы для телефонов">
-                                                          Чехлы для телефонов
-                                                        </a>
-                                                      </li>
-                                                      <li class="column2_0">
-                                                        <a href="{{home}}/shop/category/telefoniia-pleery-gps/telefony/bluetooth-garnitury" title="Bluetooth гарнитуры">
-                                                          Bluetooth гарнитуры
-                                                        </a>
-                                                      </li>
-                                                      <li class="column2_0">
-                                                        <a href="{{home}}/shop/category/telefoniia-pleery-gps/telefony/provodnye-garnitury" title="Проводные гарнитуры">
-                                                          Проводные гарнитуры
-                                                        </a>
-                                                      </li>
-                                                      
                                                     </ul>
                                                   </div>
                                                 </li>
-                                                <li class="column_0">
-                                                  <a href="{{home}}/shop/category/telefoniia-pleery-gps/aksessuary" title="Аксессуары" class="title-category-l1  is-sub">
-                                                    <span class="helper">
-                                                    </span>
-                                                    <span class="text-el">
-                                                      Аксессуары
-                                                    </span>
-                                                  </a>
-                                                  <div class="frame-l2">
-                                                    <ul class="items">
-                                                      <li class="column2_0">
-                                                        <a href="{{home}}/shop/category/telefoniia-pleery-gps/aksessuary/akkumuliatory" title="Аккумуляторы">
-                                                          Аккумуляторы
-                                                        </a>
-                                                      </li>
-                                                      <li class="column2_0">
-                                                        <a href="{{home}}/shop/category/telefoniia-pleery-gps/aksessuary/zariadnye-ustroistva" title="Зарядные устройства">
-                                                          Зарядные устройства
-                                                        </a>
-                                                      </li>
-                                                      <li class="column2_0">
-                                                        <a href="{{home}}/shop/category/telefoniia-pleery-gps/aksessuary/karty-pamiati" title="Карты памяти">
-                                                          Карты памяти
-                                                        </a>
-                                                      </li>
-                                                      <li class="column2_0">
-                                                        <a href="{{home}}/shop/category/telefoniia-pleery-gps/aksessuary/zashchitnye-plenki" title="Защитные пленки">
-                                                          Защитные пленки
-                                                        </a>
-                                                      </li>
-                                                      <li class="column2_0">
-                                                        <a href="{{home}}/shop/category/telefoniia-pleery-gps/aksessuary/aksessuary-dlia-telefonov" title="Аксессуары для телефонов">
-                                                          Аксессуары для телефонов
-                                                        </a>
-                                                      </li>
-                                                      
-                                                    </ul>
-                                                  </div>
-                                                </li>
-                                                <li class="column_0">
-                                                  <a href="{{home}}/shop/category/telefoniia-pleery-gps/mp3-mp4-pleery" title="MP3-MP4 плееры" class="title-category-l1  is-sub">
-                                                    <span class="helper">
-                                                    </span>
-                                                    <span class="text-el">
-                                                      MP3-MP4 плееры
-                                                    </span>
-                                                  </a>
-                                                  <div class="frame-l2">
-                                                    <ul class="items">
-                                                      <li class="column2_0">
-                                                        <a href="{{home}}/shop/category/telefoniia-pleery-gps/mp3-mp4-pleery/apple-ipod-i-aksessuary" title="Apple iPod и аксессуары">
-                                                          Apple iPod и аксессуары
-                                                        </a>
-                                                      </li>
-                                                      <li class="column2_0">
-                                                        <a href="{{home}}/shop/category/telefoniia-pleery-gps/mp3-mp4-pleery/mp3--i-mediapleery" title="MP3- и медиаплееры">
-                                                          MP3- и медиаплееры
-                                                        </a>
-                                                      </li>
-                                                      <li class="column2_0">
-                                                        <a href="{{home}}/shop/category/telefoniia-pleery-gps/mp3-mp4-pleery/naushniki" title="Наушники">
-                                                          Наушники
-                                                        </a>
-                                                      </li>
-                                                      
-                                                    </ul>
-                                                  </div>
-                                                </li>
-                                                
                                               </ul>
+                                              -->
+                                            
                                             </div>
                                             
                                           </div>
@@ -592,7 +504,7 @@
                         }
                       </script>
                   </div>
- 
+                {% if isHandler('news:main') %}
                   <div class="frame-baner frame-baner-start_page">
                     <section class="carousel-js-css baner container cycleFrame resize is-small" style="height: 218px;">
                       <!--remove class="resize" if not resize-->
@@ -647,10 +559,12 @@
                       </div>
                     </section>
                   </div>
+                {% endif %}
             </div>
             
             
             <div class="content">
+              {% if isHandler('news:main') %}
               <div class="page-main">
                 <div class="container f-s_0">
                   <ul class="tabs tabs-special-proposition">
@@ -1988,7 +1902,11 @@
                   </div>
                 </div>
               </div>
+              {% else %}
+              {{ mainblock }}
+              {% endif %}
               
+              {% if isHandler('news:main') %}
               <div class="container">
                 <div id="ViewedProducts">
                   
@@ -2383,11 +2301,13 @@
                   </div>
                 </div>
               </div>
+              {% endif %}
             </div>
             <div class="h-footer footer-main" data-mq-prop="height" data-mq-prop-pool="height" data-mq-elem-pool="footer" style="height: 456px;">
             </div>
           </div>
           <footer class="footer-main" data-mq-prop="margin-top" data-mq-prop-pref="-" data-mq-prop-pool="height" data-mq-elem-pool="footer" style="margin-top: -456px;">
+            {% if isHandler('news:main') %}
             <div class="content-footer">
               <div class="container">
                 <div class="frame-box23">
@@ -2484,6 +2404,7 @@
                 </div>
               </div>
             </div>
+            {% endif %}
             <div class="footer-footer">
               <div class="container">
                 <div class="inside-padd t-a_j">

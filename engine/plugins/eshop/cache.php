@@ -17,20 +17,18 @@ function generate_catz_cache($load = false)
 {global $mysql, $config;
 
     $eshop_dir = get_plugcfg_dir('eshop');
-
+    
     if(!file_exists($eshop_dir.'/cache_catz.php') or $load){
         
-        /*
-         * TODO: сделать генерацию дерева категорий
         $catt = array(); 
-        foreach ($mysql->select('SELECT cat_id, COUNT(id) as num FROM '.prefix.'_eshop WHERE active = \'1\' GROUP BY cat_id ') as $rows)
+        foreach ($mysql->select("SELECT c.id AS cat_id, COUNT(p.id) AS num FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id WHERE p.active = 1 GROUP BY c.id ") as $rows)
         {
             $catt[$rows['cat_id']] .= $rows['num'];
         }
         
-        foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_cat ORDER BY position ASC') as $cat_row)
+        foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_categories ORDER BY position ASC') as $cat_row)
         {
-
+            
             $catlink = checkLinkAvailable('eshop', '')?
                     generateLink('eshop', '', array('cat' => $cat_row['id'])):
                     generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $cat_row['id']));
@@ -44,18 +42,18 @@ function generate_catz_cache($load = false)
         
         $catz_tree = build_tree_catz($cats,0);
         file_put_contents($eshop_dir.'/cache_catz.php', serialize($catz_tree));
-        */
+        
     }
 
 }
 
-/*
 function build_tree_catz($cats,$parent_id,$only_parent = false){
     if(is_array($cats) and isset($cats[$parent_id])){
-        $tree = '<ul>';
+        $tree = '<ul class="items">';
         if($only_parent==false){
             foreach($cats[$parent_id] as $cat){
-                $tree .= '<li><a href="'.$cat['url'].'">'.$cat['cat_name'].'</a> ('.$cat['num'].')';
+                
+                $tree .= '<li class="column_0"><a href="'.$cat['url'].'" class="title-category-l1  is-sub"><span class="helper"></span><span class="text-el">'.$cat['name'].'</span></a> ('.$cat['num'].')';
                 $tree .=  build_tree_catz($cats,$cat['id']);
                 $tree .= '</li>';
             }
@@ -70,4 +68,3 @@ function build_tree_catz($cats,$parent_id,$only_parent = false){
     else return null;
     return $tree;
 }
-*/
