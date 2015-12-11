@@ -626,7 +626,8 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
             'meta_keywords' => $row['meta_keywords'],
             'meta_description' => $row['meta_description'],
             
-            'fulllink' => $fulllink,
+            'full_link'  => $fulllink,
+            'edit_link' => admin_url."/admin.php?mod=extra-config&plugin=eshop&action=edit_product&id=".$row['id']."",
             
             'date' => (empty($row['date']))?'':$row['date'],
             'editdate' => (empty($row['editdate']))?'':$row['editdate'],

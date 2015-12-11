@@ -11,7 +11,15 @@
 <tr align="left">
 <td width="5%" class="contentEntry1">{{ entry.id }}</td>
 <td width="10%" class="contentEntry1">{% if entry.image %}<a href="{{ entry.edit_link }}" ><img src="{{home}}/uploads/eshop/categories/thumb/{{ entry.image }}" width="100px" height="100px"/></a>{% endif %}</td>
-<td width="40%" class="contentEntry1">{{ entry.prefix }} <a href="{{ entry.edit_link }}" >{{ entry.cat_name }}</a></td>
+<td width="40%" class="contentEntry1">
+    <div style="float: left; margin: 0px;">
+        {{ entry.prefix }} <a href="{{ entry.edit_link }}" >{{ entry.cat_name }}</a><br/>
+        <small>
+            <a href="{{ home }}{{ entry.view_link }}" target="_blank">{{ home }}{{ entry.view_link }}</a>
+        </small>&nbsp;
+    </div>
+    
+</td>
 <td width="15%" class="contentEntry1">{{ entry.position }}</td>
 <td width="15%" class="contentEntry1"><a href="{{ entry.del_link }}"  /><img src="/engine/skins/default/images/delete.gif"></a></td>
 </tr>

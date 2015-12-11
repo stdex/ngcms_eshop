@@ -95,6 +95,10 @@ global $tpl, $mysql, $lang, $twig;
 
     foreach ($mysql->select($sqlQ.' LIMIT '.$start_from.', '.$news_per_page) as $row)
     {
+        $view_link = checkLinkAvailable('eshop', 'show')?
+            generateLink('eshop', 'show', array('id' => $row['id'])):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['id']));
+        
         $tEntry[] = array (
             'id'                   => $row['id'],
             'code'                 => $row['code'],
@@ -115,7 +119,7 @@ global $tpl, $mysql, $lang, $twig;
             'editdate'             => $row['editdate'],
             
             'edit_link'            => "?mod=extra-config&plugin=eshop&action=edit_product&id=".$row['id']."",
-            'view_link'            => '',
+            'view_link'            => $view_link,
         );
     }
 
@@ -523,7 +527,6 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     print $xg->render($tVars);
 }
 
-
 function modify_product()
 {
 global $mysql;
@@ -556,7 +559,6 @@ global $mysql;
         msg(array("type" => "info", "info" => "Записи с ID ${id} удалены!"));
     }
 }
-
 
 
 function getCats($res){
@@ -1071,11 +1073,17 @@ function generate_menu($parent, $catz_array)
 
         if ($value['parent'] == $parent) 
         {
+            $view_link = checkLinkAvailable('eshop', '')?
+            generateLink('eshop', '', array('cat' => $value['CategoryID'])):
+            generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $value['CategoryID']));
+
+            
             $gvars[] = array (
                 'id' => $value['CategoryID'],
                 'cat_name' => $value['CategoryName'],
                 'edit_link' => "?mod=extra-config&plugin=eshop&action=edit_cat&id=".$value['CategoryID'],
                 'del_link' => "?mod=extra-config&plugin=eshop&action=del_cat&id=".$value['CategoryID'],
+                'view_link' => $view_link,
                 'prefix' => get_prefix($value['CategoryID']),
                 'parent' => $value['parent'],
                 'position' => $value['SortOrder'],

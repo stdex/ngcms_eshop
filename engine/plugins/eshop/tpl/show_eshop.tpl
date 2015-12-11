@@ -203,7 +203,7 @@
    <div class="f-s_0 title-product">
     <!-- Start. Name product -->
     <div class="frame-title">
-     <h1 class="title">{{ name }}</h1>
+     <h1 class="title">{{ name }} <a href="{{ edit_link }}" target="_blank">[E]</a></h1>
    </div>
    <!-- End. Name product -->
  </div>

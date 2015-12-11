@@ -66,8 +66,8 @@
 <table border="0" cellspacing="0" cellpadding="0" class="content" align="center">
 <tr  class="contHead" align="left">
 <td width="5%">ID</td>
-<td width="25%">Изображение</td>
-<td width="20%">Название</td>
+<td width="15%">Изображение</td>
+<td width="30%">Название</td>
 <td width="15%">Категория</td>
 <td width="10%">Текущая цена</td>
 <td width="10%">Старая цена</td>
@@ -77,11 +77,18 @@
 {% for entry in entries %}
 <tr align="left">
 <td width="5%" class="contentEntry1">{{ entry.id }}</td>
-<td width="10%" class="contentEntry1"><a href="{{ entry.edit_link }}" ><img src="{% if (entry.image_filepath) %}{{home}}/uploads/eshop/products/thumb/{{entry.image_filepath}}{% else %}{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg{% endif %}" width="100" height="100"></a></td>
-<td width="20%" class="contentEntry1"><a href="{{ entry.edit_link }}" >{{ entry.name }}</a></td>
+<td width="15%" class="contentEntry1"><a href="{{ entry.edit_link }}" ><img src="{% if (entry.image_filepath) %}{{home}}/uploads/eshop/products/thumb/{{entry.image_filepath}}{% else %}{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg{% endif %}" width="100" height="100"></a></td>
+<td width="30%" class="contentEntry1">
+    <div style="float: left; margin: 0px;">
+        <a href="{{ entry.edit_link }}" >{{ entry.name }}</a><br/>
+        <small>
+            <a href="{{ home }}{{ entry.view_link }}" target="_blank">{{ home }}{{ entry.view_link }}</a>
+        </small>&nbsp;
+    </div>
+</td>
 <td width="15%" class="contentEntry1">{{ entry.category }}</td>
-<td width="15%" class="contentEntry1">{{ entry.price }}</td>
-<td width="15%" class="contentEntry1">{{ entry.compare_price }}</td>
+<td width="10%" class="contentEntry1">{{ entry.price }}</td>
+<td width="10%" class="contentEntry1">{{ entry.compare_price }}</td>
 <td width="10%" class="contentEntry1"><img src="{{home}}/engine/skins/default/images/{% if (entry.active == 1) %}yes.png{% else %}no.png{% endif %}" alt=""></td>
 <td width="5%" class="contentEntry1"><input name="selected_product[]" value="{{ entry.id }}" class="check" type="checkbox" /></td>
 </tr>
