@@ -59,6 +59,10 @@ $db_update = array(
 		'action'	=>	'drop',
 	),
     array(
+		'table'		=>	'eshop_order_basket',
+		'action'	=>	'drop',
+	),
+    array(
 		'table'		=>	'eshop_variants',
 		'action'	=>	'drop',
 	),

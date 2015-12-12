@@ -282,7 +282,7 @@
    </button>
  </div>
  <div class="btn-buy-p btn-buy">
-   <button type="button" onclick="Shop.Cart.add($(this).closest(&quot;form&quot;).serialize(), &quot;5853&quot;)" class="btnBuy infoBut" data-id="5853" data-vname="Мобильный телефон Fly E141 TV Dual SIM Black" data-number="200236" data-price="69" data-add-price="55" data-orig-price="" data-large-image="
+   <button type="button" class="btnBuy infoBut" data-id="5853" data-vname="Мобильный телефон Fly E141 TV Dual SIM Black" data-number="200236" data-price="69" data-add-price="55" data-orig-price="" data-large-image="
       /uploads/shop/products/large/5623_main_origin.jpg   " data-main-image="
       /uploads/shop/products/main/5623_main_origin.jpg   " data-img="
       /uploads/shop/products/small/5623_main_origin.jpg   " data-maxcount="1">
@@ -846,3 +846,24 @@ var productPhotoCZoom = isTouch ? undefined : true;
         <img src="{{home}}/uploads/eshop/products/{{entry.filepath}}">
     {% endfor %}
 </div>
+
+<script>
+$(document).ready(function() {
+    $(".btnBuy").click(function(e){
+        var count = $("input[name='quantity']").attr('value');
+        console.log(count);
+        rpcBasketRequest('plugin.ebasket.manage', {'action': 'add', 'ds':1,'id':{{id}},'count':count});
+        $(".forCenter").css("display", "block");
+        $(".overlayDrop").css("display", "block");
+        e.preventDefault();
+    });
+    
+    $(".icon_times_drop, .btn-form.f_l").click(function(e){
+        $(".forCenter").css("display", "none");
+        $(".overlayDrop").css("display", "none");
+        e.preventDefault();
+    });
+    
+
+});
+</script>

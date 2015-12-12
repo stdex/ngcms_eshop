@@ -315,36 +315,8 @@
           <!-- Start. Include cart data template-->
           <div id="tinyBask" class="frame-cleaner">
             
-            <div class="btn-bask pointer">
-              <button type="button" class="btnBask">
-                <span class="frame-icon">
-                  <span class="helper">
-                  </span>
-                  <span class="icon_cleaner">
-                  </span>
-                </span>
-                <span class="text-cleaner">
-                  <span class="helper">
-                  </span>
-                  <span class="">
-                    <span class="title text-el d_l">
-                      Моя корзина
-                    </span>
-                    <span class="d_b" style="padding-top:3px;">
-                        <span class="text-el small">1</span>
-                        <span class="text-el">&nbsp;</span>
-                        <span class="text-el">товар</span>
-                        <span class="divider text-el">–</span>
-                        <span class="d_i-b">
-                            <span class="text-el">188 $</span>
-                        </span>
-                    </span>
-                
-              </span>
-          </span>
-      </span>
-  </button>
-        </div>
+            {{ plugin_ebasket }}
+
           </div>
           <!-- End. Include cart data template-->
       </div>
@@ -2680,6 +2652,106 @@
               </div>
             </div>
           </div>
+
+         
+          <div class="forCenter" data-rel="#popupCart" style="left: 0px; width: 100%; position: absolute; height: 100%; z-index: 1105; top: 1px; display: block; display: none;">
+<div class="drop-bask drop drop-style center active" id="popupCart" data-rel="" data-elrun="#popupCart" style="z-index: 1105; position: absolute; top: 136px; left: 275px; display: block;">
+
+<div class="frame-bask frameBask p_r">
+    <button type="button" class="icon_times_drop" data-closed="closed-js"></button>
+            <div class="drop-header">
+            <div class="title bask"><span>Товар добавлен к попупкам</span></div>
+        </div>
+        <div class="drop-content is-empty">
+            <div class="inside-padd">
+                <div class="msg f-s_0">
+                    <div class="success">
+                        <span class="icon_info"></span><span class="text-el">Вы добавили товар в корзину</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bask drop-footer">
+            <div class="content-frame-foot notCart">
+                <div class="clearfix inside-padd">
+                    <div class="btn-form f_l">
+                        <button type="button" data-closed="closed-js">
+                            <span class="text-el">Вернуться к покупкам</span>
+                        </button>
+                    </div>
+                    <div class="btn-buy f_r">
+                        <a href="{{home}}/plugin/ebasket/">
+                            <span class="icon_cart_p"></span>
+                            <span class="text-el">Оформить заказ</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="preloader" style="display: none;"></div>
+</div>
+</div>
+</div>
+<div class="overlayDrop" data-rel="#popupCart" style="position: absolute; width: 100%; left: 0px; top: 0px; opacity: 0.6; height: 3556px; z-index: 1103; background-color: rgb(0, 0, 0); display: none;"></div>
+
+
+<!--
+<div class="forCenter" data-rel=".drop-enter" style="left: 0px; width: 100%; position: absolute; height: 100%; overflow-x: auto; overflow-y: auto; z-index: 1105; display: block; top: 1px;"><div class="drop-enter drop drop-style center active" id="enter" data-rel="" data-elrun=".drop-enter" style="z-index: 1105; position: absolute; display: block; top: 62px; left: 478px;">
+    <button type="button" class="icon_times_drop" data-closed="closed-js"></button>
+    <div class="drop-header">
+        <div class="title">вход в магазин</div>
+    </div>
+    <div class="drop-content" style="overflow: hidden; padding: 0px; height: 172px; width: 395px;"><div class="jspContainer" style="width: 395px; height: 172px;"><div class="jspPane" style="padding: 0px; top: 0px; width: 395px;"><div class="inside-padd">
+            <div class="horizontal-form">
+                <form method="post" id="login_form" onsubmit="ImageCMSApi.formAction('http://fluid.imagecmsdemo.net/auth/authapi/login', '#login_form');
+                return false;">
+                <label>
+                    <span class="title">Почта</span>
+                    <span class="frame-form-field">
+                        <input type="text" name="email">
+                        <span class="must">*</span>
+                    </span>
+                </label>
+                <label>
+                    <span class="title">Пароль</span>
+                    <span class="frame-form-field">
+                        <input type="password" name="password">
+                        <span class="must">*</span>
+                    </span>
+                </label>
+
+                <lable id="captcha_block">
+
+                </lable>
+                <div class="frame-label">
+                    <span class="title">&nbsp;</span>
+                    <div class="frame-form-field">
+                        <div class="clearfix">
+                            <span class="btn-form f_l">
+                                <button type="submit">
+                                    <span class="icon_enter_drop"></span>
+                                    <span class="text-el">Войти</span>
+                                </button>
+                            </span>
+                            <div class="f_r neigh-buttonform">
+                                <span class="helper"></span>
+                                <button type="button" class="d_l_1 isDrop" data-drop=".drop-forgot" data-source="http://fluid.imagecmsdemo.net/auth/forgot_password">Забыли Пароль?</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" value="d24a73bf9832ff9029e48569cf17c6f8" name="cms_token">            </form>
+        </div>
+    </div></div></div></div>
+<div class="drop-footer">
+    <div class="help-block">Если вы еще не зарегистрированы:</div>
+    <a href="/auth/register">Перейти к регистрации</a>
+</div>
+</div></div>
+
+<div class="overlayDrop" data-rel=".drop-enter" style="position: absolute; width: 100%; left: 0px; top: 0px; opacity: 0.6; z-index: 1104; display: block; height: 722px; background-color: rgb(0, 0, 0);"></div>
+-->
+         
           <script>
             (function($){
               var methods = {

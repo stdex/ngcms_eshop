@@ -255,6 +255,23 @@ function plugin_eshop_install($action) {
             array('action'	=> 'cmodify', 'name' => 'total_price', 'type' => 'decimal(14,2)', 'params' => 'NOT NULL default \'0.00\''),
         )
     ),
+    
+    array(
+        'table'		=> 'eshop_order_basket',
+        'action'	=> 'cmodify',
+        'engine'	=> 'MyISAM',
+        'key'		=> 'primary key(id)',
+        'fields'	=> array(
+            array('action'	=> 'cmodify', 'name' => 'id', 'type' => 'int(11)', 'params' => 'NOT NULL AUTO_INCREMENT'),
+            array('action'	=> 'cmodify', 'name' => 'order_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
+            array('action'	=> 'cmodify', 'name' => 'linked_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
+            
+            array('action' => 'cmodify', 'name' => 'title', 'type' => 'varchar(500)', 'params' => 'default ""'),
+            array('action' => 'cmodify', 'name' => 'count', 'type' => 'int', 'params' => 'default 0'),
+            array('action' => 'cmodify', 'name' => 'price', 'type' => 'decimal(12,2)', 'params' => 'default 0'),
+            array('action' => 'cmodify', 'name' => 'linked_fld', 'type' => 'text'),
+        )
+    ),
         
     array(
         'table'		=> 'eshop_variants',

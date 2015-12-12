@@ -1,0 +1,20 @@
+;
+; Version description file for plugin @@ Next Generation CMS
+;
+
+ID: ebasket
+Name: Shop ebasket
+Version: 0.1
+Acts: core, admin:mod:news, admin:mod:categories
+File: ebasket.php
+Actions: rpc;lib/librpc.php
+Config: config.php
+Install: install.php
+Deinstall: deinstall.php
+Type: plugin
+Description: Корзина заказа
+Author: stdex, web-padawan
+Author_URI: http://ngcms.ru
+Title: Корзина заказа
+Information: Позволяет откладывать товары в корзину
+Preinstall: no

@@ -528,7 +528,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
             break;
     }
 
-
+    $conditions = array();
     if(isset($id) && !empty($id))
     {
         array_push($conditions, "p.id = ".$id." ");
@@ -545,10 +545,31 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
     $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
 
     $row = $mysql->record($sqlQ);
+/*    
+    $filter = array();
+    if (is_array($userROW)) {
+        $filter []= '(user_id = '.db_squote($userROW['id']).')';
+    }
+
+    if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {
+        $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';
+    }
+
+    foreach ($mysql->select("select * from ".prefix."_eshop_ebasket where ".join(" or ", $filter), 1) as $rec) {
+                $total += round($rec['price'] * $rec['count'], 2);
+
+                $rec['sum'] = sprintf('%9.2f', round($rec['price'] * $rec['count'], 2));
+                $rec['xfields'] = unserialize($rec['linked_fld']);
+                unset($rec['linked_fld']);
+
+                $recs []= $rec;
+    }
+
+    var_dump($recs);
+*/
 
     foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_images WHERE product_id = '.$row['id'].' ') as $row2)
     {
-
         $entriesImg[] = array (
             'id' => $row2['id'],
             'filepath' => $row2['filepath'],
@@ -556,18 +577,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
             'position' => $row2['position'],
         );
     }
-    
-    foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_images WHERE product_id = '.$row['id'].' ') as $row2)
-    {
 
-        $entriesImg[] = array (
-            'id' => $row2['id'],
-            'filepath' => $row2['filepath'],
-            'product_id' => $row2['product_id'],
-            'position' => $row2['position'],
-        );
-    }
-    
     $features_array = array();
     foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_options LEFT JOIN '.prefix.'_eshop_features ON '.prefix.'_eshop_features.id='.prefix.'_eshop_options.feature_id WHERE '.prefix.'_eshop_options.product_id = '.$row['id'].' ORDER BY position, id') as $orow)
     {
