@@ -1,3 +1,5 @@
+{{ debugValue(vnames) }}
+
 {% if (recs > 0) %}
 <h3>Ваша корзина</h3>
 <div class="table">
@@ -10,7 +12,7 @@
 <tbody>
 {% for entry in entries %}
 <tr>
- <td>{{ loop.index }}</td><td>{{ entry.title }}</td><td>{{ entry.xfields.news.size }}</td><td align="right">{{ entry.price }}</td><td align="right">{{ entry.count }}</td><td align="right">{{ entry.sum }}</td>
+ <td>{{ loop.index }}</td><td>{{ entry.title }}</td><td align="right">{{ entry.price }}</td><td align="right">{{ entry.count }}</td><td align="right">{{ entry.sum }}</td>
 </tr>
 {% endfor %}
 </tbody>

@@ -26,6 +26,10 @@ switch ($_REQUEST['action']) {
     case 'edit_cat':        edit_cat();                            break;
     case 'del_cat':         del_cat(); list_cat();                 break;
     
+    case 'list_order':      list_order();                          break;
+    case 'edit_order':      edit_order();                          break;
+    case 'modify_order':    modify_order(); list_order();          break;
+    
     case 'options':         options();                             break;
 
     case 'urls':            urls();                                break;
@@ -1427,6 +1431,229 @@ global $mysql;
     }
 }
 
+
+function list_order($params)
+{
+global $tpl, $mysql, $twig;
+
+    $tpath = locatePluginTemplates(array('config/main', 'config/list_order'), 'eshop', 1);
+    
+    $tVars = array();
+
+    // Load admin page based cookies
+    $admCookie = admcookie_get();
+
+    $fName          = $_REQUEST['fname'];
+    $fPhone         = $_REQUEST['fphone'];
+    $fAdress        = $_REQUEST['fadress'];
+
+    $news_per_page  = isset($_REQUEST['rpp'])?intval($_REQUEST['rpp']):intval($admCookie['eshop']['pp_order']);
+    // - Set default value for `Records Per Page` parameter
+    if (($news_per_page < 2)||($news_per_page > 2000))
+        $news_per_page = 10;
+    
+    // - Save into cookies current value
+    $admCookie['eshop']['pp_order'] = $news_per_page;
+    admcookie_set($admCookie);
+
+    $conditions = array();
+    if ($fName) {
+        array_push($conditions, "name LIKE ".db_squote("%".$fName."%"));
+    }
+    
+    if ($fPhone) {
+        array_push($conditions, "phone LIKE ".db_squote("%".$fPhone."%"));
+    }
+
+    if ($fAdress) {
+        array_push($conditions, "address LIKE ".db_squote("%".$fAdress."%"));
+    }
+
+    $fSort = " ORDER BY id DESC";
+    $sqlQPart = "FROM ".prefix."_eshop_orders ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+    $sqlQ = "SELECT * ".$sqlQPart;
+    
+    $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
+    
+    //$sqlQCount = "SELECT COUNT(p.id) FROM ng_eshop_products p ORDER BY p.id DESC";
+    //var_dump($sqlQ);
+    
+    $pageNo     = intval($_REQUEST['page'])?$_REQUEST['page']:0;
+    if ($pageNo < 1)    $pageNo = 1;
+    if (!$start_from)   $start_from = ($pageNo - 1)* $news_per_page;
+    
+    $count = $mysql->result($sqlQCount);
+    $countPages = ceil($count / $news_per_page);
+
+    foreach ($mysql->select($sqlQ.' LIMIT '.$start_from.', '.$news_per_page) as $row)
+    {
+        
+        $row['edit_link'] = "?mod=extra-config&plugin=eshop&action=edit_order&id=".$row['id'];
+        $tEntry[] = $row;
+        
+    }
+ 
+    $xt = $twig->loadTemplate($tpath['config/list_order'].'config/'.'list_order.tpl');
+    
+    $tVars = array(
+        'pagesss' => generateAdminPagelist( array('current' => $pageNo, 'count' => $countPages, 'url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop&action=list_order'.($news_per_page?'&rpp='.$news_per_page:'').($fName?'&fname='.$fName:'').($fPhone?'&fphone='.$fPhone:'').($fAdress?'&fadress='.$fAdress:'').'&page=%page%')),
+        'rpp'			=>	$news_per_page,
+        'fname'			=>	secure_html($fName),
+        'fphone'			=>	secure_html($fPhone),
+        'fadress'			=>	secure_html($fAdress),
+        'entries' => isset($tEntry)?$tEntry:'',
+    );
+    
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Заказы',
+    );
+    
+    print $xg->render($tVars);
+
+}
+
+function edit_order($params)
+{
+global $tpl, $template, $config, $mysql, $lang, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_order'), 'eshop', 1);
+    
+    $id = intval($_REQUEST['id']);
+    $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_orders WHERE id = '.db_squote($id).' LIMIT 1');
+    
+    if (isset($_REQUEST['submit']))
+    {
+
+        $name = input_filter_com(convert($_REQUEST['name']));
+        if(empty($name))
+        {
+            $error_text[] = 'Имя не задано';
+        }
+        
+        $email = input_filter_com(convert($_REQUEST['email']));
+        if(empty($email))
+        {
+            $error_text[] = 'Email не задан';
+        }
+        
+        $phone = input_filter_com(convert($_REQUEST['phone']));
+        if(empty($phone))
+        {
+            $error_text[] = 'Телефон не задан';
+        }
+        
+        $address = input_filter_com(convert($_REQUEST['address']));
+        if(empty($address))
+        {
+            $error_text[] = 'Адрес не задан';
+        }
+        
+        $comment = input_filter_com(convert($_REQUEST['comment']));
+        $paid = input_filter_com(convert($_REQUEST['paid']));
+  
+        if(empty($error_text))
+        {
+
+            $mysql->query('UPDATE '.prefix.'_eshop_orders SET  
+                name = '.db_squote($name).',
+                email = '.db_squote($email).',
+                phone = '.db_squote($phone).',
+                address = '.db_squote($address).',
+                comment = '.db_squote($comment).',
+                paid = '.db_squote($paid).'
+                WHERE id = '.$id.'
+            ');
+            
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_order');
+        }
+
+    }
+    
+    if(!empty($error_text))
+    {
+        foreach($error_text as $error)
+        {
+            $error_input .= msg(array("type" => "error", "text" => $error));
+        }
+    } else {
+        $error_input ='';
+    }
+
+
+    $filter = array();
+    if ($id) {
+        $filter []= '(order_id = '.db_squote($id).')';
+    }
+
+
+    foreach ($mysql->select("select * from ".prefix."_eshop_order_basket where ".join(" or ", $filter), 1) as $rec) {
+                $total += round($rec['price'] * $rec['count'], 2);
+
+                $rec['sum'] = sprintf('%9.2f', round($rec['price'] * $rec['count'], 2));
+                $rec['xfields'] = unserialize($rec['linked_fld']);
+                unset($rec['linked_fld']);
+
+                $basket []= $rec;
+    }
+    
+    $tEntry = $row;
+    $tEntry['error'] = $error_input;
+    $tEntry['basket'] = $basket;
+    $tEntry['basket_total'] = $total;
+
+    $xt = $twig->loadTemplate($tpath['config/add_order'].'config/'.'add_order.tpl');
+    
+    $tVars = array(
+        'entries' => isset($tEntry)?$tEntry:'' 
+    );
+    
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Заказ: Карточка заказа (ID: '.$id.')',
+    );
+    
+    print $xg->render($tVars);
+}
+
+function modify_order()
+{
+global $mysql;
+    
+    $selected_order = $_REQUEST['selected_order'];
+    $subaction  =   $_REQUEST['subaction'];
+    
+    $id = implode( ',', $selected_order );
+    
+    if( empty($id) )
+    {
+        return msg(array("type" => "error", "text" => "Вы выбран ID!"));
+    }
+    
+    switch($subaction) {
+        case 'mass_delete'       : $del = true; break;
+    }
+
+    if(isset($del))
+    {
+        $mysql->query("delete from ".prefix."_eshop_orders where id in ({$id})");
+        $mysql->query("delete from ".prefix."_eshop_order_basket where order_id in ({$id})");
+        msg(array("type" => "info", "info" => "Записи с ID${id} удалены!"));
+    }
+}
 
 function urls()
 {global $tpl, $mysql, $twig;

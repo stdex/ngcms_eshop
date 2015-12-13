@@ -104,7 +104,7 @@ function plugin_ebasket_list(){
             $error_text[] = 'Адрес доставки не задан';
         }
         
-        $SQL['comment'] = filter_var( $_REQUEST['userInfo']['comment'], FILTER_SANITIZE_STRING );
+        $SQL['comment'] = filter_var( $_REQUEST['userInfo']['commentText'], FILTER_SANITIZE_STRING );
         
         $SQL['dt'] = time() + ($config['date_adjust'] * 60);
         $SQL['ip'] =  $ip;
@@ -136,6 +136,37 @@ function plugin_ebasket_list(){
                 }
                 
                 // mail notify
+                
+                // Определяем условия выборки
+                $filter = array();
+                if ($qid) {
+                    $filter []= '(order_id = '.db_squote($qid).')';
+                }
+
+                foreach ($mysql->select("select * from ".prefix."_eshop_order_basket where ".join(" or ", $filter), 1) as $rec) {
+                            $total += round($rec['price'] * $rec['count'], 2);
+
+                            $rec['sum'] = sprintf('%9.2f', round($rec['price'] * $rec['count'], 2));
+                            $rec['xfields'] = unserialize($rec['linked_fld']);
+                            unset($rec['linked_fld']);
+                            $basket []= $rec;
+                }
+                
+                $notify_tpath = locatePluginTemplates(array('lfeedback'), 'ebasket', pluginGetVariable('ebasket', 'localsource'));
+                $notify_xt = $twig->loadTemplate($notify_tpath['lfeedback'].'lfeedback.tpl');
+
+                $pVars = array(
+                    'recs'		=> count($recs),
+                    'entries'	=> $recs,
+                    'total'		=> sprintf('%9.2f', $total),
+                    'vnames'   => $vnames,
+                );
+            
+                $mailBody = $notify_xt->render($pVars);
+                $mailSubject = "Новый заказ с сайта";
+                $mailTo = pluginGetVariable('eshop', 'email_notify_orders');
+            
+                sendEmailMessage($mailTo, $mailSubject, $mailBody, $filename = false, $mail_from = false, $ctype = 'text/html');
                 
                 $notify_text[] = 'Заказ добавлен.';
 
@@ -172,7 +203,7 @@ function plugin_ebasket_list(){
         
     $tFormEntry['error'] = $error_text;
     $tFormEntry['notify'] = $notify_text;
-
+    $tFormEntry['id'] = $qid;
 
 	$tVars = array(
         'formEntry'	=> $tFormEntry,
@@ -222,210 +253,8 @@ function plugin_ebasket_update() {
 	@header("Location: ".generatePluginLink('ebasket', null, array(), array(), false, true));
 }
 
-// Update ebasket content/counters
-function plugin_ebasket_order() {
-	global $mysql, $twig, $userROW, $template, $SUPRESS_TEMPLATE_SHOW;
-
-	// Определяем условия выборки
-	$filter = array();
-	if (is_array($userROW)) {
-		$filter []= '(user_id = '.db_squote($userROW['id']).')';
-	}
-
-	if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {
-		$filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';
-	}
-    
-    $filter = array();
-    if (is_array($userROW)) {
-        $filter []= '(user_id = '.db_squote($userROW['id']).')';
-    }
-
-    if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {
-        $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';
-    }
-
-    foreach ($mysql->select("select * from ".prefix."_eshop_ebasket where ".join(" or ", $filter), 1) as $rec) {
-                $total += round($rec['price'] * $rec['count'], 2);
-
-                $rec['sum'] = sprintf('%9.2f', round($rec['price'] * $rec['count'], 2));
-                $rec['xfields'] = unserialize($rec['linked_fld']);
-                unset($rec['linked_fld']);
-
-                $recs []= $rec;
-    }
-
-    var_dump($recs);
-
-	// Scan POST params
-	if (count($filter)) {
-		foreach ($_POST as $k => $v) {
-			if (preg_match('#^count_(\d+)$#', $k, $m)) {
-				if (intval($v) < 1) {
-					$mysql->query("delete from ".prefix."_eshop_ebasket where (id = ".db_squote($m[1]).") and (".join(" or ", $filter).")");
-				} else {
-					$mysql->query("update ".prefix."_eshop_ebasket set count = ".db_squote(intval($v))."where (id = ".db_squote($m[1]).") and (".join(" or ", $filter).")");
-				}
-			}
-		}
-	}
-
-	// Redirect to ebasket page
-	$SUPRESS_TEMPLATE_SHOW = true;
-	@header("Location: ".generatePluginLink('ebasket', null, array(), array(), false, true));
-}
-
-
-
-// XFields filter
-if (class_exists('XFieldsFilter') && class_exists('FeedbackFilter')) {
-	class ebasketXFieldsFilter extends XFieldsFilter {
-
-		function showTableEntry($newsID, $SQLnews, $rowData, &$rowVars) {
-            global $DSlist;
-			// Определяем - работаем ли мы внутри строк таблиц
-			if (!pluginGetVariable('ebasket', 'ntable_flag'))
-				return;
-
-			// Работаем. Определяем режим работы - по всем строкам или по условию "поле из xfields не равно нулю"
-			if (pluginGetVariable('ebasket', 'ntable_activated')) {
-				if (!$rowData['xfields_'.pluginGetVariable('ebasket', 'ntable_xfield')])
-					return;
-			}
-
-			$rowVars['flags']['ebasket_allow'] = true;
-			$rowVars['ebasket_link'] = generatePluginLink('ebasket', 'add', array('ds' => $DSlist['#xfields:tdata'], 'id' => $rowData['id']), array(), false, true);
-
-			// Строку можно добавлять в корзину
-			//print "rowData <pre>(".var_export($rowVars, true).")</pre><br/>\n";
-		}
-
-	}
-
-	// Feedback filter
-	class ebasketFeedbackFilter extends FeedbackFilter {
-
-		// Action executed when form is showed
-		function onShow($formID, $formStruct, $formData, &$tvars) {
-			global $userROW, $mysql, $twig;
-
-			// Проверяем ID формы - данные корзины отображаются только в конкретной форме
-			if (pluginGetVariable('ebasket', 'feedback_form') != $formID)
-				return;
-
-			// Определяем условия выборки
-			$filter = array();
-			if (is_array($userROW)) {
-				$filter []= '(user_id = '.db_squote($userROW['id']).')';
-			}
-
-			if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {
-				$filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';
-			}
-
-			// Выполняем выборку
-			$recs = array();
-			$total = 0;
-			if (count($filter)) {
-				foreach ($mysql->select("select * from ".prefix."_eshop_ebasket where ".join(" or ", $filter)) as $rec) {
-					$total += round($rec['price'] * $rec['count'], 2);
-
-					$rec['sum'] = sprintf('%9.2f', round($rec['price'] * $rec['count'], 2));
-					$rec['xfields'] = unserialize($rec['linked_fld']);
-					unset($rec['linked_fld']);
-
-					$recs []= $rec;
-				}
-			}
-
-
-			$tVars = array(
-				'recs'		=> count($recs),
-				'entries'	=> $recs,
-				'total'		=> sprintf('%9.2f', $total),
-			);
-
-			// Выводим шаблон
-			$xt = $twig->loadTemplate('plugins/ebasket/lfeedback.tpl');
-			$tvars['plugin_ebasket'] .= $xt->render($tVars);
-		}
-
-
-		function onProcess($formID, $formStruct, $formData, $flagHTML, &$tvars) {
-			global $userROW, $mysql, $twig;
-
-			// Проверяем ID формы - данные корзины отображаются только в конкретной форме
-			if (pluginGetVariable('ebasket', 'feedback_form') != $formID)
-				return 1;
-
-			// Определяем условия выборки
-			$filter = array();
-			if (is_array($userROW)) {
-				$filter []= '(user_id = '.db_squote($userROW['id']).')';
-			}
-
-			if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {
-				$filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';
-			}
-
-			// Выполняем выборку
-			$recs = array();
-			$total = 0;
-			if (count($filter)) {
-				foreach ($mysql->select("select * from ".prefix."_eshop_ebasket where ".join(" or ", $filter)) as $rec) {
-					$total += round($rec['price'] * $rec['count'], 2);
-
-					$rec['sum'] = sprintf('%9.2f', round($rec['price'] * $rec['count'], 2));
-					$rec['xfields'] = unserialize($rec['linked_fld']);
-					unset($rec['linked_fld']);
-
-					$recs []= $rec;
-				}
-			}
-
-			$bVars = array(
-				'recs'		=> count($recs),
-				'entries'	=> $recs,
-				'total'		=> sprintf('%9.2f', $total),
-			);
-
-			// Выводим шаблон
-			$xt = $twig->loadTemplate('plugins/ebasket/lfeedback.tpl');
-			$tvars['plugin_ebasket'] = $xt->render($bVars);
-		}
-
-		// Action executed when post request is completed
-		function onProcessNotify($formID){
-			global $mysql, $userROW;
-
-			// Определяем условия выборки
-			$filter = array();
-			if (is_array($userROW)) {
-				$filter []= '(user_id = '.db_squote($userROW['id']).')';
-			}
-
-			if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {
-				$filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';
-			}
-
-			// Выполняем выборку
-			if (count($filter)) {
-				$mysql->query("delete from ".prefix."_eshop_ebasket where ".join(" or ", $filter));
-			}
-		}
-	}
-
-
-	register_filter('xfields','ebasket', new ebasketXFieldsFilter);
-	register_filter('feedback','ebasket', new ebasketFeedbackFilter);
-} else {
-	//print "ebasket error: XFields and Feedback plugins must be activated";
-}
-
-
 //
 // Вызов обработчика
 register_plugin_page('ebasket','','plugin_ebasket_list',0);
 register_plugin_page('ebasket','update','plugin_ebasket_update',0);
-register_plugin_page('ebasket','order','plugin_ebasket_order',0);
 add_act('index', 'plugin_ebasket_total');
