@@ -1,5 +1,5 @@
+<!--
 <div class="frame-crumbs">
-   <!-- Making bread crumbs -->
    <div class="crumbs" xmlns:v="http://rdf.data-vocabulary.org/#">
     <div class="container">
         <ul class="items items-crumbs">
@@ -35,6 +35,8 @@
                     </ul>
     </div>
 </div> </div>
+-->
+<br/><br/>
 
 <div class="frame-inside page-product">
    <div class="container">
@@ -223,6 +225,7 @@
 </div>
 <!-- End. article & variant name & brand name -->
 <!-- Start. Star rating -->
+<!--
 <div class="f_l">
    <div class="frame-star">
        <div class="star">
@@ -234,6 +237,7 @@
     4    отзыва  </button>
 </div>
 </div>
+-->
 <!-- End. Star rating-->
 </div>
 
@@ -267,35 +271,59 @@
 </div>
 <!-- End. Prices-->
 <div class="funcs-buttons">
-  <!-- Start. Collect information about Variants, for future processing -->
-            <div class="frame-count-buy js-variant-5853 js-variant">
-   <form method="POST" action="/shop/cart/addProductByVariantId/5853">
-    <div class="frame-count frameCount">
-      <div class="number js-number" data-title="Количество на складе 1">
+{% if (stock == 1) %}
+<!-- Start. Collect information about Variants, for future processing -->
+<div class="frame-count-buy js-variant-5853 js-variant">
+<div class="frame-count frameCount">
+    <div class="number js-number" data-title="Количество на складе 1">
         <input type="text" name="quantity" value="1" class="plusMinus plus-minus" data-title="Только цифры" data-min="1" data-max="1">
-      </div>
     </div>
-    <div class="btn-buy btn-cart d_n">
-     <button type="button" data-id="5853" class="btnBuy">
-     <span class="icon_cleaner icon_cleaner_buy"></span>
-     <span class="text-el">В корзине</span>
-   </button>
- </div>
- <div class="btn-buy-p btn-buy">
-   <button type="button" class="btnBuy infoBut" data-id="5853" data-vname="Мобильный телефон Fly E141 TV Dual SIM Black" data-number="200236" data-price="69" data-add-price="55" data-orig-price="" data-large-image="
-      /uploads/shop/products/large/5623_main_origin.jpg   " data-main-image="
-      /uploads/shop/products/main/5623_main_origin.jpg   " data-img="
-      /uploads/shop/products/small/5623_main_origin.jpg   " data-maxcount="1">
+</div>
+<div class="btn-buy btn-cart d_n">
+    <button type="button" data-id="5853" class="btnBuy">
+    <span class="icon_cleaner icon_cleaner_buy"></span>
+    <span class="text-el">В корзине</span>
+    </button>
+</div>
+<div class="btn-buy-p btn-buy btn-green" style="margin-right: 3px;">
+    <button type="button" class="btnBuy orderBut" style="padding: 0 3px;">
+    <span class="icon_cleaner icon_cleaner_buy"></span>
+    <span class="text-el">Купить</span>
+    </button>
+</div>
+
+<div class="btn-buy-p btn-buy" style="margin-right: 3px;">
+   <button type="button" class="btnBuy fastOrderBut" data-id="{{ id }}" style="padding: 0 3px;">
    <span class="icon_cleaner icon_cleaner_buy"></span>
-   <span class="text-el">Купить</span>
+   <span class="text-el">Купить в один клик</span>
  </button>
 </div>
+
 <div class="label-is-aviable">
   <span class="icon-is-aviable"></span>
   <span class="text-el">Есть в наличии</span>
 </div>
-<input type="hidden" value="c6766dff44774539893ae7b98460a47f" name="cms_token"></form>
+
 </div>
+
+{% else %}
+
+<div class="d_i-b v-a_m">
+ <div class="js-variant-5858 js-variant">
+  <div class="btn-not-avail">
+   <button type="button" class="infoBut fastPriceBut">
+   <span class="icon-but"></span>
+   <span class="text-el">Сообщить о появлении</span>
+ </button>
+</div>
+<div class="label-is-aviable">
+  <span class="icon-no-aviable"></span>
+  <span class="text-el">{% if (stock == 0) %}Нет в наличии{% elseif (stock == 2) %}На заказ{% endif %}</span>
+</div>
+</div>
+</div>
+{% endif %}
+
 </div>
 <!-- End. Collect information about Variants, for future processing -->
 </div>
@@ -312,8 +340,9 @@
   </div>
 </div>
 </div>
+<!--
 <div class="frame-btn-wish v-a_bl js-variant-5853 js-variant" data-id="5853">
-  <div class="btnWish btn-wish" data-id="5853">
+<div class="btnWish btn-wish" data-id="5853">
     <button class="toWishlist isDrop" type="button" data-rel="tooltip" data-title="В избранные" data-drop="#dropAuth">
         <span class="icon_wish"></span>
         <span class="text-el d_l">В избранные</span>
@@ -323,16 +352,17 @@
         <span class="text-el d_l">В избранныx</span>
     </button>
 </div>
+
 <script>
 langs["Create list"] = 'Создать список';
 langs["Wrong list name"] = 'Неверное имя списка';
 langs["Already in Wish List"] = 'Уже в Списке Желаний';
 langs["List does not chosen"] = 'Список не обран';
 langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
-</script></div>
+</script></div>-->
 </div>
-<!-- End. Wish List & Compare List buttons -->
 </div>
+
 </div>
 <!-- Start. Description -->
 <div class="short-desc">
@@ -849,21 +879,95 @@ var productPhotoCZoom = isTouch ? undefined : true;
 
 <script>
 $(document).ready(function() {
-    $(".btnBuy").click(function(e){
+    
+    $(".orderBut").click(function(e){
         var count = $("input[name='quantity']").attr('value');
-        console.log(count);
         rpcBasketRequest('plugin.ebasket.manage', {'action': 'add', 'ds':1,'id':{{id}},'count':count});
         $(".forCenter").css("display", "block");
         $(".overlayDrop").css("display", "block");
         e.preventDefault();
     });
     
-    $(".icon_times_drop, .btn-form.f_l").click(function(e){
-        $(".forCenter").css("display", "none");
-        $(".overlayDrop").css("display", "none");
+    $(".fastOrderBut").click(function(e){
+        $(".forCenter_fastOrder").css("display", "block");
+        $(".overlayDrop_fastOrder").css("display", "block");
         e.preventDefault();
     });
     
+    $(".fastPriceBut").click(function(e){
+        $(".forCenter_fastPrice").css("display", "block");
+        $(".overlayDrop_fastPrice").css("display", "block");
+        e.preventDefault();
+    });
+    
+    $(".icon_times_drop, #basket_back").click(function(e){
+        $(".forCenter").css("display", "none");
+        $(".overlayDrop").css("display", "none");
+        
+        $(".forCenter_fastOrder").css("display", "none");
+        $(".overlayDrop_fastOrder").css("display", "none");
+        
+        $(".forCenter_fastPrice").css("display", "none");
+        $(".overlayDrop_fastPrice").css("display", "none");
+        
+        e.preventDefault();
+    });
+    
+    $("#send_fastorder").click(function(e) {
+
+        var id = $(this).attr('data-id');
+        var count = $("input[name='quantity']").attr('value');
+
+        var name = $("#fastorder-frame").find("input[name='name']").val();
+        var phone = $("#fastorder-frame").find("input[name='phone']").val();
+        var address = $("#fastorder-frame").find("input[name='address']").val();
+
+        $.post('/engine/rpc.php', { json : 1, methodName : 'plugin.ebasket.manage', rndval: new Date().getTime(), params : json_encode({'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '2', 'name': name, 'phone': phone, 'address': address}) }, function(data) {
+            // Try to decode incoming data
+            try {
+                resTX = data;
+            //	alert(resTX['data']['feedback_text']);
+            } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
+            if (!resTX['status']) {
+                //alert('Error ['+resTX['errorCode']+']: '+resTX['errorText']);
+                alert('Ошибка при заполнении формы');
+            } else {
+                 $("div#fastorder-frame").html("<label><div align='center'>Заказ добавлен. В ближайшее время вам перезвонит наш манеджер.</div></label>");
+            }
+        }).error(function() { 
+            alert('HTTP error during request', 'ERROR'); 
+        });
+
+    });
+    
+    $("#send_fastprice").click(function(e) {
+
+        var id = $(this).attr('data-id');
+        var count = $("input[name='quantity']").attr('value');
+
+        var name = $("#fastprice-frame").find("input[name='name']").val();
+        var phone = $("#fastprice-frame").find("input[name='phone']").val();
+        var address = $("#fastprice-frame").find("input[name='address']").val();
+        
+        console.log(name + ": " + phone + ": " + address + ": ");
+
+        $.post('/engine/rpc.php', { json : 1, methodName : 'plugin.ebasket.manage', rndval: new Date().getTime(), params : json_encode({'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '3', 'name': name, 'phone': phone, 'address': address}) }, function(data) {
+            // Try to decode incoming data
+            try {
+                resTX = data;
+            //	alert(resTX['data']['feedback_text']);
+            } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
+            if (!resTX['status']) {
+                //alert('Error ['+resTX['errorCode']+']: '+resTX['errorText']);
+                alert('Ошибка при заполнении формы');
+            } else {
+                 $("div#fastprice-frame").html("<label><div align='center'>Спасибо. В ближайшее время вам перезвонит наш манеджер.</div></label>");
+            }
+        }).error(function() { 
+            alert('HTTP error during request', 'ERROR'); 
+        });
+
+    });
 
 });
 </script>

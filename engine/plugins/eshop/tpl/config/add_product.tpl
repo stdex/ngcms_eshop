@@ -142,6 +142,11 @@
     </tr>
     
     <tr>
+    <td width="50%" class="contentEntry1">Акционный?<br /><small></small></td>
+    <td width="50%" class="contentEntry2"><input type="checkbox" name="stocked" {% if entries.stocked == '1' %}checked{% endif %} value="1" ></td>
+    </tr>
+    
+    <tr>
     <td width="50%" class="contentEntry1">Связанные товары?<br /><small></small></td>
     <td width="50%" class="contentEntry2">
         <select name="linked-products[]" class="js-data-linked-products-ajax" id="js-data-linked-products-ajax" multiple="multiple" style="width: 200px;">

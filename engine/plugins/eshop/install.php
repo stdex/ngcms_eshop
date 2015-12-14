@@ -56,6 +56,7 @@ function plugin_eshop_install($action) {
             
             array('action'	=> 'cmodify', 'name' => 'active', 'type' => 'tinyint(1)', 'params' => 'NOT NULL DEFAULT \'1\''),
             array('action'	=> 'cmodify', 'name' => 'featured', 'type' => 'tinyint(1)', 'params' => 'NOT NULL DEFAULT \'0\''),
+            array('action'	=> 'cmodify', 'name' => 'stocked', 'type' => 'tinyint(1)', 'params' => 'NOT NULL DEFAULT \'0\''),
             array('action'	=> 'cmodify', 'name' => 'position', 'type' => 'INT(11)', 'params' => 'NOT NULL DEFAULT \'0\''),
             
             array('action'	=> 'cmodify', 'name' => 'meta_title', 'type' => 'varchar(500)', 'params' => 'NOT NULL default \'\''),
@@ -244,6 +245,8 @@ function plugin_eshop_install($action) {
             array('action'	=> 'cmodify', 'name' => 'id', 'type' => 'int(11)', 'params' => 'NOT NULL AUTO_INCREMENT'),
             array('action'	=> 'cmodify', 'name' => 'dt', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
             array('action'	=> 'cmodify', 'name' => 'paid', 'type' => 'tinyint(1)', 'params' => 'NOT NULL default \'0\''),
+            
+            array('action'	=> 'cmodify', 'name' => 'type', 'type' => 'tinyint(1)', 'params' => 'NOT NULL default \'0\''),
 
             array('action'	=> 'cmodify', 'name' => 'name', 'type' => 'varchar(500)', 'params' => 'NOT NULL default \'\''),
             array('action'	=> 'cmodify', 'name' => 'address', 'type' => 'varchar(500)', 'params' => 'NOT NULL default \'\''),

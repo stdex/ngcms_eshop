@@ -15,10 +15,10 @@
         <td width="50%" class="contentEntry1">IP<br /><small></small></td>
         <td width="50%" class="contentEntry2"><input type="text" size="80" name="name" value="{{entries.ip}}" disabled="disabled"/></td>
     </tr>
-    
+
     <tr>
-        <td width="50%" class="contentEntry1">Имя<br /><small></small></td>
-        <td width="50%" class="contentEntry2"><input type="text" size="80" name="name" value="{{entries.name}}" /></td>
+        <td width="50%" class="contentEntry1">Тип<br /><small></small></td>
+        <td width="50%" class="contentEntry2"><input type="text" size="80" name="type" value="{% if (entries.type == 1) %}Обычный{% elseif (entries.type == 2) %}Купить в один клик{% elseif (entries.type == 3) %}Узнать о наличии{% endif %}" disabled="disabled"/></td>
     </tr>
     
     <tr>

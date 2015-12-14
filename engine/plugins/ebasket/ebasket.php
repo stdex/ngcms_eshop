@@ -3,9 +3,6 @@
 // Protect against hack attempts
 if (!defined('NGCMS')) die ('HAL');
 
-LoadPluginLibrary('xfields', 'common');
-LoadPluginLibrary('feedback', 'common');
-
 register_htmlvar('js', admin_url.'/plugins/ebasket/js/ebasket.js');
 
 //
@@ -47,6 +44,21 @@ function plugin_ebasket_total() {
 	$template['vars']['plugin_ebasket'] = $xt->render($tVars);
 }
 
+//
+// Отображение блока нотификации при добавлении продукта в корзину
+function plugin_ebasket_notify() {
+	global $mysql, $twig, $userROW, $template;
+
+	// Выводим шаблон
+	$tpath = locatePluginTemplates(array('notify'), 'ebasket', pluginGetVariable('ebasket', 'localsource'));
+    
+    //var_dump($tpath['total'].'total.tpl');
+    
+    $tVars = array();
+
+	$xt = $twig->loadTemplate($tpath['notify'].'notify.tpl');
+	$template['vars']['plugin_ebasket_notify'] = $xt->render($tVars);
+}
 
 //
 // Показать содержимое корзины
@@ -108,6 +120,8 @@ function plugin_ebasket_list(){
         
         $SQL['dt'] = time() + ($config['date_adjust'] * 60);
         $SQL['ip'] =  $ip;
+        
+        $SQL['type'] =  "1";
         
         $SQL['paid'] = 0;
         $SQL['total_price'] = $total;
@@ -258,3 +272,4 @@ function plugin_ebasket_update() {
 register_plugin_page('ebasket','','plugin_ebasket_list',0);
 register_plugin_page('ebasket','update','plugin_ebasket_update',0);
 add_act('index', 'plugin_ebasket_total');
+add_act('index', 'plugin_ebasket_notify');

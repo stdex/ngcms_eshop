@@ -326,8 +326,10 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
     $tpath = locatePluginTemplates(array('search_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'), pluginGetVariable('eshop','localskin'));
     $xt = $twig->loadTemplate($tpath['search_eshop'].'search_eshop.tpl');
 
-    if(isset($_REQUEST['submit']) && $_REQUEST['submit']){
-        $keywords = secure_search_eshop($_REQUEST['keywords']);
+
+    if(isset($_REQUEST['keywords']) && $_REQUEST['keywords']){
+        $keywords = filter_var( $_REQUEST['keywords'], FILTER_SANITIZE_STRING );
+        /*
         $cat_id = intval($_REQUEST['cat_id']);
         if(empty($cat_id))
             $cat_id = 0;
@@ -335,14 +337,16 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
         $search_in = secure_search_eshop($_REQUEST['search_in']);
         if(empty($search_in))
             $search_in = 'all';
-
+        */
         $search = substr($keywords, 0, 64);
          if( strlen($search) < 3 )
             $output = msg(array("type" => "error", "text" => "Слишком короткое слово"), 1, 2);
-
+        
+        
         $keywords = array();
 
         $get_url = $search;
+
 
         $search = str_replace(" +", " ", $search);
         $stemmer = new Lingua_Stem_Ru();
@@ -356,152 +360,161 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
         $string = $string.'*';
 
         $text = implode('|', $keywords);
+        
+        $conditions = array();
 
-        if(isset($params['page']))
-            $pageNo = isset($_REQUEST['page'])?intval($_REQUEST['page']):0;
-        else
-            $pageNo = isset($_REQUEST['page'])?intval($_REQUEST['page']):0;
-
-        $limitCount = intval(pluginGetVariable('eshop', 'count_search'));
-
-        if (($limitCount < 2)||($limitCount > 2000)) $limitCount = 2;
-
-        if($cat_id)
-            $cats_id = " AND a.`cat_id` = '{$cat_id}'";
-        else
-            $cats_id = NULL;
-
-        switch($search_in){
-            case 'all':$sql_count = "SELECT COUNT(*) FROM ".prefix."_eshop AS a
-                                    WHERE MATCH (a.announce_name, a.announce_description) AGAINST ('{$string}' IN BOOLEAN MODE){$cats_id} and a.active = 1 ";
-                                    break;
-            case 'text':$sql_count = "SELECT COUNT(*) FROM ".prefix."_eshop AS a
-                                    WHERE MATCH (a.announce_description) AGAINST ('{$string}' IN BOOLEAN MODE){$cats_id} and a.active = 1 ";
-                                    break;
-            case 'title':$sql_count = "SELECT COUNT(*) FROM ".prefix."_eshop AS a
-                                    WHERE MATCH (a.announce_name) AGAINST ('{$string}' IN BOOLEAN MODE){$cats_id} and a.active = 1 ";
-                                    break;
+        if(isset($text) && !empty($text))
+        {
+            array_push($conditions, "MATCH (p.name, p.annotation, p.body) AGAINST ('{$string}' IN BOOLEAN MODE) ");
+            array_push($conditions, "p.active = 1 ");
         }
+        
+        $limitCount = pluginGetVariable('eshop', 'count_search');
 
-        $count = $mysql->result($sql_count);
+        $pageNo		= intval($params['page'])?intval($params['page']):intval($_REQUEST['page']);
+        if ($pageNo < 1)	$pageNo = 1;
+        if (!$limitStart)	$limitStart = ($pageNo - 1)* $limitCount;
+
+        $fSort = " GROUP BY p.id ORDER BY p.id DESC";
+        $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+        $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+        
+        $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
+
+        $count = $mysql->result($sqlQCount);
+
+        //if($count == 0)
+        //    return msg(array("type" => "error", "text" => "В данной категории пока что нету продукции"));
+
 
         $countPages = ceil($count / $limitCount);
+
         if($countPages < $pageNo)
-            $output = msg(array("type" => "error", "text" => "Подстраницы не существует"), 1, 2);
+            return msg(array("type" => "error", "text" => "Подстраницы не существует"));
 
-        if ($pageNo < 1) $pageNo = 1;
-        if (!isset($limitStart)) $limitStart = ($pageNo - 1)* $limitCount;
 
-        if ($countPages > 1 && $countPages >= $pageNo){
-
-            $paginationParams = checkLinkAvailable('eshop', 'search')?
-                array('pluginName' => 'eshop', 'pluginHandler' => 'search', 'params' => array('keywords' => $get_url, 'cat_id' => $cat_id, 'search_in' => $search_in, 'submit'=> 'Отправить'), 'xparams' => array('keywords' => $get_url, 'cat_id' => $cat_id, 'search_in' => $search_in, 'submit'=> 'Отправить'), 'paginator' => array('page', 1, false)):
-                array('pluginName' => 'core', 'pluginHandler' => 'plugin', 'params' => array('plugin' => 'eshop', 'handler' => 'search'), 'xparams' => array('keywords' => $get_url, 'cat_id' => $cat_id, 'search_in' => $search_in, 'submit'=> 'Отправить'), 'paginator' => array('page', 1, false));
+        if ($countPages > 1 && $countPages >= $pageNo)
+        {
+            $paginationParams = checkLinkAvailable('eshop', '')?
+                array('pluginName' => 'eshop', 'pluginHandler' => '', 'params' => array('keywords' => $get_url), 'xparams' => array(), 'paginator' => array('page', 0, false)):
+                array('pluginName' => 'core', 'pluginHandler' => 'plugin', 'params' => array('plugin' => 'eshop'), 'xparams' => array('keywords' => $get_url), 'paginator' => array('page', 1, false));
 
             $navigations = LoadVariables();
             $pages = generatePagination($pageNo, 1, $countPages, 10, $paginationParams, $navigations);
         }
-
-        switch($search_in){
-            case 'all': $sql_two = 'SELECT *, a.id as aid, b.id as bid FROM '.prefix.'_eshop a LEFT JOIN '.prefix.'_eshop_cat b ON a.cat_id = b.id LEFT JOIN '.prefix.'_eshop_images c ON a.id = c.zid WHERE MATCH (a.announce_name, a.announce_description) AGAINST (\''.$string.'\' IN BOOLEAN MODE)'.$cats_id.' and a.active = \'1\' GROUP BY a.id ORDER BY MATCH (a.announce_name, a.announce_description) AGAINST (\''.$string.'\' IN BOOLEAN MODE) DESC LIMIT '.$limitStart.', '.$limitCount; break;
-            case 'text':$sql_two = 'SELECT *, a.id as aid, b.id as bid FROM '.prefix.'_eshop a LEFT JOIN '.prefix.'_eshop_cat b ON a.cat_id = b.id LEFT JOIN '.prefix.'_eshop_images c ON a.id = c.zid WHERE MATCH (a.announce_description) AGAINST (\''.$string.'\' IN BOOLEAN MODE)'.$cats_id.' and a.active = \'1\' GROUP BY a.id ORDER BY MATCH (a.announce_description) AGAINST (\''.$string.'\' IN BOOLEAN MODE) DESC LIMIT '.$limitStart.', '.$limitCount; break;
-            case 'title':$sql_two = 'SELECT *, a.id as aid, b.id as bid FROM '.prefix.'_eshop a LEFT JOIN '.prefix.'_eshop_cat b ON a.cat_id = b.id LEFT JOIN '.prefix.'_eshop_images c ON a.id = c.zid WHERE MATCH (a.announce_name) AGAINST (\''.$string.'\' IN BOOLEAN MODE)'.$cats_id.' and a.active = \'1\' GROUP BY a.id ORDER BY MATCH (a.announce_name) AGAINST (\''.$string.'\' IN BOOLEAN MODE) DESC LIMIT '.$limitStart.', '.$limitCount; break;
-        }
-
-        foreach ($mysql->select($sql_two) as $row_two){
-            /* print '<pre>';
-            print_r ($row_two);
-            print '</pre>'; */
-
+        
+        foreach ($mysql->select($sqlQ.' LIMIT '.$limitStart.', '.$limitCount) as $row)
+        {
             $fulllink = checkLinkAvailable('eshop', 'show')?
-                generateLink('eshop', 'show', array('id' => $row_two['aid'])):
-                generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row_two['aid']));
+                generateLink('eshop', 'show', array('id' => $row['id'])):
+                generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['id']));
             $catlink = checkLinkAvailable('eshop', '')?
-                generateLink('eshop', '', array('cat' => $row_two['bid'])):
-                generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $row_two['bid']));
+                generateLink('eshop', '', array('cat' => $row['cid'])):
+                generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $row['cid']));
 
 
-            $tEntry[] = array (
-                'aid'					=>	$row_two['aid'],
-                'bid'					=>	$row_two['bid'],
-                'date'					=>	$row_two['date'],
-                'editdate'				=>	$row_two['editdate'],
-                'views'					=>	$row_two['views'],
-                'announce_name'			=>	$row_two['announce_name'],
-                'author'				=>	$row_two['author'],
-                'author_id'				=>	$row_two['author_id'],
-                'author_email'			=>	$row_two['author_email'],
-                'announce_period'		=>	$row_two['announce_period'],
-                'announce_description'	=>	preg_replace("/\b(".$text.")(.*?)\b/i", "<span style='color:red; font-weight:bold'>\\0</span>", eshop_bbcode_p($row_two['announce_description'])),
-                'announce_contacts'		=>	$row_two['announce_contacts'],
-                'vip_added'				=>	$row_two['vip_added'],
-                'vip_expired'			=>	$row_two['vip_expired'],
-                'fulllink'				=>	$fulllink,
-                'catlink'				=>	$catlink,
-                'cat_name'				=>	$row_two['cat_name'],
-                'pid'					=>	$row_two['pid'],
-                'filepath'				=>	$row_two['filepath'],
+            $entries[] = array (
+                'id' => $row['id'],
+                'code' => $row['code'],
+                'name' => $row['name'],
+                
+                'annotation' => $row['annotation'],
+                'body' => $row['body'],
+                
+                'active' => $row['active'],
+                'featured' => $row['featured'],
+                
+                'price'                => $row['price'],
+                'compare_price'        => $row['compare_price'],
+                'stock'                => $row['stock'],
+                
+                'meta_title' => $row['meta_title'],
+                'meta_keywords' => $row['meta_keywords'],
+                'meta_description' => $row['meta_description'],
+                
+                'fulllink' => $fulllink,
+                
+                'date' => (empty($row['date']))?'':$row['date'],
+                'editdate' => (empty($row['editdate']))?'':$row['editdate'],
+                
+                'views'		=>	$row['views'],
+                
+                'cat_name' => $row['category'],
+                'cid' => $row['cid'],
+                'catlink' => $catlink,
+                
+                'home' => home,
+                'image_filepath'    =>  $row['image_filepath'],
+                'tpl_url' => home.'/templates/'.$config['theme'],
             );
 
         }
 
-        if( empty($row_two) )
-            $output = msg(array("type" => "error", "text" => "По вашему запросу <b>".$get_url."</b> ничего не найдено"), 1, 2);
-    }else{
-            $res = mysql_query("SELECT * FROM ".prefix."_eshop_cat ORDER BY id");
-            $cats = getCats($res);
-            $options = getTree($cats, $row['cat_id'], 0);
+        if ($limitStart)
+        {
+            $prev = floor($limitStart / $limitCount);
+            $PageLink = checkLinkAvailable('eshop', '')?
+                generatePageLink(array('pluginName' => 'eshop', 'pluginHandler' => '', 'params' => array(), 'xparams' => array(), 'paginator' => array('page', 0, false)), $prev):
+                generatePageLink(array('pluginName' => 'core', 'pluginHandler' => 'plugin', 'params' => array('plugin' => 'eshop'), 'xparams' => array(), 'paginator' => array('page', 1, false)), $prev);
 
-        //	$tVars['options'] = $options;
+            $gvars['regx']["'\[prev-link\](.*?)\[/prev-link\]'si"] = str_replace('%page%',"$1",str_replace('%link%',$PageLink, $navigations['prevlink']));
+        } else {
+            $gvars['regx']["'\[prev-link\](.*?)\[/prev-link\]'si"] = "";
+            $prev = 0;
+        }
 
-        /*foreach ($mysql->select('SELECT `id`, `title` FROM `'.prefix.'_forum_forums` ORDER BY `position`') as $row){
-            $tEntry[] = array (
-                'forum_id' => $row['id'],
-                'forum_name' => $row['title'],
-            );
-        }*/
-
+        if (($prev + 2 <= $countPages))
+        {
+            $PageLink = checkLinkAvailable('eshop', '')?
+                generatePageLink(array('pluginName' => 'eshop', 'pluginHandler' => '', 'params' => array(), 'xparams' => array(), 'paginator' => array('page', 0, false)), $prev+2):
+                generatePageLink(array('pluginName' => 'core', 'pluginHandler' => 'plugin', 'params' => array('plugin' => 'eshop'), 'xparams' => array(), 'paginator' => array('page', 1, false)), $prev+2);
+            $gvars['regx']["'\[next-link\](.*?)\[/next-link\]'si"] = str_replace('%page%',"$1",str_replace('%link%',$PageLink, $navigations['nextlink']));
+        } else {
+            $gvars['regx']["'\[next-link\](.*?)\[/next-link\]'si"] = "";
+        }
+        
+        
     }
 
-    $tVars = array(
-        'entries' => isset($tEntry)?$tEntry:'',
-        'options' => isset($options)?$options:'',
-        'output'	  =>  $output,
-        'get_url'	  =>  $get_url,
-        'submit' => (isset($_REQUEST['submit']) && $_REQUEST['submit'])?0:1,
-        'pages' => array(
+
+        $tVars = array(
+            'search_request' => $get_url,
+            'cat_info' => $cat_array,
+            'info' =>	isset($info)?$info:'',
+            'entries' => isset($entries)?$entries:'',
+            'pages' => array(
             'true' => (isset($pages) && $pages)?1:0,
             'print' => isset($pages)?$pages:''
-        ),
-        'prevlink' => array(
+                            ),
+            'prevlink' => array(
                     'true' => !empty($limitStart)?1:0,
                     'link' => str_replace('%page%',
                                             "$1",
                                             str_replace('%link%',
-                                                checkLinkAvailable('eshop', 'search')?
-                                                generatePageLink(array('pluginName' => 'eshop', 'pluginHandler' => 'search', 'params' => array('keywords' => $get_url?$get_url:'', 'cat_id' => $cat_id, 'search_in' => $search_in, 'submit'=> 'Отправить'), 'xparams' => array('keywords' => $get_url?$get_url:'', 'cat_id' => $cat_id, 'search_in' => $search_in, 'submit'=> 'Отправить'), 'paginator' => array('page', 1, false)), $prev = floor($limitStart / $limitCount)):
-                                                generatePageLink(array('pluginName' => 'core', 'pluginHandler' => 'plugin', 'params' => array('plugin' => 'eshop', 'handler' => 'search'), 'xparams' => array('keywords' => isset($get_url)?$get_url:'', 'cat_id' => isset($cat_id)?$cat_id:'', 'search_in' => isset($search_in)?$search_in:'', 'submit'=> 'Отправить'), 'paginator' => array('page', 1, false)),
-                                                    $prev = floor((isset($limitStart) && $limitStart)?$limitStart:10 / (isset($limitCount) && $limitCount)?$limitCount:'5')),
+                                                checkLinkAvailable('eshop', '')?
+                generatePageLink(array('pluginName' => 'eshop', 'pluginHandler' => '', 'params' => array('keywords' => $get_url?$get_url:''), 'xparams' => array('keywords' => $get_url?$get_url:''), 'paginator' => array('page', 0, false)), $prev = floor($limitStart / $limitCount)):
+                generatePageLink(array('pluginName' => 'core', 'pluginHandler' => 'plugin', 'params' => array('plugin' => 'eshop'), 'xparams' => array('keywords' => $get_url?$get_url:''), 'paginator' => array('page', 1, false)), $prev = floor($limitStart / $limitCount)),
                                                 isset($navigations['prevlink'])?$navigations['prevlink']:''
                                             )
                     ),
-        ),
-        'nextlink' => array(
+                                ),
+            'nextlink' => array(
                     'true' => ($prev + 2 <= $countPages)?1:0,
                     'link' => str_replace('%page%',
                                             "$1",
                                             str_replace('%link%',
-                                                checkLinkAvailable('eshop', 'search')?
-                                                generatePageLink(array('pluginName' => 'eshop', 'pluginHandler' => 'search', 'params' => array('keywords' => $get_url, 'cat_id' => $cat_id, 'search_in' => $search_in, 'submit'=> 'Отправить'), 'xparams' => array('keywords' => $get_url?$get_url:'', 'cat_id' => $cat_id, 'search_in' => $search_in, 'submit'=> 'Отправить'), 'paginator' => array('page', 1, false)), $prev+2):
-                                                generatePageLink(array('pluginName' => 'core', 'pluginHandler' => 'plugin', 'params' => array('plugin' => 'eshop', 'handler' => 'search'), 'xparams' => array('keywords' => $get_url, 'cat_id' => $cat_id, 'search_in' => $search_in, 'submit'=> 'Отправить'), 'paginator' => array('page', 1, false)), $prev+2),
+                                                checkLinkAvailable('eshop', '')?
+                generatePageLink(array('pluginName' => 'eshop', 'pluginHandler' => '', 'params' => array('keywords' => $get_url?$get_url:''), 'xparams' => array('keywords' => $get_url?$get_url:''), 'paginator' => array('page', 0, false)), $prev+2):
+                generatePageLink(array('pluginName' => 'core', 'pluginHandler' => 'plugin', 'params' => array('plugin' => 'eshop'), 'xparams' => array('keywords' => $get_url?$get_url:''), 'paginator' => array('page', 1, false)), $prev+2),
                                                 isset($navigations['nextlink'])?$navigations['nextlink']:''
                                             )
                     ),
-        ),
-    );
+                                ),
+            'tpl_url' => home.'/templates/'.$config['theme'],
+            'tpl_home' => admin_url,
+        );
 
-    //$output = $xt->render($tVars);
-    $template['vars']['mainblock'] .= $xt->render($tVars);
+        $template['vars']['mainblock'] .= $xt->render($tVars);
 
 }
 

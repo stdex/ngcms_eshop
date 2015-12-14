@@ -279,6 +279,16 @@ hr{border-top-color: #fff;}
 .btn-additional-s_c:hover{background-color: #ff8001;}
 .btn-additional-s_c .text-el{color: #fff;}
 
+.btn-green {
+    border-color: #86BC65 !important;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.2) !important;
+    background: rgb(127, 184, 92) !important;
+}
+
+.btn-green:hover {
+    background: #75BD4D !important;
+}
+
 .btn-buy{
   border-color: #f06b10;box-shadow: 0 1px 1px rgba(0,0,0,0.2);
   background: #ff8001;

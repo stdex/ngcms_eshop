@@ -117,6 +117,8 @@ global $tpl, $mysql, $lang, $twig;
             
             'active'               => $row['active'],
             'featured'             => $row['featured'],
+            'stocked'              => $row['stocked'],
+            
             'position'             => $row['position'],
             
             'date'                 => $row['date'],
@@ -185,6 +187,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         
         $SQL['active'] = intval($_REQUEST['active']);
         $SQL['featured'] = intval($_REQUEST['featured']);
+        $SQL['stocked'] = intval($_REQUEST['stocked']);
         
         $SQL['date'] = time() + ($config['date_adjust'] * 60);
         $SQL['editdate'] = $SQL['date'];
@@ -345,6 +348,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         
         $SQL['active'] = intval($_REQUEST['active']);
         $SQL['featured'] = intval($_REQUEST['featured']);
+        $SQL['stocked'] = intval($_REQUEST['stocked']);
 
         $SQL['editdate'] = time() + ($config['date_adjust'] * 60);
         
@@ -415,7 +419,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
             
             #generate_catz_cache(true);
             
-            //redirect_eshop('?mod=extra-config&plugin=eshop&action=list_product');
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_product');
         }
 
     }
@@ -1532,28 +1536,9 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     {
 
         $name = input_filter_com(convert($_REQUEST['name']));
-        if(empty($name))
-        {
-            $error_text[] = 'Имя не задано';
-        }
-        
         $email = input_filter_com(convert($_REQUEST['email']));
-        if(empty($email))
-        {
-            $error_text[] = 'Email не задан';
-        }
-        
         $phone = input_filter_com(convert($_REQUEST['phone']));
-        if(empty($phone))
-        {
-            $error_text[] = 'Телефон не задан';
-        }
-        
         $address = input_filter_com(convert($_REQUEST['address']));
-        if(empty($address))
-        {
-            $error_text[] = 'Адрес не задан';
-        }
         
         $comment = input_filter_com(convert($_REQUEST['comment']));
         $paid = input_filter_com(convert($_REQUEST['paid']));
