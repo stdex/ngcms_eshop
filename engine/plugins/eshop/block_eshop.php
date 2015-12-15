@@ -11,36 +11,80 @@ function plugin_block_eshop($number, $mode, $cat, $overrideTemplateName, $cacheE
     // Prepare keys for cacheing
     $cacheKeys = array();
     $cacheDisabled = false;
-
+    
+    $conditions = array();
     if(isset($cat) && !empty($cat))
     {
-        $cat_id = ' and n.cat_id IN ( '.$cat.' ) ';
-    } else {
-        $cat_id = '';
+        array_push($conditions, "c.id IN (".$cat.") ");
     }
-    $sorting = $cat_id;
+    
+    array_push($conditions, "p.active = 1");
 
     if (($number < 1) || ($number > 100))
         $number = 5;
-    
-    /*
-     * TODO: режимы работы    
+       
     switch ($mode) {
-        case 'view':    $sql = 'SELECT *, c.id as cid, n.id as nid FROM '.prefix.'_eshop n LEFT JOIN '.prefix.'_eshop_cat c ON n.cat_id = c.id LEFT JOIN '.prefix.'_eshop_images i ON n.id = i.zid WHERE n.active = \'1\' '.$sorting.' GROUP BY n.id ORDER BY n.views DESC';
-                        break;
-        case 'last':	$sql = 'SELECT *, c.id as cid, n.id as nid FROM '.prefix.'_eshop n LEFT JOIN '.prefix.'_eshop_cat c ON n.cat_id = c.id LEFT JOIN '.prefix.'_eshop_images i ON n.id = i.zid WHERE n.active = \'1\' '.$sorting.' GROUP BY n.id ORDER BY editdate DESC';
-                        break;
-        case 'rnd':		$cacheDisabled = true;
-                        $sql = 'SELECT *, c.id as cid, n.id as nid FROM '.prefix.'_eshop n LEFT JOIN '.prefix.'_eshop_cat c ON n.cat_id = c.id LEFT JOIN '.prefix.'_eshop_images i ON n.id = i.zid WHERE n.active = \'1\' '.$sorting.' GROUP BY n.id ORDER BY RAND() DESC';
-                        break;
-        case 'vip':		$sql = 'SELECT *, c.id as cid, n.id as nid FROM '.prefix.'_eshop n LEFT JOIN '.prefix.'_eshop_cat c ON n.cat_id = c.id LEFT JOIN '.prefix.'_eshop_images i ON n.id = i.zid WHERE n.active = \'1\' '.$sorting.' AND n.vip_expired != "" ORDER BY n.vip_expired DESC';
-                        break;
-        default:		$mode = 'last';
-                        $sql = 'SELECT *, c.id as cid, n.id as nid FROM '.prefix.'_eshop n LEFT JOIN '.prefix.'_eshop_cat c ON n.cat_id = c.id LEFT JOIN '.prefix.'_eshop_images i ON n.id = i.zid WHERE n.active = \'1\' '.$sorting.' GROUP BY n.id ORDER BY editdate DESC';
-                        break;
+        case 'view':
+            $orderby = " ORDER BY p.view DESC ";
+            break;
+        case 'last':
+            $orderby = " ORDER BY p.editdate DESC ";
+            break;
+        case 'stocked':
+            array_push($conditions, "p.stocked = 1");
+            $orderby = " ORDER BY p.editdate DESC ";
+            break;
+        case 'featured':
+            array_push($conditions, "p.featured = 1");
+            $orderby = " ORDER BY p.editdate DESC ";
+            break;
+        case 'rnd':	
+            $cacheDisabled = true;
+            $orderby = " ORDER BY RAND() DESC ";
+            break;
+        default:
+            $mode = 'last';
+            $orderby = " ORDER BY p.editdate DESC ";
+            break;
     }
-    $sql .= " limit ".$number;
-    */
+
+    $fSort = " GROUP BY p.id ".$orderby." LIMIT ".$number;
+    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+    $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.stocked AS stocked, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+
+    $tEntries = array();
+
+    foreach ($mysql->select($sqlQ) as $row)
+    {
+        $view_link = checkLinkAvailable('eshop', 'show')?
+            generateLink('eshop', 'show', array('id' => $row['id'])):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['id']));
+        
+        $tEntries[] = array (
+            'id'                   => $row['id'],
+            'code'                 => $row['code'],
+            'name'                 => $row['name'],
+            
+            'category'             => $row['category'],
+            'image_filepath'       => $row['image_filepath'],
+
+            'price'                => $row['price'],
+            'compare_price'        => $row['compare_price'],
+            'stock'                => $row['stock'],
+            
+            'active'               => $row['active'],
+            'featured'             => $row['featured'],
+            'stocked'              => $row['stocked'],
+            
+            'position'             => $row['position'],
+            
+            'date'                 => $row['date'],
+            'editdate'             => $row['editdate'],
+            
+            'edit_link'            => "?mod=extra-config&plugin=eshop&action=edit_product&id=".$row['id']."",
+            'view_link'            => $view_link,
+        );
+    }
 
     if ($overrideTemplateName) {
         $templateName = 'block/'.$overrideTemplateName;
@@ -71,52 +115,11 @@ function plugin_block_eshop($number, $mode, $cat, $overrideTemplateName, $cacheE
         }
     }
 
-    /*
-    foreach ($mysql->select($sql) as $row) {
-        
-        if($row['author_id'] != 0) {
-            $alink = checkLinkAvailable('uprofile', 'show')?
-                        generateLink('uprofile', 'show', array('id' => $row['author_id'])):
-                        generateLink('core', 'plugin', array('plugin' => 'uprofile', 'handler' => 'show'), array('id' => $row['author_id']));
-        }
-        else { $alink = ''; }
-        
-        $fulllink = checkLinkAvailable('eshop', 'show')?
-            generateLink('eshop', 'show', array('id' => $row['nid'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['nid']));
-        
-        $catlink = checkLinkAvailable('eshop', '')?
-            generateLink('eshop', '', array('cat' => $row['cid'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $row['cid']));
-        
-        $tEntries [] = array(
-            'nid'					=>	$row['nid'],
-            'date'					=>	$row['date'],
-            'editdate'				=>	$row['editdate'],
-            'views'					=>	$row['views'],
-            'announce_name'			=>	$row['announce_name'],
-            'author'				=>	$row['author'],
-            'author_id'				=>	$row['author_id'],
-            'author_email'			=>	$row['author_email'],
-            'announce_period'		=>	$row['announce_period'],
-            'announce_description'	=>	$row['announce_description'],
-            'announce_contacts'		=>	$row['announce_contacts'],
-            'vip_added'				=>	$row['vip_added'],
-            'vip_expired'			=>	$row['vip_expired'],
-            'fulllink'				=>	$fulllink,
-            'catlink'				=>	$catlink,
-            'cat_name'				=>	$row['cat_name'],
-            'pid'					=>	$row['pid'],
-            'filepath'				=>	$row['filepath'],
-            'alink' 		=> $alink,
-        );
-        //var_dump($row);
-    }
-    */
-
-    $tVars['entries']	= $tEntries;
-    $tVars['tpl_url'] = tpl_url;
-    $tVars['home'] = home;
+    $tVars['mode']       = $mode;
+    $tVars['number']     = $number;
+    $tVars['entries']    = $tEntries;
+    $tVars['tpl_url']    = tpl_url;
+    $tVars['home']       = home;
 
     $xt = $twig->loadTemplate($tpath[$templateName].$templateName.'.tpl');
     $output = $xt->render($tVars);

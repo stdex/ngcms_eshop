@@ -604,7 +604,27 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
                 'value' => $orow['value']
                 );
     }
-
+    
+    foreach ($mysql->select('SELECT p.id AS id, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock FROM '.prefix.'_eshop_related_products rp LEFT JOIN '.prefix.'_eshop_products p ON p.id=rp.related_id LEFT JOIN '.prefix.'_eshop_images i ON i.product_id = p.id LEFT JOIN '.prefix.'_eshop_variants v ON p.id = v.product_id WHERE rp.product_id = '.$row['id'].' GROUP BY p.id ORDER BY rp.position') as $rrow)
+    {
+        
+        $fulllink = checkLinkAvailable('eshop', 'show')?
+            generateLink('eshop', 'show', array('id' => $rrow['id'])):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $rrow['id']));
+        
+        $rrow['fulllink'] = $fulllink;
+        
+        $related_array[] = $rrow;
+        /*
+        $related_array[] = 
+            array(
+                'name' => $rrow['name'],
+                'product_id' => $rrow['product_id'],
+                'related_id' => $rrow['related_id'],
+                'position' => $rrow['position']
+                );
+        */
+    }
 
     $SYSTEM_FLAGS['info']['title']['others'] = $row['meta_title'];
     $SYSTEM_FLAGS['info']['title']['group'] = $lang['eshop']['name_plugin'];
@@ -667,6 +687,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
             
             'entriesImg' => isset($entriesImg)?$entriesImg:'',
             'entriesFeatures' => isset($features_array)?$features_array:'',
+            'entriesRelated' => isset($related_array)?$related_array:'',
         );
 
         $template['vars']['mainblock'] .= $xt->render($tVars);

@@ -40,7 +40,7 @@
 
 <div class="frame-inside page-product">
    <div class="container">
-            <div class="clearfix item-product  to-cart">
+            <div class="clearfix item-product {% if (stock == 0) or (stock == 2) %}not-avail{% elseif (stock == 1) %}to-cart{% endif %}">
       <div class="right-product">
         <!--Start. Payments method form -->
         <div class="" data-mq-max="1280" data-mq-min="0" data-mq-target="#deliveryTabs">
@@ -61,8 +61,9 @@
 </ul>
 </dd></dl></div>        </div>
         <!--End. Payments method form -->
-        <!-- Start. Similar Products-->
 
+        {% if (entriesRelated) %}
+        <!-- Start. Similar Products-->
         <div class="items-products count-items1" id="similar">
     <div class="title-proposition-v">
         <div class="frame-title">
@@ -74,17 +75,15 @@
                         <div class="content-carousel container" data-mq-max="1280" data-mq-min="0" data-mq-target="#similarBott">
                 <ul class="items items-default items-h-carousel items-product ">
                     
-
-
-
-<li class="globalFrameProduct to-cart" data-pos="top">
+{% for entry in entriesRelated %}
+<li class="globalFrameProduct {% if (entry.stock == 0) or (entry.stock == 2) %}not-avail{% elseif (entry.stock == 1) %}to-cart{% endif %}" data-pos="top">
     <!-- Start. Photo & Name product -->
-    <a href="http://fluid.imagecmsdemo.net/shop/product/mobilnyi-telefon-fly-e141-tv-dual-sim-white" class="frame-photo-title" title="Мобильный телефон Fly E141 TV Dual SIM White">
+    <a href="{{entry.fulllink}}" class="frame-photo-title">
         <span class="photo-block">
             <span class="helper"></span>
-                        <img src="/uploads/shop/products/medium/5624_main_origin.jpg" class="vImg">
+                        {% if (entry.image_filepath) %}<img src='{{home}}/uploads/eshop/products/thumb/{{entry.image_filepath}}' class="vImg">{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' class="vImg">{% endif %}
                                             </span>
-        <span class="title">Мобильный телефон Fly E141 TV Dual SIM White</span>
+        <span class="title">{{ entry.name }}</span>
     </a>
     <!-- End. Photo & Name product -->
     <div class="description">
@@ -96,12 +95,12 @@
             <span class="current-prices f-s_0">
                 <span class="price-new">
                     <span>
-<span class="price priceVariant">69</span> $
+<span class="price priceVariant">{% if (entry.price) %}{{ entry.price }}{% else %}0{% endif %}</span> $
                     </span>
                 </span>
                                 <span class="price-add">
                     <span>
-<span class="price addCurrPrice">55</span> €
+<span class="price addCurrPrice">{% if (entry.compare_price) %}{{ entry.compare_price }}{% else %}0{% endif %}</span> €
                     </span>
                 </span>
                             </span>
@@ -117,6 +116,7 @@
 <!-- Start. For wishlist page-->
 <!-- End. For wishlist page-->
 </li>
+{% endfor %}
                 </ul>
             </div>
             <div class="group-button-carousel">
@@ -131,6 +131,7 @@
     </div>
 </div>
         <!-- End. Similar Products-->
+        {% endif %}
       </div>
       
       <div class="left-product leftProduct">
@@ -948,8 +949,6 @@ $(document).ready(function() {
         var name = $("#fastprice-frame").find("input[name='name']").val();
         var phone = $("#fastprice-frame").find("input[name='phone']").val();
         var address = $("#fastprice-frame").find("input[name='address']").val();
-        
-        console.log(name + ": " + phone + ": " + address + ": ");
 
         $.post('/engine/rpc.php', { json : 1, methodName : 'plugin.ebasket.manage', rndval: new Date().getTime(), params : json_encode({'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '3', 'name': name, 'phone': phone, 'address': address}) }, function(data) {
             // Try to decode incoming data

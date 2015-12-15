@@ -493,9 +493,9 @@
 
 
 {% for entry in entries %}
-<li class="globalFrameProduct to-cart" data-pos="top">
+<li class="globalFrameProduct {% if (entry.stock == 0) or (entry.stock == 2) %}not-avail{% elseif (entry.stock == 1) %}to-cart{% endif %}" data-pos="top">
     <!-- Start. Photo & Name product -->
-    <a href="{{entry.fulllink}}" class="frame-photo-title" title="Мобильный телефон Fly E141 TV Dual SIM Black">
+    <a href="{{entry.fulllink}}" class="frame-photo-title">
         <span class="photo-block">
             <span class="helper"></span>
             {% if (entry.image_filepath) %}<img src='{{home}}/uploads/eshop/products/thumb/{{entry.image_filepath}}' class="vImg">{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' class="vImg">{% endif %}
@@ -518,6 +518,7 @@
             </span>
                     </div>
                 <!-- End. article & variant name & brand name -->
+                <!--
                         <div class="frame-star f-s_0">
                 <div class="star">
         <div id="star_rating_5623" class="productRate star-small">
@@ -527,6 +528,7 @@
             <a href="http://fluid.imagecmsdemo.net/shop/product/mobilnyi-telefon-fly-e141-tv-dual-sim-black#comment" class="count-response">
                 4                отзыва            </a>
         </div>
+        -->
                         <!-- Start. Prices-->
         <div class="frame-prices f-s_0">
                                                 <!-- Start. Product price-->
@@ -538,7 +540,7 @@
                 </span>
                                 <span class="price-add">
                     <span>
-<span class="price addCurrPrice">{% if (entry.compare_price) %}{{ entry.compare_price }}{% else %}0{% endif %}</span> €
+<span class="price addCurrPrice">{% if (entry.compare_price) %}{{ entry.compare_price }}{% else %}0{% endif %}</span> $
                     </span>
                 </span>
                             </span>
@@ -548,25 +550,34 @@
                         
                 <div class="funcs-buttons frame-without-top" style="position: relative; top: 0px;">
             <div class="no-vis-table">
+                {% if (entry.stock == 0) or (entry.stock == 2) %}
+                <div class="js-variant-5834 js-variant">
+                <div class="alert-exists">Нет в наличии</div>
+                <div class="btn-not-avail">
+                <button class="infoBut isDrop" type="button" data-drop=".drop-report" data-source="/shop/ajax/getNotifyingRequest" data-id="5834" data-product-id="5604" data-name="Мобильный телефон Fly DS103 Duos Grey" data-vname="Мобильный телефон Fly DS103 Duos Grey" data-number="200217" data-price="125" data-add-price="100" data-orig-price="" data-medium-image="
+                            /uploads/shop/products/medium/5604_main_origin.jpg                " data-img="
+                            /uploads/shop/products/small/5604_main_origin.jpg                " data-maxcount="0" data-url="http://fluid.imagecmsdemo.net/shop/product/mobilnyi-telefon-fly-ds103-duos-grey">
+                </button>
+                </div>
+                </div>
+                {% elseif (entry.stock == 1) %}
                 <!-- Start. Collect information about Variants, for future processing -->
-                                                                                                <div class="frame-count-buy js-variant-5853 js-variant">
-                    <form method="POST" action="/shop/cart/addProductByVariantId/5853">
-                        <div class="btn-buy btn-cart d_n">
-                            <button type="button" data-id="5853" class="btnBuy">
+                <div class="frame-count-buy js-variant-5853 js-variant">
+                    <div class="btn-buy btn-cart d_n">
+                        <button type="button" data-id="5853" class="btnBuy">
                             <span class="icon_cleaner icon_cleaner_buy"></span>
                             <span class="text-el">В корзине</span>
                         </button>
                     </div>
-                    <div class="btn-buy">
-                        <button type="button" onclick="Shop.Cart.add($(this).closest(&quot;form&quot;).serialize(), &quot;5853&quot;)" class="btnBuy infoBut" data-id="5853" data-name="Мобильный телефон Fly E141 TV Dual SIM Black" data-vname="Мобильный телефон Fly E141 TV Dual SIM Black" data-number="200236" data-price="69" data-add-price="55" data-orig-price="" data-medium-image="
-                                                /uploads/shop/products/medium/5623_main_origin.jpg                        " data-img="
-                                                /uploads/shop/products/small/5623_main_origin.jpg                        " data-url="http://fluid.imagecmsdemo.net/shop/product/mobilnyi-telefon-fly-e141-tv-dual-sim-black" data-maxcount="1">
-                        <span class="icon_cleaner icon_cleaner_buy"></span>
-                        <span class="text-el">Купить</span>
-                    </button>
+                    <div class="btn-buy btn-green">
+                        <button type="button" class="btnBuy orderBut" data-id="{{ entry.id }}">
+                            <span class="icon_cleaner icon_cleaner_buy"></span>
+                            <span class="text-el">Купить</span>
+                        </button>
+                    </div>
                 </div>
-                <input type="hidden" value="c6766dff44774539893ae7b98460a47f" name="cms_token">            </form>
-        </div>
+                {% endif %}
+                
             </div>
 </div>
 <!-- End. Collect information about Variants, for future processing -->
@@ -586,6 +597,7 @@
         <!-- End. Compare List button -->
     </div>
             <!-- Start. Wish list buttons -->
+            <!--
         <div class="frame-btn-wish js-variant-5853 js-variant d_i-b_">
         <div class="btnWish btn-wish" data-id="5853">
     <button class="toWishlist isDrop" type="button" data-rel="tooltip" data-title="В избранные" data-drop="#dropAuth">
@@ -603,7 +615,7 @@ langs["Wrong list name"] = 'Неверное имя списка';
 langs["Already in Wish List"] = 'Уже в Списке Желаний';
 langs["List does not chosen"] = 'Список не обран';
 langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
-</script>    </div>
+</script>    </div> -->
         <!-- End. wish list buttons -->
     </div>
 <!-- End. Wish List & Compare List buttons -->
@@ -651,3 +663,32 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
             </div>
         </div>
     </div>
+
+<script>
+$(document).ready(function() {
+    
+    $(".orderBut").click(function(e){
+        var id = $(this).attr('data-id');
+        var count = 1;
+        rpcBasketRequest('plugin.ebasket.manage', {'action': 'add', 'ds':1,'id':id,'count':count});
+        $(".forCenter").css("display", "block");
+        $(".overlayDrop").css("display", "block");
+        e.preventDefault();
+    });
+    
+    $(".icon_times_drop, #basket_back").click(function(e){
+        $(".forCenter").css("display", "none");
+        $(".overlayDrop").css("display", "none");
+        
+        $(".forCenter_fastOrder").css("display", "none");
+        $(".overlayDrop_fastOrder").css("display", "none");
+        
+        $(".forCenter_fastPrice").css("display", "none");
+        $(".overlayDrop_fastPrice").css("display", "none");
+        
+        e.preventDefault();
+    });
+
+
+});
+</script>
