@@ -944,7 +944,7 @@ input + .msg{margin-top: 5px;}
 
 /*pagination*/
 .next-page, .prev-page{display: none;}
-.pagination{text-align: center;margin-bottom: 12px;position: relative;z-index: 1;}
+.pagination{text-align: center;margin-bottom: 12px;margin-top: 12px;position: relative;z-index: 1;}
 .pagination li{display: inline-block;margin: 0 10px 6px;}
 li.clear-pag-item{margin: 0 14px 4px;}
 .pagination li > a, .pagination li > span{display: block;min-width: 26px;padding: 0 5px;height: 36px;line-height: 36px;}

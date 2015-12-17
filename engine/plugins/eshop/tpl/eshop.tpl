@@ -554,17 +554,15 @@
                 <div class="js-variant-5834 js-variant">
                 <div class="alert-exists">Нет в наличии</div>
                 <div class="btn-not-avail">
-                <button class="infoBut isDrop" type="button" data-drop=".drop-report" data-source="/shop/ajax/getNotifyingRequest" data-id="5834" data-product-id="5604" data-name="Мобильный телефон Fly DS103 Duos Grey" data-vname="Мобильный телефон Fly DS103 Duos Grey" data-number="200217" data-price="125" data-add-price="100" data-orig-price="" data-medium-image="
-                            /uploads/shop/products/medium/5604_main_origin.jpg                " data-img="
-                            /uploads/shop/products/small/5604_main_origin.jpg                " data-maxcount="0" data-url="http://fluid.imagecmsdemo.net/shop/product/mobilnyi-telefon-fly-ds103-duos-grey">
+                <button class="infoBut isDrop" type="button" data-drop=".drop-report">
                 </button>
                 </div>
                 </div>
                 {% elseif (entry.stock == 1) %}
                 <!-- Start. Collect information about Variants, for future processing -->
-                <div class="frame-count-buy js-variant-5853 js-variant">
+                <div class="frame-count-buy js-variant-{{entry.id}} js-variant">
                     <div class="btn-buy btn-cart d_n">
-                        <button type="button" data-id="5853" class="btnBuy">
+                        <button type="button" data-id="{{entry.id}}" class="btnBuy">
                             <span class="icon_cleaner icon_cleaner_buy"></span>
                             <span class="text-el">В корзине</span>
                         </button>
@@ -587,9 +585,9 @@
                 <div class="frame-btn-comp">
             <!-- Start. Compare List button -->
             <div class="btn-compare">
-                <div class="toCompare btnCompare" data-id="5623" type="button" data-title="Сравнить" data-firtitle="Сравнить" data-sectitle="В сравнении" data-rel="tooltip">
-                <span class="niceCheck nstcheck">
-                    <input type="checkbox">
+                <div class="toCompare btnCompare {% if (entry.compare) %}active{% endif %}" data-id="{{entry.id}}" type="button" data-title="Сравнить" data-firtitle="Сравнить" data-sectitle="В сравнении" data-rel="tooltip">
+                <span class="niceCheck nstcheck {% if (entry.compare) %}active{% endif %}">
+                    <input type="checkbox" {% if (entry.compare) %}cheked="cheked"{% endif %}>
                 </span>
                 <span class="text-el d_l">Сравнить</span>
             </div>
@@ -663,32 +661,3 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
             </div>
         </div>
     </div>
-
-<script>
-$(document).ready(function() {
-    
-    $(".orderBut").click(function(e){
-        var id = $(this).attr('data-id');
-        var count = 1;
-        rpcBasketRequest('plugin.ebasket.manage', {'action': 'add', 'ds':1,'id':id,'count':count});
-        $(".forCenter").css("display", "block");
-        $(".overlayDrop").css("display", "block");
-        e.preventDefault();
-    });
-    
-    $(".icon_times_drop, #basket_back").click(function(e){
-        $(".forCenter").css("display", "none");
-        $(".overlayDrop").css("display", "none");
-        
-        $(".forCenter_fastOrder").css("display", "none");
-        $(".overlayDrop_fastOrder").css("display", "none");
-        
-        $(".forCenter_fastPrice").css("display", "none");
-        $(".overlayDrop_fastPrice").css("display", "none");
-        
-        e.preventDefault();
-    });
-
-
-});
-</script>

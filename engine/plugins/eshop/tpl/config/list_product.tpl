@@ -106,6 +106,15 @@
 Действие: <select name="subaction" style="font: 12px Verdana, Courier, Arial; width: 230px;">
 <option value="">-- Действие --</option>
 <option value="mass_delete">Удалить</option>
+<option value="" style="background-color: #E0E0E0;" disabled="disabled">===================</option>
+<option value="mass_active_add">Опубликовать</option>
+<option value="mass_active_remove">Запретить публикацию</option>
+<option value="" style="background-color: #E0E0E0;" disabled="disabled">===================</option>
+<option value="mass_featured_add">Добавить в рекомендованные</option>
+<option value="mass_featured_remove">Убрать из рекомендованных</option>
+<option value="" style="background-color: #E0E0E0;" disabled="disabled">===================</option>
+<option value="mass_stocked_add">Добавить в акционные</option>
+<option value="mass_stocked_remove">Убрать из акционных</option>
 </select>
 <input type="submit" value="Выполнить.." class="button" />
 

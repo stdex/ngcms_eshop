@@ -275,6 +275,18 @@ function plugin_eshop_install($action) {
             array('action' => 'cmodify', 'name' => 'linked_fld', 'type' => 'text'),
         )
     ),
+    
+    array(
+        'table'  => 'eshop_compare',
+        'action' => 'cmodify',
+        'key'    => 'primary key(id)',
+        'fields' => array(
+            array('action' => 'cmodify', 'name' => 'id', 'type' => 'int', 'params' => 'not null auto_increment'),
+            array('action' => 'cmodify', 'name' => 'user_id', 'type' => 'int', 'params' => 'default 0'),
+            array('action' => 'cmodify', 'name' => 'cookie', 'type' => 'char(50)', 'params' => 'default ""'),
+            array('action' => 'cmodify', 'name' => 'linked_fld', 'type' => 'text'),
+        )
+    ),
         
     array(
         'table'		=> 'eshop_variants',
@@ -326,8 +338,10 @@ function plugin_eshop_install($action) {
             }
 
             $params = array(
-                'count' => '10',
-                'count_search' => '20',
+                'count' => '8',
+                'count_search' => '8',
+                'count_stocks' => '8',
+                
                 'views_count' => '1',
                 
                 'url' => '0',
@@ -348,9 +362,32 @@ function plugin_eshop_install($action) {
                 'email_notify_comments' => '',
                 'email_notify_back' => '',
                 
-                'description_delivery' => '',
-                'description_order' => '',
-                'description_phones' => '',
+                'description_delivery' => '<ul>
+    <li>Новая Почта</li>
+    <li>Другие транспортные службы</li>
+    <li>Курьером по Киеву</li>
+    <li>Самовывоз</li>
+</ul>',
+                'description_order' => '<ul>
+    <li>Наличными при получении</li>
+    <li>Безналичный перевод</li>
+    <li>Приват 24</li>
+    <li>WebMoney</li>
+</ul>',
+                'description_phones' => '<div class="frame-ico">
+    <span class="icon_work">
+    </span>
+</div>
+<div>
+    <div>
+        Работаем: 
+        <span class="text-el">
+        Пн–Пт 09:00–20:00,
+        <br>
+        Сб 09:00–17:00, Вс выходной
+        </span>
+    </div>
+</div>',
 
             );
             foreach ($params as $k => $v) {

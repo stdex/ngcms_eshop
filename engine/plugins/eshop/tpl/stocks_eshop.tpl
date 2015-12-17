@@ -10,7 +10,7 @@
             </li>
                              <li class="btn-crumb">
                                             <button typeof="v:Breadcrumb" disabled="disabled">
-                            <span class="text-el">Поиск</span>
+                            <span class="text-el">Акции</span>
                         </button>
                                     </li>
                     </ul>
@@ -20,48 +20,18 @@
 {% if (entries) %}
 <div class="frame-inside">
     <div class="container">
-        <!--
-                    <div class="left-catalog">
-                <form method="GET" action="" id="catalogForm">
-                    <input type="hidden" name="order" value="">
-                    <input type="hidden" name="text" value="Fly">
-                    <input type="hidden" name="category" value="">
-                    <input type="hidden" name="user_per_page" value="">
-                </form>
-                <div class="frame-category-menu layout-highlight">
-                    <div class="title-menu-category">
-                        <div class="title-default">
-                            <div class="title">Категории:</div>
-                        </div>
-                    </div>
-                    <div class="inside-padd">
-                        
-                        <nav>
-                                                            <ul class="nav nav-vertical nav-category">
-                                    <li>
-                                        <span>Телефония, МР3-плееры, GPS</span>
-                                    </li>
-                                                                                                                        <li>
-                                                <a rel="nofollow" data-id="930" href="http://fluid.imagecmsdemo.net/shop/search?text=Fly&amp;category=930"><span class="text-el">Мобильные телефоны</span> <span class="count">(18)</span></a>
-                                                                                    </li>
-                                                                    </ul>
-                                                    </nav>
-                                                    
-                    </div>
-                </div>
-            </div>
-            -->
                 <div class="right-catalog"  style="width:100% !important;margin-left: 0;">
                             <div class="f-s_0 title-category">
                     <div class="frame-title">
-                        <h1 class="title"><span class="s-t">Результаты поиска</span> <span class="what-search">«{{ search_request }}»</span></h1>
+                        <h1 class="title"><span class="s-t">Товары по акции</span></h1>
                     </div>
                     <!--<span class="count">(Найдено 18 товаров)</span>-->
                 </div>
+                <!--
                                         <div class="frame-header-category">
-        <!--
         <div class="header-category f-s_0">
             <div class="inside-padd">
+
                 <div class="frame-sort d_i-b v-a_t">
                     <div class="lineForm">
                         <div class="cusel sort" id="cuselFrame-sort" style="width:176px" tabindex="0"><div class="cuselFrameRight"></div><div class="cuselText">Акции</div><div class="cusel-scroll-wrap" style="display: none; visibility: visible;"><div class="jScrollPaneContainer" style="height: 192px; width: 180px;"><div class="cusel-scroll-pane" id="cusel-scroll-sort" style="overflow: hidden; width: 180px; height: 192px; padding: 0px;">
@@ -76,8 +46,10 @@
                                                     </div></div></div><input type="hidden" id="sort" name="order" value="action"></div>
                     </div>
                 </div>
+
                 <div class="frame-count-onpage d_i-b v-a_t">
                                                                                     <div class="lineForm">
+
                                                 <div class="cusel" id="cuselFrame-sort2" style="width:159px" tabindex="0"><div class="cuselFrameRight"></div><div class="cuselText">12 товаров на странице</div><div class="cusel-scroll-wrap" style="display: none; visibility: visible;"><div class="cusel-scroll-pane" id="cusel-scroll-sort2">
                                                             <span selected="selected" val="12" class="cuselActive">12 товаров на странице</span>
                                                             <span val="24">24 товара на странице</span>
@@ -85,6 +57,7 @@
                                                     </div></div><input type="hidden" id="sort2" name="user_per_page" value="12"></div>
                     </div>
                 </div>
+
                 <nav class="frame-catalog-view d_i-b v-a_t">
                     <ul class="tabs tabs-list-table" data-elchange="#items-catalog-main" data-cookie="listtable">
                         <li class="active">
@@ -100,9 +73,10 @@
                                             </ul>
                 </nav>
             </div>
-        </div>-->
+            
+        </div>
     </div>
-    
+               -->
                <!-- Start.If count products in category > 0 then show products list and pagination links -->
                                 <ul class="animateListItems items items-catalog items-product tablemini" id="items-catalog-main">
                     <!-- Include template for one product item-->
@@ -180,6 +154,8 @@
 </div>
 <!-- End. Collect information about Variants, for future processing -->
 <div class="frame-without-top" style="position: relative; top: 40px;">
+    <!-- Wish List & Compare List buttons -->
+    
     <div class="frame-wish-compare-list no-vis-table t-a_j">
                 <div class="frame-btn-comp">
             <div class="btn-compare">
@@ -268,7 +244,7 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
                                         <div class="msg layout-highlight layout-highlight-msg">
                     <div class="info">
                         <span class="icon_info"></span>
-                        <span class="text-el">Не найдено товаров</span>
+                        <span class="text-el">Акционных товаров не найдено</span>
                     </div>
                 </div>
                                                 <!--Start. Pagination -->

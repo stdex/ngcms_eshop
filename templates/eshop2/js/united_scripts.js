@@ -493,7 +493,7 @@ function init() {
         }, {
             type: a.type
         })
-    }), $(".items-product, .item-product").nStCheck({
+    })/*, $(".items-product, .item-product").nStCheck({
         wrapper: $(".btnCompare"),
         elCheckWrap: ".niceCheck",
         classRemove: "b_n",
@@ -504,7 +504,7 @@ function init() {
         ShopFront.CompareList.count(), ShopFront.CompareList.process(), decorElemntItemProduct()
     }), c.on("wish_list_sync", function() {
         global.processWish(), global.wishListCount()
-    }), c.on("widget_ajax", function(a) {
+    })*/, c.on("widget_ajax", function(a) {
         initCarouselJscrollPaneCycle(a.el), reinitializeScrollPane(a.el), a.el.find("img.lazy").lazyload(lazyload), wnd.scroll(), a.el.find(".special-proposition").find(genObj.btnBuy).each(function() {
             ShopFront.Cart.processBtnBuyCount($(this).data("id"), "remove", !1)
         }), _.map(cartItemsProductsId, function(a) {
@@ -4180,13 +4180,19 @@ var Shop = {
             return b
         }
     },
+    /**/
     CompareList: {
         items: [],
         all: function() {
+            /*
             return JSON.parse(localStorage.getItem("compareList")) ? _.compact(JSON.parse(localStorage.getItem("compareList"))) : []
+            */
+            return [];
         },
         add: function(a) {
             var b = this;
+            return [];
+            /*
             return b.items = b.all(), $(document).trigger({
                 type: "before_add_to_compare"
             }), -1 === b.items.indexOf(a) && $.getJSON(siteUrl + "shop/compare_api/add/" + a, function(c) {
@@ -4199,10 +4205,12 @@ var Shop = {
                         JSON.parse(c)
                     }
                 } catch (d) {}
-            }), b
+            }), b*/
         },
         rm: function(a, b) {
             var c = this;
+            return [];
+            /*
             return c.items = c.all(), $(document).trigger({
                 type: "before_delete_compare"
             }), -1 !== c.items.indexOf(a) && (c.items = _.without(c.items, a), c.items = c.all(), $.getJSON(siteUrl + "shop/compare_api/remove/" + a, function(d) {
@@ -4212,14 +4220,18 @@ var Shop = {
                     el: $(b)
                 }), returnMsg("=== remove Compare Item. call compare_list_rm ===")) : (returnMsg("=== Error. remove Compare Item ==="), $(document).trigger("hideActivity"))
             })), c
+            * */
         },
         sync: function() {
+            return [];
+            /*
             return $.getJSON(siteUrl + "shop/compare_api/sync", function(a) {
                 "object" == typeof a || "Array" == typeof a ? localStorage.setItem("compareList", JSON.stringify(a)) : a === !1 && localStorage.removeItem("compareList"), $(document).trigger({
                     type: "compare_list_sync",
                     dataObj: a
                 }), returnMsg("=== Compare sync. call compare_list_sync ===")
             }), this
+            * */
         }
     }
 };
@@ -4543,6 +4555,7 @@ var ShopFront = {
         },
         CompareList: {
             process: function() {
+                /*
                 var a = Shop.CompareList.all();
                 $(".btnCompare " + genObj.textEl).off("click.inCompare"), $("." + genObj.toCompare).each(function() {
                     if (-1 !== a.indexOf($(this).data("id"))) {
@@ -4557,8 +4570,10 @@ var ShopFront = {
                 }), $("." + genObj.inCompare + " " + genObj.textEl).on("click.inCompare", function(a) {
                     a.stopPropagation(), document.location.href = locale + "/shop/compare"
                 })
+                * */
             },
             count: function() {
+                /*
                 var a = Shop.CompareList.all().length,
                     b = $(genObj.tinyCompareList).find("[data-href]").drop("destroy").off("click.tocompare");
                 a > 0 ? ($(genObj.tinyCompareList).addClass(genObj.isAvail).find(genObj.blockNoEmpty).css("display", "block").end().find(genObj.blockEmpty).css("display", "none"), b.on("click.tocompare", function() {
@@ -4568,6 +4583,7 @@ var ShopFront = {
                 }), Shop.CompareList.count = a, $(document).trigger({
                     type: "change_count_cl"
                 })
+                * */
             }
         }
     },

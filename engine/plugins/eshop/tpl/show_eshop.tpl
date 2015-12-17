@@ -46,19 +46,17 @@
         <div class="" data-mq-max="1280" data-mq-min="0" data-mq-target="#deliveryTabs">
           <div class="frame-delivery-payment"><dl><dt class="title f-s_0"><span class="icon_delivery">&nbsp;</span><span class="text-el">Доставка</span><span class="icon_info_t" data-rel="tooltip" data-placement="left" data-other-class="info-patch" data-title="При желании Вы можете сами забрать купленный товар в наших офисах<br></span> 
 Бесплатная доставка от 2000 руб.">&nbsp;</span></dt><dd class="frame-list-delivery">
-<ul>
-<li>Новая Почта</li>
-<li>Другие транспортные службы</li>
-<li>Курьером по Киеву</li>
-<li>Самовывоз</li>
-</ul>
+{{ plugin_eshop_description_delivery }}
 </dd><dt class="title f-s_0"><span class="icon_payment">&nbsp;</span><span class="text-el">Оплата</span><span class="icon_info_t" data-placement="left" data-rel="tooltip" data-other-class="info-patch" data-title="Сервис решает задачи по организации процесса приема платежей с помощью подключения всех (из возможного множества) платежных систем.">&nbsp;</span></dt><dd class="frame-list-payment">
+{{ plugin_eshop_description_order }}
+<!--
 <ul>
 <li>Наличными при получении</li>
 <li>Безналичный перевод</li>
 <li>Приват 24</li>
 <li>WebMoney</li>
 </ul>
+-->
 </dd></dl></div>        </div>
         <!--End. Payments method form -->
 
@@ -287,7 +285,7 @@
     </button>
 </div>
 <div class="btn-buy-p btn-buy btn-green" style="margin-right: 3px;">
-    <button type="button" class="btnBuy orderBut" style="padding: 0 3px;">
+    <button type="button" class="btnBuy orderBut" data-id="{{ id }}" style="padding: 0 3px;">
     <span class="icon_cleaner icon_cleaner_buy"></span>
     <span class="text-el">Купить</span>
     </button>
@@ -333,9 +331,9 @@
 <div class="frame-wish-compare-list f-s_0 d_i-b v-a_m">
   <div class="frame-btn-comp v-a_bl">
    <div class="btn-compare">
-    <div class="btnCompare toCompare" data-id="5623" type="button" data-title="Cравнить" data-firtitle="Cравнить" data-sectitle="В сравнении" data-rel="tooltip">
-    <span class="niceCheck nstcheck">
-      <input type="checkbox">
+    <div class="btnCompare toCompare {% if (compare) %}active{% endif %}" data-id="{{id}}" type="button" data-title="Cравнить" data-firtitle="Cравнить" data-sectitle="В сравнении" data-rel="tooltip">
+    <span class="niceCheck nstcheck {% if (compare) %}active{% endif %}">
+      <input type="checkbox" {% if (compare) %}cheked="cheked"{% endif %}>
     </span>
     <span class="text-el d_l">Cравнить</span>
   </div>
@@ -880,40 +878,19 @@ var productPhotoCZoom = isTouch ? undefined : true;
 
 <script>
 $(document).ready(function() {
-    
-    $(".orderBut").click(function(e){
-        var count = $("input[name='quantity']").attr('value');
-        rpcBasketRequest('plugin.ebasket.manage', {'action': 'add', 'ds':1,'id':{{id}},'count':count});
-        $(".forCenter").css("display", "block");
-        $(".overlayDrop").css("display", "block");
-        e.preventDefault();
-    });
-    
+
     $(".fastOrderBut").click(function(e){
         $(".forCenter_fastOrder").css("display", "block");
         $(".overlayDrop_fastOrder").css("display", "block");
         e.preventDefault();
     });
-    
+
     $(".fastPriceBut").click(function(e){
         $(".forCenter_fastPrice").css("display", "block");
         $(".overlayDrop_fastPrice").css("display", "block");
         e.preventDefault();
     });
-    
-    $(".icon_times_drop, #basket_back").click(function(e){
-        $(".forCenter").css("display", "none");
-        $(".overlayDrop").css("display", "none");
-        
-        $(".forCenter_fastOrder").css("display", "none");
-        $(".overlayDrop_fastOrder").css("display", "none");
-        
-        $(".forCenter_fastPrice").css("display", "none");
-        $(".overlayDrop_fastPrice").css("display", "none");
-        
-        e.preventDefault();
-    });
-    
+          
     $("#send_fastorder").click(function(e) {
 
         var id = $(this).attr('data-id');
@@ -967,6 +944,8 @@ $(document).ready(function() {
         });
 
     });
+    
+    br.storage.prependUnique('page_stack', {{ id }}, 25);
 
 });
 </script>

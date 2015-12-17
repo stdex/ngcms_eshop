@@ -64,7 +64,7 @@
             {% for entry in entries.basket %}
             <tr align="left">
             <td width="5%" class="contentEntry1">{{ entry.id }}</td>
-            <td width="15%" class="contentEntry1"><a href="{{entry.xfields.item.view_link}}"><img alt="" src="{% if (entry.xfields.item.image_filepath) %}{{home}}/uploads/eshop/products/thumb/{{entry.xfields.item.image_filepath}}{% else %}{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg{% endif %}"></a></td>
+            <td width="15%" class="contentEntry1"><a href="{{entry.xfields.item.view_link}}"><img alt="" src="{% if (entry.xfields.item.image_filepath) %}{{home}}/uploads/eshop/products/thumb/{{entry.xfields.item.image_filepath}}{% else %}{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg{% endif %}"  width="100" height="100"></a></td>
             <td width="60%" class="contentEntry1"><a href="{{entry.xfields.item.view_link}}">{{ entry.title }}</a></td>
             <td width="10%" class="contentEntry1">{{ entry.count }} רע.</td>
             <td width="10%" class="contentEntry1">{{ entry.price }} $</td>

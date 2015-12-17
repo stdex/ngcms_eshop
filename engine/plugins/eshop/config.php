@@ -131,7 +131,8 @@ global $tpl, $mysql, $lang, $twig;
 
     $xt = $twig->loadTemplate($tpath['config/list_product'].'config/'.'list_product.tpl');
 
-    $tVars = array( 
+    $tVars = array(
+        'php_self'      =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop', 
         'filter_cats' => getTree($cats, $fCategory, 0),
         'pagesss' => generateAdminPagelist( array('current' => $pageNo, 'count' => $countPages, 'url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop'.($news_per_page?'&rpp='.$news_per_page:'').($fName?'&fname='.$fName:'').($fStatus?'&fstatus='.$fStatus:'').($fCategory?'&fcategory='.$fCategory:'').'&page=%page%')),
         'rpp'			=>	$news_per_page,
@@ -550,7 +551,13 @@ global $mysql;
     }
     
     switch($subaction) {
-        case 'mass_delete'       : $del = true; break;
+        case 'mass_delete'           : $del = true; break;
+        case 'mass_active_add'       : $active_add = true; break;
+        case 'mass_active_remove'    : $active_remove = true; break;
+        case 'mass_featured_add'     : $featured_add = true; break;
+        case 'mass_featured_remove'  : $featured_remove = true; break;
+        case 'mass_stocked_add'      : $stocked_add = true; break;
+        case 'mass_stocked_remove'   : $stocked_remove = true; break;
     }
 
     if(isset($del))
@@ -564,10 +571,59 @@ global $mysql;
         }
         $mysql->query("delete from ".prefix."_eshop_images where product_id in ({$id})");
         
+        //redirect_eshop('?mod=extra-config&plugin=eshop');
         msg(array("type" => "info", "info" => "Записи с ID ${id} удалены!"));
     }
-}
+    
+    if(isset($active_add))
+    {
+        $mysql->query("UPDATE ".prefix."_eshop_products SET active = 1 WHERE id IN ({$id})");
+        
+        //redirect_eshop('?mod=extra-config&plugin=eshop');
+        msg(array("type" => "info", "info" => "Записи с ID ${id} обновлены!"));
+    }
 
+    if(isset($active_remove))
+    {
+        $mysql->query("UPDATE ".prefix."_eshop_products SET active = 0 WHERE id IN ({$id})");
+        
+        //redirect_eshop('?mod=extra-config&plugin=eshop');
+        msg(array("type" => "info", "info" => "Записи с ID ${id} обновлены!"));
+    }       
+    
+    if(isset($featured_add))
+    {
+        $mysql->query("UPDATE ".prefix."_eshop_products SET featured = 1 WHERE id IN ({$id})");
+        
+        //redirect_eshop('?mod=extra-config&plugin=eshop');
+        msg(array("type" => "info", "info" => "Записи с ID ${id} обновлены!"));
+    }
+    
+    if(isset($featured_remove))
+    {
+        $mysql->query("UPDATE ".prefix."_eshop_products SET featured = 0 WHERE id IN ({$id})");
+        
+        //edirect_eshop('?mod=extra-config&plugin=eshop');
+        msg(array("type" => "info", "info" => "Записи с ID ${id} обновлены!"));
+    }   
+
+    if(isset($stocked_add))
+    {
+        $mysql->query("UPDATE ".prefix."_eshop_products SET stocked = 1 WHERE id IN ({$id})");
+        
+        //redirect_eshop('?mod=extra-config&plugin=eshop');
+        msg(array("type" => "info", "info" => "Записи с ID ${id} обновлены!"));
+    }
+    
+    if(isset($stocked_remove))
+    {
+        $mysql->query("UPDATE ".prefix."_eshop_products SET stocked = 0 WHERE id IN ({$id})");
+        
+        //redirect_eshop('?mod=extra-config&plugin=eshop');
+        msg(array("type" => "info", "info" => "Записи с ID ${id} обновлены!"));
+    }     
+
+}
 
 function getCats($res){
 
@@ -1670,8 +1726,23 @@ function urls()
                        
             $ULIB->registerCommand('eshop', 'search',
                 array ('vars' =>
-                        array(),
+                        array('page' => array('matchRegex' => '\d{1,4}', 'descr' => array('russian' => 'Постраничная навигация'))
+                        ),
                         'descr' => array ('russian' => 'Поиск по продукции'),
+                )
+            );
+            
+            $ULIB->registerCommand('eshop', 'stocks',
+                array ('vars' =>
+                        array('page' => array('matchRegex' => '\d{1,4}', 'descr' => array('russian' => 'Постраничная навигация'))
+                        ),
+                        'descr' => array ('russian' => 'Акции'),
+                )
+            );
+            
+            $ULIB->registerCommand('eshop', 'compare',
+                array (
+                        'descr' => array ('russian' => 'Сравнение продукции'),
                 )
             );
 
@@ -1797,7 +1868,7 @@ function urls()
               )
             );
             
-            $UHANDLER->registerHandler(0,
+           $UHANDLER->registerHandler(0,
                 array (
                 'pluginName' => 'eshop',
                 'handlerName' => 'search',
@@ -1806,10 +1877,11 @@ function urls()
                 'flagDisabled' => false,
                 'rstyle' => 
                 array (
-                  'rcmd' => '/eshop/search/',
-                  'regex' => '#^/eshop/search/$#',
+                  'rcmd' => '/eshop/search/[page/{page}/]',
+                  'regex' => '#^/eshop/search/(?:page/(\\d{1,4})/){0,1}$#',
                   'regexMap' => 
                   array (
+                    1 => 'page',
                   ),
                   'reqCheck' => 
                   array (
@@ -1825,6 +1897,110 @@ function urls()
                       1 => '/eshop/search/',
                       2 => 0,
                     ),
+                    1 => 
+                    array (
+                      0 => 0,
+                      1 => 'page/',
+                      2 => 1,
+                    ),
+                    2 => 
+                    array (
+                      0 => 1,
+                      1 => 'page',
+                      2 => 1,
+                    ),
+                    3 => 
+                    array (
+                      0 => 0,
+                      1 => '/',
+                      2 => 1,
+                    ),
+                  ),
+                ),
+              )
+            );
+
+           $UHANDLER->registerHandler(0,
+                array (
+                'pluginName' => 'eshop',
+                'handlerName' => 'stocks',
+                'flagPrimary' => true,
+                'flagFailContinue' => false,
+                'flagDisabled' => false,
+                'rstyle' => 
+                array (
+                  'rcmd' => '/eshop/stocks/[page/{page}/]',
+                  'regex' => '#^/eshop/stocks/(?:page/(\\d{1,4})/){0,1}$#',
+                  'regexMap' => 
+                  array (
+                    1 => 'page',
+                  ),
+                  'reqCheck' => 
+                  array (
+                  ),
+                  'setVars' => 
+                  array (
+                  ),
+                  'genrMAP' => 
+                  array (
+                    0 => 
+                    array (
+                      0 => 0,
+                      1 => '/eshop/stocks/',
+                      2 => 0,
+                    ),
+                    1 => 
+                    array (
+                      0 => 0,
+                      1 => 'page/',
+                      2 => 1,
+                    ),
+                    2 => 
+                    array (
+                      0 => 1,
+                      1 => 'page',
+                      2 => 1,
+                    ),
+                    3 => 
+                    array (
+                      0 => 0,
+                      1 => '/',
+                      2 => 1,
+                    ),
+                  ),
+                ),
+              )
+            );
+
+           $UHANDLER->registerHandler(0,
+                array (
+                'pluginName' => 'eshop',
+                'handlerName' => 'compare',
+                'flagPrimary' => true,
+                'flagFailContinue' => false,
+                'flagDisabled' => false,
+                'rstyle' => 
+                array (
+                  'rcmd' => '/eshop/compare/',
+                  'regex' => '#^/eshop/compare/$#',
+                  'regexMap' => 
+                  array (
+                    1 => 'page',
+                  ),
+                  'reqCheck' => 
+                  array (
+                  ),
+                  'setVars' => 
+                  array (
+                  ),
+                  'genrMAP' => 
+                  array (
+                    0 => 
+                    array (
+                      0 => 0,
+                      1 => '/eshop/compare/',
+                      2 => 0,
+                    ),
                   ),
                 ),
               )
@@ -1837,12 +2013,16 @@ function urls()
             $ULIB->removeCommand('eshop', '');
             $ULIB->removeCommand('eshop', 'show');
             $ULIB->removeCommand('eshop', 'search');
+            $ULIB->removeCommand('eshop', 'stocks');
+            $ULIB->removeCommand('eshop', 'compare');
             $ULIB->saveConfig();
             $UHANDLER = new urlHandler();
             $UHANDLER->loadConfig();
             $UHANDLER->removePluginHandlers('eshop', '');
             $UHANDLER->removePluginHandlers('eshop', 'show');
             $UHANDLER->removePluginHandlers('eshop', 'search');
+            $UHANDLER->removePluginHandlers('eshop', 'stocks');
+            $UHANDLER->removePluginHandlers('eshop', 'compare');
             $UHANDLER->saveConfig();
         }
         
@@ -1889,6 +2069,8 @@ global $tpl, $mysql, $cron, $twig;
     {
         pluginSetVariable('eshop', 'count', intval($_REQUEST['count']));
         pluginSetVariable('eshop', 'count_search',  secure_html($_REQUEST['count_search']));
+        pluginSetVariable('eshop', 'count_stocks',  secure_html($_REQUEST['count_stocks']));
+        
         pluginSetVariable('eshop', 'views_count', $_REQUEST['views_count']);
         
         pluginSetVariable('eshop', 'max_image_size', intval($_REQUEST['max_image_size']));
@@ -1940,6 +2122,8 @@ global $tpl, $mysql, $cron, $twig;
 
     $count = pluginGetVariable('eshop', 'count');
     $count_search = pluginGetVariable('eshop', 'count_search');
+    $count_stocks = pluginGetVariable('eshop', 'count_stocks');
+    
     $views_count = pluginGetVariable('eshop', 'views_count');
     $views_count = '<option value="0" '.($views_count==0?'selected':'').'>Нет</option><option value="1" '.($views_count==1?'selected':'').'>Да</option><option value="2" '.($views_count==2?'selected':'').'>Отложенное</option>';
     
@@ -1966,6 +2150,8 @@ global $tpl, $mysql, $cron, $twig;
     $tEntry = array (
         'count' => $count,
         'count_search' => $count_search,
+        'count_stocks' => $count_stocks,
+        
         'views_count' => $views_count,
         
         'max_image_size' => $max_image_size,

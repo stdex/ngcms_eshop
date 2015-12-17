@@ -13,6 +13,10 @@
 <td class="contentEntry2" valign=top><input name="count_search" type="text" title="Количество продуктов на странице поиска" size="4" value="{{entries.count_search}}" /></td>
 </tr>
 <tr>
+<td class="contentEntry1" valign=top>Количество продуктов на странице c акциями<br /></td>
+<td class="contentEntry2" valign=top><input name="count_stocks" type="text" title="Количество продуктов на странице c акциями" size="4" value="{{entries.count_stocks}}" /></td>
+</tr>
+<tr>
 <td class="contentEntry1" valign=top>Учёт просмотра объявлений?<br /></td>
 <td class="contentEntry2" valign=top><select name="views_count" >{{entries.views_count}}</select></td>
 </tr>

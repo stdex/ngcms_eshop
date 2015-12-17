@@ -192,36 +192,7 @@
           
         </li>
         <li class="compare-button">
-          <div class="compare-list-btn tinyCompareList">
-            <button data-href="{{home}}/shop/compare" class="isDrop">
-              <span class="js-empty empty" style="display: block">
-                <span class="icon_compare_list">
-                </span>
-                <span class="text-el">
-                  Сравнение 
-                </span>
-              </span>
-              <span class="js-no-empty no-empty" style="display: none;">
-                <span class="icon_compare_list">
-                </span>
-                <span class="text-el">
-                  Сравнение 
-                </span>
-                <span class="compareListCount">
-                  0
-                </span>
-              </span>
-            </button>
-          </div>
-          <div class="drop drop-info drop-info-compare">
-            <span class="helper">
-            </span>
-            <span class="text-el">
-              Ваш список 
-              <br>
-              “Список сравнения” пуст    
-            </span>
-          </div>
+            {{ plugin_eshop_compare }}
         </li>
         <!--Start. Top menu and authentication data block-->
         <li class="btn-personal-area">
@@ -242,10 +213,10 @@
                         <div class="container">
                           <div class="left-content-header t-a_j">
                             <!--        Logo-->
-                            <div class="logo-out">
+                            <div class="logo-out"><a href="{{home}}">
                               <span class="logo">
                                 <img src="{{ tpl_url }}/img/logo.png" alt="logo">
-                              </span>
+                              </span></a>
                             </div>
           <!--                Start. contacts block-->
           <div class="top-search">
@@ -268,6 +239,7 @@
             </form>
           </div>
           <div class="phones-header">
+            <!-- 
             <div class="frame-ico">
               <span class="icon_phone_header">
               </span>
@@ -293,23 +265,28 @@
                 </button>
               </div>
             </div>
+          -->
           </div>
           <div class="frame-time-work">
+
+              {{ plugin_eshop_description_phones }}
+            <!--
             <div class="frame-ico">
               <span class="icon_work">
               </span>
             </div>
-                          <div>
-                            <div>
-                              Работаем: 
-                              <span class="text-el">
-                                Пн–Пт 09:00–20:00,
-                                <br>
-                                Сб 09:00–17:00, Вс выходной
-                              </span>
-                            </div>
-                            
-                          </div>
+            <div>
+                <div>
+                  Работаем: 
+                  <span class="text-el">
+                    Пн–Пт 09:00–20:00,
+                    <br>
+                    Сб 09:00–17:00, Вс выходной
+                  </span>
+                </div>
+            </div>
+            -->
+          
           </div>
           <!-- End. Contacts block-->
           <!-- Start. Include cart data template-->
@@ -768,405 +745,38 @@
               {% if isHandler('news:main') %}
               <div class="container">
                 <div id="ViewedProducts">
-                  
-                  
-                  <div class="horizontal-carousel">
-                    <section class="special-proposition frame-view-products">
-                      <div class="title-proposition-v">
-                        <div class="frame-title">
-                          <div class="title">
-                            Вы уже смотрели
-                          </div>
-                        </div>
-                      </div>
-                      <div class="carousel-js-css items-carousel jcarousel-container jcarousel-container-horizontal iscarousel" style="position: relative; display: block;">
-                        <div class="content-carousel container">
-                          <div class="jcarousel-clip jcarousel-clip-horizontal" style="position: relative;">
-                            <ul class="items items-catalog items-h-carousel items-product jcarousel-list jcarousel-list-horizontal" style="overflow: hidden; position: relative; top: 0px; margin: 0px; padding: 0px; left: 0px; width: 2568px;">
-                              
-                              
-                              
-                              
-                              <li class="globalFrameProduct to-cart jcarousel-item jcarousel-item-horizontal jcarousel-item-1 jcarousel-item-1-horizontal" data-pos="top" jcarouselindex="1" style="float: left; list-style: none; width: 411px;">
-                                <!-- Start. Photo & Name product -->
-                                <a href="{{home}}/shop/product/mobilnyi-telefon-lg-nexus-4-e960-black" class="frame-photo-title" title="Мобильный телефон LG Nexus 4 E960 black">
-                                  <span class="photo-block">
-                                    <span class="helper">
-                                    </span>
-                                    <img src="{{ tpl_url }}/img/1105_main_origin.jpg" alt="" class="vImg">
-                                    <span class="product-status hit">
-                                    </span>
-                                    
-                                  </span>
-                                  <span class="title">
-                                    Мобильный телефон LG Nexus 4 E960 black
-                                  </span>
-                                </a>
-                                <!-- End. Photo & Name product -->
-                                <div class="description">
-                                  <!-- Start. article & variant name & brand name -->
-                                  <!-- End. article & variant name & brand name -->
-                                  <div class="frame-star f-s_0">
-                                    <div class="star">
-                                      <div id="star_rating_1105" class="productRate star-small">
-                                        <div style="width: 100%">
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <a href="{{home}}/shop/product/mobilnyi-telefon-lg-nexus-4-e960-black#comment" class="count-response">
-                                      5                отзывов            
-                                    </a>
-                                  </div>
-                                  <!-- Start. Prices-->
-                                  <div class="frame-prices f-s_0">
-                                    <!-- Start. Product price-->
-                                    <span class="current-prices f-s_0">
-                                      <span class="price-new">
-                                        <span>
-                                          <span class="price priceVariant">
-                                            6.619
-                                          </span>
-                                          $
-                                        </span>
-                                      </span>
-                                      <span class="price-add">
-                                        <span>
-                                          <span class="price addCurrPrice">
-                                            5.295
-                                          </span>
-                                          €
-                                        </span>
-                                      </span>
-                                    </span>
-                                    <!-- End. Product price-->
-                                  </div>
-                                  <!-- End. Prices-->
-                                  
-                                  <!-- End. Collect information about Variants, for future processing -->
-                                </div>
-                                <!-- Start. Remove buttons if compare-->
-                                <!-- End. Remove buttons if compare-->
-                                
-                                <!-- Start. For wishlist page-->
-                                <!-- End. For wishlist page-->
-                              </li>
-                              
-                              
-                              
-                              <li class="globalFrameProduct to-cart jcarousel-item jcarousel-item-horizontal jcarousel-item-2 jcarousel-item-2-horizontal" data-pos="top" jcarouselindex="2" style="float: left; list-style: none; width: 411px;">
-                                <!-- Start. Photo & Name product -->
-                                <a href="{{home}}/shop/product/nokia-lumia-920-white" class="frame-photo-title" title="Nokia Lumia 920 White">
-                                  <span class="photo-block">
-                                    <span class="helper">
-                                    </span>
-                                    <img src="{{ tpl_url }}/img/1108_main_origin.jpg" alt="" class="vImg">
-                                    <span class="product-status nowelty">
-                                    </span>
-                                    
-                                  </span>
-                                  <span class="title">
-                                    Nokia Lumia 920 White
-                                  </span>
-                                </a>
-                                <!-- End. Photo & Name product -->
-                                <div class="description">
-                                  <!-- Start. article & variant name & brand name -->
-                                  <!-- End. article & variant name & brand name -->
-                                  <!-- Start. Prices-->
-                                  <div class="frame-prices f-s_0">
-                                    <!-- Start. Product price-->
-                                    <span class="current-prices f-s_0">
-                                      <span class="price-new">
-                                        <span>
-                                          <span class="price priceVariant">
-                                            5.445
-                                          </span>
-                                          $
-                                        </span>
-                                      </span>
-                                      <span class="price-add">
-                                        <span>
-                                          <span class="price addCurrPrice">
-                                            4.356
-                                          </span>
-                                          €
-                                        </span>
-                                      </span>
-                                    </span>
-                                    <!-- End. Product price-->
-                                  </div>
-                                  <!-- End. Prices-->
-                                  
-                                  <!-- End. Collect information about Variants, for future processing -->
-                                </div>
-                                <!-- Start. Remove buttons if compare-->
-                                <!-- End. Remove buttons if compare-->
-                                
-                                <!-- Start. For wishlist page-->
-                                <!-- End. For wishlist page-->
-                              </li>
-                              
-                              
-                              
-                              <li class="globalFrameProduct to-cart jcarousel-item jcarousel-item-horizontal jcarousel-item-3 jcarousel-item-3-horizontal" data-pos="top" jcarouselindex="3" style="float: left; list-style: none; width: 411px;">
-                                <!-- Start. Photo & Name product -->
-                                <a href="{{home}}/shop/product/mobilnyi-telefon-sony-xperia-v-lt25i-black" class="frame-photo-title" title="Мобильный телефон Sony Xperia V LT25i Black ">
-                                  <span class="photo-block">
-                                    <span class="helper">
-                                    </span>
-                                    <img src="{{ tpl_url }}/img/1104_main_origin.jpg" alt="" class="vImg">
-                                    <span class="product-status hit">
-                                    </span>
-                                    
-                                  </span>
-                                  <span class="title">
-                                    Мобильный телефон Sony Xperia V LT25i Black 
-                                  </span>
-                                </a>
-                                <!-- End. Photo & Name product -->
-                                <div class="description">
-                                  <!-- Start. article & variant name & brand name -->
-                                  <!-- End. article & variant name & brand name -->
-                                  <div class="frame-star f-s_0">
-                                    <div class="star">
-                                      <div id="star_rating_1104" class="productRate star-small">
-                                        <div style="width: 80%">
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <a href="{{home}}/shop/product/mobilnyi-telefon-sony-xperia-v-lt25i-black#comment" class="count-response">
-                                      14                отзывов            
-                                    </a>
-                                  </div>
-                                  <!-- Start. Prices-->
-                                  <div class="frame-prices f-s_0">
-                                    <!-- Start. Product price-->
-                                    <span class="current-prices f-s_0">
-                                      <span class="price-new">
-                                        <span>
-                                          <span class="price priceVariant">
-                                            6.249
-                                          </span>
-                                          $
-                                        </span>
-                                      </span>
-                                      <span class="price-add">
-                                        <span>
-                                          <span class="price addCurrPrice">
-                                            4.999
-                                          </span>
-                                          €
-                                        </span>
-                                      </span>
-                                    </span>
-                                    <!-- End. Product price-->
-                                  </div>
-                                  <!-- End. Prices-->
-                                  
-                                  <!-- End. Collect information about Variants, for future processing -->
-                                </div>
-                                <!-- Start. Remove buttons if compare-->
-                                <!-- End. Remove buttons if compare-->
-                                
-                                <!-- Start. For wishlist page-->
-                                <!-- End. For wishlist page-->
-                              </li>
-                              
-                              
-                              
-                              <li class="globalFrameProduct to-cart jcarousel-item jcarousel-item-horizontal jcarousel-item-4 jcarousel-item-4-horizontal" data-pos="top" jcarouselindex="4" style="float: left; list-style: none; width: 411px;">
-                                <!-- Start. Photo & Name product -->
-                                <a href="{{home}}/shop/product/smartfon-samsung-gt-s7562-galaxy-s-duos-zka-black" class="frame-photo-title" title="Смартфон Samsung GT-S7562 Galaxy S Duos ZKA Black">
-                                  <span class="photo-block">
-                                    <span class="helper">
-                                    </span>
-                                    <img src="{{ tpl_url }}/img/12045_main_origin.jpg" alt="Смартфон Samsung GT-S7562 Galaxy S Duos ZKA Black" class="vImg">
-                                  </span>
-                                  <span class="title">
-                                    Смартфон Samsung GT-S7562 Galaxy S Duos ZKA Black
-                                  </span>
-                                </a>
-                                <!-- End. Photo & Name product -->
-                                <div class="description">
-                                  <!-- Start. article & variant name & brand name -->
-                                  <!-- End. article & variant name & brand name -->
-                                  <!-- Start. Prices-->
-                                  <div class="frame-prices f-s_0">
-                                    <!-- Start. Product price-->
-                                    <span class="current-prices f-s_0">
-                                      <span class="price-new">
-                                        <span>
-                                          <span class="price priceVariant">
-                                            356
-                                          </span>
-                                          $
-                                        </span>
-                                      </span>
-                                      <span class="price-add">
-                                        <span>
-                                          <span class="price addCurrPrice">
-                                            285
-                                          </span>
-                                          €
-                                        </span>
-                                      </span>
-                                    </span>
-                                    <!-- End. Product price-->
-                                  </div>
-                                  <!-- End. Prices-->
-                                  
-                                  <!-- End. Collect information about Variants, for future processing -->
-                                </div>
-                                <!-- Start. Remove buttons if compare-->
-                                <!-- End. Remove buttons if compare-->
-                                
-                                <!-- Start. For wishlist page-->
-                                <!-- End. For wishlist page-->
-                              </li>
-                              
-                              
-                              
-                              <li class="globalFrameProduct to-cart jcarousel-item jcarousel-item-horizontal jcarousel-item-5 jcarousel-item-5-horizontal" data-pos="top" jcarouselindex="5" style="float: left; list-style: none; width: 411px;">
-                                <!-- Start. Photo & Name product -->
-                                <a href="{{home}}/shop/product/elektrogitara-seriyi-badwater-as820br" class="frame-photo-title" title="АКУСТИЧНА ГІТАРА СЕРІЇ STANDARD D350CEG">
-                                  <span class="photo-block">
-                                    <span class="helper">
-                                    </span>
-                                    <img src="{{ tpl_url }}/img/4959_main_origin.jpg" alt="АКУСТИЧНА ГІТАРА СЕРІЇ STANDARD D350CEG" class="vImg">
-                                  </span>
-                                  <span class="title">
-                                    АКУСТИЧНА ГІТАРА СЕРІЇ STANDARD D350CEG
-                                  </span>
-                                </a>
-                                <!-- End. Photo & Name product -->
-                                <div class="description">
-                                  <!-- Start. article & variant name & brand name -->
-                                  <!-- End. article & variant name & brand name -->
-                                  <!-- Start. Prices-->
-                                  <div class="frame-prices f-s_0">
-                                    <!-- Start. Product price-->
-                                    <span class="current-prices f-s_0">
-                                      <span class="price-new">
-                                        <span>
-                                          <span class="price priceVariant">
-                                            2.426
-                                          </span>
-                                          $
-                                        </span>
-                                      </span>
-                                      <span class="price-add">
-                                        <span>
-                                          <span class="price addCurrPrice">
-                                            1.941
-                                          </span>
-                                          €
-                                        </span>
-                                      </span>
-                                    </span>
-                                    <!-- End. Product price-->
-                                  </div>
-                                  <!-- End. Prices-->
-                                  
-                                  <!-- End. Collect information about Variants, for future processing -->
-                                </div>
-                                <!-- Start. Remove buttons if compare-->
-                                <!-- End. Remove buttons if compare-->
-                                
-                                <!-- Start. For wishlist page-->
-                                <!-- End. For wishlist page-->
-                              </li>
-                              
-                              
-                              
-                              <li class="globalFrameProduct in-cart jcarousel-item jcarousel-item-horizontal jcarousel-item-6 jcarousel-item-6-horizontal" data-pos="top" jcarouselindex="6" style="float: left; list-style: none; width: 411px;">
-                                <!-- Start. Photo & Name product -->
-                                <a href="{{home}}/shop/product/3d-led-televizor-samsung-ue65es8007uxua" class="frame-photo-title" title="3D LED телевизор Samsung UE65ES8007UXUA">
-                                  <span class="photo-block">
-                                    <span class="helper">
-                                    </span>
-                                    <img src="{{ tpl_url }}/img/937_main_origin.jpg" alt="" class="vImg">
-                                    <span class="product-status action">
-                                    </span>
-                                    
-                                  </span>
-                                  <span class="title">
-                                    3D LED телевизор Samsung UE65ES8007UXUA
-                                  </span>
-                                </a>
-                                <!-- End. Photo & Name product -->
-                                <div class="description">
-                                  <!-- Start. article & variant name & brand name -->
-                                  <!-- End. article & variant name & brand name -->
-                                  <!-- Start. Prices-->
-                                  <div class="frame-prices f-s_0">
-                                    <!-- Start. Check old price-->
-                                    <span class="price-discount">
-                                      <span>
-                                        <span class="price priceOrigVariant">
-                                          45.424
-                                        </span>
-                                        $
-                                      </span>
-                                    </span>
-                                    <!-- End. Check old price-->
-                                    <!-- Start. Product price-->
-                                    <span class="current-prices f-s_0">
-                                      <span class="price-new">
-                                        <span>
-                                          <span class="price priceVariant">
-                                            32.988
-                                          </span>
-                                          $
-                                        </span>
-                                      </span>
-                                      <span class="price-add">
-                                        <span>
-                                          <span class="price addCurrPrice">
-                                            26.390
-                                          </span>
-                                          €
-                                        </span>
-                                      </span>
-                                    </span>
-                                    <!-- End. Product price-->
-                                  </div>
-                                  <!-- End. Prices-->
-                                  
-                                  <!-- End. Collect information about Variants, for future processing -->
-                                </div>
-                                <!-- Start. Remove buttons if compare-->
-                                <!-- End. Remove buttons if compare-->
-                                
-                                <!-- Start. For wishlist page-->
-                                <!-- End. For wishlist page-->
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                        <div class="group-button-carousel">
-                          
-                          
-                          <button type="button" class="prev arrow jcarousel-prev jcarousel-prev-horizontal jcarousel-prev-disabled jcarousel-prev-disabled-horizontal" disabled="disabled" style="display: inline-block;">
-                            <span class="icon_arrow_p">
-                            </span>
-                          </button>
-                          <button type="button" class="next arrow jcarousel-next jcarousel-next-horizontal" style="display: inline-block;">
-                            <span class="icon_arrow_n">
-                            </span>
-                          </button>
-                        </div>
-                      </div>
-                    </section>
-                  </div>
                 </div>
               </div>
+                <script>
+                $(document).ready(function() {
+                    
+                    var page_stack = br.storage.get('page_stack');
+                    
+                    if(page_stack != null) {
+                        page_stack_str = page_stack.join(",");
+
+                        $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_viewed', rndval: new Date().getTime(), params : json_encode({'action': 'show', 'page_stack':page_stack_str }) }, function(data) {
+                            try {
+                                resTX = data;
+                            } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
+                            
+                            $('#ViewedProducts').html(resTX['update']);
+                            
+                        }).error(function() { 
+                            alert('HTTP error during request', 'ERROR'); 
+                        });
+                        
+                    }
+
+                });    
+                </script>
               {% endif %}
             </div>
             <div class="h-footer footer-main" data-mq-prop="height" data-mq-prop-pool="height" data-mq-elem-pool="footer" style="height: 456px;">
             </div>
           </div>
           <footer class="footer-main" data-mq-prop="margin-top" data-mq-prop-pref="-" data-mq-prop-pool="height" data-mq-elem-pool="footer" style="margin-top: -456px;">
-            {% if isHandler('news:main') %}
+            {% if isHandler('news:main') %}{% endif %}
             <div class="content-footer">
               <div class="container">
                 <div class="frame-box23">
@@ -1263,7 +873,7 @@
                 </div>
               </div>
             </div>
-            {% endif %}
+            
             <div class="footer-footer">
               <div class="container">
                 <div class="inside-padd t-a_j">
@@ -1543,6 +1153,104 @@
           {{ plugin_ebasket_notify }}
 
           <script>
+              
+$(document).ready(function() {
+    
+    $(".orderBut").click(function(e){
+        var id = $(this).attr('data-id');
+        var count = $("input[name='quantity']").attr('value');
+        if( count == undefined) {
+            count = 1;
+        }
+        rpcBasketRequest('plugin.ebasket.manage', {'action': 'add', 'ds':1,'id':id,'count':count});
+        $(".forCenter").css("display", "block");
+        $(".overlayDrop").css("display", "block");
+        e.preventDefault();
+    });
+
+    $(".icon_times_drop, #basket_back").click(function(e){
+        $(".forCenter").css("display", "none");
+        $(".overlayDrop").css("display", "none");
+        
+        $(".forCenter_fastOrder").css("display", "none");
+        $(".overlayDrop_fastOrder").css("display", "none");
+        
+        $(".forCenter_fastPrice").css("display", "none");
+        $(".overlayDrop_fastPrice").css("display", "none");
+        
+        e.preventDefault();
+    });
+    
+    $(".btnCompare").click(function(e){
+        var id = $(this).attr('data-id');
+        var bl = $(this);
+        
+        if( bl.hasClass("active") ) {
+
+            $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_compare', rndval: new Date().getTime(), params : json_encode({'action': 'remove', 'id':id }) }, function(data) {
+                try {
+                    resTX = data;
+                } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
+                if (!resTX['status']) {
+                    alert('Ошибка при удалении продукта из сравнения');
+                } else {
+                    bl.removeClass("active");
+                    bl.find(".niceCheck").removeClass("active");
+                    bl.find("input:checkbox").prop('checked', false);
+                    $('.compare-button').html(resTX['update']);
+                }
+            }).error(function() { 
+                alert('HTTP error during request', 'ERROR'); 
+            });
+            
+        }
+        else {
+            
+            $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_compare', rndval: new Date().getTime(), params : json_encode({'action': 'add', 'id':id }) }, function(data) {
+                try {
+                    resTX = data;
+                } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
+                if (!resTX['status']) {
+                    alert('Ошибка при добавлении продукта в сравнение');
+                } else {
+                    bl.addClass("active");
+                    bl.find(".niceCheck").addClass("active");
+                    bl.find("input:checkbox").prop('checked', true);
+                    $('.compare-button').html(resTX['update']);
+                }
+            }).error(function() { 
+                alert('HTTP error during request', 'ERROR'); 
+            });
+
+        }
+
+    });
+
+    $(".deleteFromCompare").click(function(e){
+        var id = $(this).attr('data-id');
+
+        $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_compare', rndval: new Date().getTime(), params : json_encode({'action': 'remove', 'id':id }) }, function(data) {
+                        try {
+                            resTX = data;
+                        } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
+                        if (!resTX['status']) {
+                            alert('Ошибка при удалении продукта из сравнения');
+                        } else {
+                            location.reload();
+                        }
+                    }).error(function() { 
+                        alert('HTTP error during request', 'ERROR'); 
+        });
+
+    });
+    
+
+});    
+
+
+
+
+              
             (function($){
               var methods = {
                 init: function(options){

@@ -63,6 +63,10 @@ $db_update = array(
 		'action'	=>	'drop',
 	),
     array(
+		'table'		=>	'eshop_compare',
+		'action'	=>	'drop',
+	),
+    array(
 		'table'		=>	'eshop_variants',
 		'action'	=>	'drop',
 	),

@@ -2,6 +2,7 @@ ID: eshop
 Name: Интернет магазин
 Version: 0.1
 Actions: ppages; eshop.php
+Actions: core; info_eshop.php
 Actions: index; block_eshop.php
 Actions: rpc; rpc_eshop.php
 File: eshop.php
