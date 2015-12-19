@@ -125,6 +125,10 @@ function plugin_ebasket_list(){
         
         $SQL['paid'] = 0;
         $SQL['total_price'] = $total;
+        
+        if(isset($userROW)) {
+            $SQL['author_id'] = $userROW['id'];
+        }
     
         if(empty($error_text))
         {
@@ -157,6 +161,7 @@ function plugin_ebasket_list(){
                     $filter []= '(order_id = '.db_squote($qid).')';
                 }
 
+                $total = 0;
                 foreach ($mysql->select("select * from ".prefix."_eshop_order_basket where ".join(" or ", $filter), 1) as $rec) {
                             $total += round($rec['price'] * $rec['count'], 2);
 

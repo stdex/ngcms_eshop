@@ -41,17 +41,17 @@
         <span class="price-new">
           <span>
             <span class="price priceVariant">
-              {% if (entry.price) %}{{ entry.price }}{% else %}0{% endif %}
+              {% if (entry.price) %}{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}
             </span>
-            $
+            {{ system_flags.current_currency.sign }}
           </span>
         </span>
         <span class="price-add">
           <span>
             <span class="price addCurrPrice">
-              {% if (entry.compare_price) %}{{ entry.compare_price }}{% else %}0{% endif %}
+              {% if (entry.compare_price) %}{{ (entry.compare_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}
             </span>
-            $
+            {{ system_flags.current_currency.sign }}
           </span>
         </span>
       </span>

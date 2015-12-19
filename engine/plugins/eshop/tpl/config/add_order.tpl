@@ -21,6 +21,20 @@
         <td width="50%" class="contentEntry2"><input type="text" size="80" name="type" value="{% if (entries.type == 1) %}Обычный{% elseif (entries.type == 2) %}Купить в один клик{% elseif (entries.type == 3) %}Узнать о наличии{% endif %}" disabled="disabled"/></td>
     </tr>
     
+    {{ debugValue(entries) }}
+    
+    {% if (entries.author_id) %}
+    <tr>
+        <td width="50%" class="contentEntry1">Пользователь<br /><small></small></td>
+        <td width="50%" class="contentEntry2"><a href="{{ entries.profile_link }}">{{ entries.author }}</a></td>
+    </tr>
+    {% endif %}
+
+    <tr>
+        <td width="50%" class="contentEntry1">Имя<br /><small></small></td>
+        <td width="50%" class="contentEntry2"><input type="text" size="80" name="name" value="{{entries.name}}" /></td>
+    </tr>
+    
     <tr>
         <td width="50%" class="contentEntry1">Телефон<br /><small></small></td>
         <td width="50%" class="contentEntry2"><input type="text" size="80" name="phone" value="{{entries.phone}}" /></td>

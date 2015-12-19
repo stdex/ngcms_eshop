@@ -8,6 +8,11 @@ rpcRegisterFunction('eshop_linked_products', 'linked_prd');
 rpcRegisterFunction('eshop_compare', 'compare_prd');
 rpcRegisterFunction('eshop_viewed', 'viewed_prd');
 
+rpcRegisterFunction('eshop_likes_result', 'likes_result');
+
+rpcRegisterFunction('eshop_comments_add', 'comments_add');
+rpcRegisterFunction('eshop_comments_show', 'comments_show');
+
 function linked_prd($params){
     global $userROW, $mysql;
 
@@ -211,4 +216,237 @@ function viewed_prd($params){
     }
     
     return array('status' => 1, 'errorCode' => 0, 'data'	 => 'OK, '.var_export($params, true));
+}
+
+function likes_result($params){
+    global $tpl, $template, $twig, $SYSTEM_FLAGS, $config, $userROW, $mysql, $twigLoader;
+
+    $results = array();
+    $params = arrayCharsetConvert(1, $params);
+    $id = filter_var( $params['id'], FILTER_SANITIZE_STRING );
+
+    switch ($params['action']) {
+        // **** ADD NEW ITEM INTO compare ****
+        case 'do_like':
+
+            if(!empty($id)) {
+                
+                // Check if now we're logged in and earlier we started filling ebasket before logging in
+                if (is_array($userROW)) {
+                    $mysql->query("update ".prefix."_eshop_products_likes set user_id = ".db_squote($userROW['id'])." where (user_id = 0) and (cookie = ".db_squote($_COOKIE['ngTrackID']).")");
+                }
+                
+                $filter = array();
+                if (is_array($userROW)) {												$filter []= '(user_id = '.db_squote($userROW['id']).')';		}
+                if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {	$filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';	}
+
+                $tCount = 0;
+                
+                if (count($filter) && is_array($check_like = $mysql->record("select count(*) as count from ".prefix."_eshop_products_likes where (".join(" or ", $filter).") AND product_id = ".db_squote($id)." ", 1))) {
+                    $tCount = $check_like['count'];
+                }
+                
+                if($tCount == 0) {
+            
+                    $mysql->query("insert into ".prefix."_eshop_products_likes (user_id, cookie, product_id) values (".(is_array($userROW)?db_squote($userROW['id']):0).", ".db_squote($_COOKIE['ngTrackID']).", ".db_squote($id).")");
+                    
+                    $mysql->query("update ".prefix."_eshop_products set likes = likes + 1 where id = ".db_squote($id)." ");
+
+                }
+                else {
+                    
+                    $mysql->query("delete from ".prefix."_eshop_products_likes where (".join(" or ", $filter).") AND product_id = ".db_squote($id)." ");
+                    
+                    $mysql->query("update ".prefix."_eshop_products set likes = likes - 1 where id = ".db_squote($id)." ");
+                }
+
+                $likes = $mysql->record("SELECT COUNT(*) as count FROM ".prefix."_eshop_products_likes l WHERE l.product_id='".$id."'");
+                
+                $likes_tVars = array (
+                    'count' => $likes['count'],
+                    'id' => $id,
+                );
+                        
+                //var_dump($likes_tVars);
+
+                $tpath = locatePluginTemplates(array('likes_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'));
+                $xt = $twig->loadTemplate($tpath['likes_eshop'].'likes_eshop.tpl');
+
+                return array('status' => 1, 'errorCode' => 0, 'data' => 'Likes updated', 'update' => arrayCharsetConvert(0, $xt->render($likes_tVars)));
+                
+                
+            }
+
+
+
+            break;
+        }
+    
+    return array('status' => 1, 'errorCode' => 0, 'data'	 => 'OK, '.var_export($params, true));
+}
+
+function comments_add($params) {
+    global $tpl, $template, $twig, $ip, $SYSTEM_FLAGS, $config, $userROW, $mysql, $TemplateCache;
+
+    // Prepare basic reply array
+    $results = array();
+
+    if (isset($userROW)) {
+        $SQL['name']			= $userROW['name'];
+        $SQL['author']			= $userROW['name'];
+        $SQL['author_id']		= $userROW['id'];
+        $SQL['mail']			= $userROW['mail'];
+        $is_member				= 1;
+        $memberRec				= $userROW;
+    }
+    else {
+        $SQL['name']			= secure_html(convert(trim($params['comment_author'])));
+        $SQL['author']			= secure_html(convert(trim($params['comment_author'])));
+        $SQL['author_id']		= 0;
+        $SQL['mail']			= secure_html(convert(trim($params['comment_email'])));
+        $is_member				= 0;
+        $memberRec				= "";
+    }
+    $SQL['text']	=	secure_html(convert(trim($params['comment_text'])));
+    $SQL['product_id'] =  $params['product_id'];
+    $SQL['postdate'] = time() + ($config['date_adjust'] * 60);
+
+    $SQL['text']	= str_replace("\r\n", "<br />", $SQL['text']);
+    $SQL['ip']		= $ip;
+    $SQL['reg']		= ($is_member) ? '1' : '0';
+    $SQL['status']		= '1';
+
+    if(empty($SQL['name']))
+    {
+        $error_text[] = 'Вы не ввели имя!';
+    }
+
+    if(empty($SQL['mail']))
+    {
+        $error_text[] = 'Вы не ввели email!';
+    }
+
+    if(empty($SQL['text']))
+    {
+        $error_text[] = 'Вы не написали комментарий!';
+    }
+
+    if( empty($error_text) )
+    {
+
+        // Create comment
+        $vnames = array(); $vparams = array();
+        foreach ($SQL as $k => $v) { $vnames[]  = $k; $vparams[] = db_squote($v); }
+
+        $mysql->query("insert into ".prefix."_eshop_products_comments (".implode(",",$vnames).") values (".implode(",",$vparams).")");
+
+        // Update comment counter
+        $mysql->query("update ".prefix."_eshop_products set comments = comments + 1 where id = ".db_squote($SQL['product_id'])." ");
+
+
+        $results = array(
+            'eshop_comments'	=> 100,
+            'eshop_comments_text' => iconv('Windows-1251', 'UTF-8', 'Комментарий успешно добавлен!'),
+            'eshop_comments_show' => iconv('Windows-1251', 'UTF-8', comments_show_handler($params))
+        );
+        
+    }
+    else {
+
+        $results = array(
+            'eshop_comments' => 2,
+            'eshop_comments_text' => iconv('Windows-1251', 'UTF-8', implode('<br />', $error_text)),
+            'eshop_comments_show' => iconv('Windows-1251', 'UTF-8', comments_show_handler($params))
+        );
+
+    }
+
+    return array('status' => 1, 'errorCode' => 0, 'data' => $results);
+}
+
+function comments_show($params){
+    global $mysql, $tpl, $template, $config, $userROW, $parse, $lang, $PFILTERS, $TemplateCache, $twig, $mysql;
+
+    // Prepare basic reply array
+    $results = array();
+
+    $results = array(
+            'eshop_comments'	=> 100,
+            'eshop_comments_text' => iconv('Windows-1251', 'UTF-8', 'Комментарии'),
+            'eshop_comments_show' => iconv('Windows-1251', 'UTF-8', comments_show_handler($params))
+    );
+    
+    return array('status' => 1, 'errorCode' => 0, 'data' => $results);
+
+}
+
+function comments_show_handler($params){
+    global $mysql, $tpl, $template, $config, $userROW, $parse, $lang, $PFILTERS, $TemplateCache, $twig, $mysql;
+
+    // Preload template configuration variables
+    templateLoadVariables();
+
+    // Use default <noavatar> file
+    // - Check if noavatar is defined on template level
+    $tplVars = $TemplateCache['site']['#variables'];
+    $noAvatarURL = (isset($tplVars['configuration']) && is_array($tplVars['configuration']) && isset($tplVars['configuration']['noAvatarImage']) && $tplVars['configuration']['noAvatarImage'])?(tpl_url."/".$tplVars['configuration']['noAvatarImage']):(avatars_url."/noavatar.gif");
+
+    $tpath = locatePluginTemplates(array('comments.show_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'));
+    $xt = $twig->loadTemplate($tpath['comments.show_eshop'].'comments.show_eshop.tpl');
+
+    $conditions = array();
+    if ($params['product_id']) {
+        array_push($conditions, "c.product_id = ".db_squote($params['product_id']));
+    }
+
+    $fSort = "ORDER BY c.postdate ASC";
+
+    $sqlQPart = "from ".prefix."_eshop_products_comments c LEFT JOIN ".prefix."_users u ON c.author_id = u.id ".(count($conditions)?"where ".implode(" AND ", $conditions):'').' '.$fSort;
+    $sqlQ = "select *, c.id as cid, u.id as uid, u.name as uname, c.name as name ".$sqlQPart;
+
+    $output = '';
+    foreach ($mysql->select($sqlQ) as $row) {
+        // Add [hide] tag processing
+        $text	= $row['text'];
+
+        if ($config['use_bbcodes'])			{ $text = $parse -> bbcodes($text); }
+        if ($config['use_htmlformatter'])	{ $text = $parse -> htmlformatter($text); }
+        if ($config['use_smilies'])			{ $text = $parse -> smilies($text); }
+
+            if ($config['use_avatars']) {
+            if ($row['avatar']) {
+                $avatar = avatars_url."/".$row['avatar'];
+            } else {
+                    $avatar = $noAvatarURL;
+            }
+        } else {
+            $avatar = '';
+        }
+        
+        
+        $Entries[] = array (
+                'id' => $row['cid'],
+                'mail' =>	$row['mail'],
+                'author' => $row['name'],
+                'date' => $row['postdate'],
+                'profile_link' => checkLinkAvailable('uprofile', 'show')?
+                    generateLink('uprofile', 'show', array('name' => $row['author'], 'id' => $row['author_id'])):
+                    generateLink('core', 'plugin', array('plugin' => 'uprofile', 'handler' => 'show'), array('id' => $row['author_id'])),
+                'avatar' => $avatar,
+                'name' => $row['uname'],
+                'commenttext' => $text
+                );
+                
+        //$output .= $xt->render($tVars);
+    }
+
+    $tVars = array(
+        'entries' => isset($Entries)?$Entries:'',
+        'tpl_url' => home.'/templates/'.$config['theme'],
+        'tpl_home' => admin_url
+    );
+        
+    $output .=  $xt->render($tVars);
+
+    return $output;
 }

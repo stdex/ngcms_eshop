@@ -84,7 +84,7 @@
 
 
 {% for entry in entries %}
-<li class="globalFrameProduct to-cart" data-pos="top">
+<li class="globalFrameProduct {% if (entry.stock == 0) or (entry.stock == 1) %}not-avail{% elseif (entry.stock == 5) %}to-cart{% endif %}" data-pos="top">
     <!-- Start. Photo & Name product -->
     <a href="{{entry.fulllink}}" class="frame-photo-title">
         <span class="photo-block">
@@ -120,12 +120,12 @@
             <span class="current-prices f-s_0">
                 <span class="price-new">
                     <span>
-<span class="price priceVariant">{% if (entry.price) %}{{ entry.price }}{% else %}0{% endif %}</span> $
+<span class="price priceVariant">{% if (entry.price) %}{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}</span> {{ system_flags.current_currency.sign }}
                     </span>
                 </span>
                                 <span class="price-add">
                     <span>
-<span class="price addCurrPrice">{% if (entry.compare_price) %}{{ entry.compare_price }}{% else %}0{% endif %}</span> €
+<span class="price addCurrPrice">{% if (entry.compare_price) %}{{ (entry.compare_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}</span> {{ system_flags.current_currency.sign }}
                     </span>
                 </span>
                             </span>
@@ -135,6 +135,15 @@
                         
                 <div class="funcs-buttons frame-without-top" style="position: relative; top: 0px;">
             <div class="no-vis-table">
+                {% if (entry.stock == 0) or (entry.stock == 1) %}
+                <div class="js-variant-5834 js-variant">
+                <div class="alert-exists">Нет в наличии</div>
+                <div class="btn-not-avail">
+                <button class="infoBut isDrop" type="button" data-drop=".drop-report">
+                </button>
+                </div>
+                </div>
+                {% elseif (entry.stock == 5) %}
                 <!-- Start. Collect information about Variants, for future processing -->
                                                                                                 <div class="frame-count-buy js-variant-5853 js-variant">
                         <div class="btn-buy btn-cart d_n">
@@ -149,7 +158,7 @@
                         <span class="text-el">Купить</span>
                     </button>
                 </div>
-        </div>
+        </div>{% endif %}
             </div>
 </div>
 <!-- End. Collect information about Variants, for future processing -->

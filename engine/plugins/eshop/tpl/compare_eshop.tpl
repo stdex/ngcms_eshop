@@ -61,12 +61,12 @@
             <span class="current-prices f-s_0">
                 <span class="price-new">
                     <span>
-<span class="price priceVariant">69</span> $
+<span class="price priceVariant">69</span> {{ system_flags.current_currency.sign }}
                     </span>
                 </span>
                                 <span class="price-add">
                     <span>
-<span class="price addCurrPrice">55</span> €
+<span class="price addCurrPrice">55</span> {{ system_flags.current_currency.sign }}
                     </span>
                 </span>
                             </span>
@@ -204,7 +204,7 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
 
 
 
-<li class="globalFrameProduct to-cart" data-pos="top" data-equalhorizcell="" style="height: 321px;">
+<li class="globalFrameProduct {% if (entry.stock == 0) or (entry.stock == 1) %}not-avail{% elseif (entry.stock == 5) %}to-cart{% endif %}" data-pos="top" data-equalhorizcell="" style="height: 321px;">
     <!-- Start. Photo & Name product -->
     <a href="{{entry.fulllink}}" class="frame-photo-title">
         <span class="photo-block">
@@ -234,12 +234,12 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
             <span class="current-prices f-s_0">
                 <span class="price-new">
                     <span>
-<span class="price priceVariant">{% if (entry.price) %}{{ entry.price }}{% else %}0{% endif %}</span> $
+<span class="price priceVariant">{% if (entry.price) %}{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}</span> {{ system_flags.current_currency.sign }}
                     </span>
                 </span>
                                 <span class="price-add">
                     <span>
-<span class="price addCurrPrice">{% if (entry.compare_price) %}{{ entry.compare_price }}{% else %}0{% endif %}</span> $
+<span class="price addCurrPrice">{% if (entry.compare_price) %}{{ (entry.compare_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}</span> {{ system_flags.current_currency.sign }}
                     </span>
                 </span>
                             </span>
@@ -249,6 +249,15 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
         
                 <div class="funcs-buttons frame-without-top">
             <div class="no-vis-table">
+                {% if (entry.stock == 0) or (entry.stock == 1) %}
+                <div class="js-variant-5834 js-variant">
+                <div class="alert-exists">Нет в наличии</div>
+                <div class="btn-not-avail">
+                <button class="infoBut isDrop" type="button" data-drop=".drop-report">
+                </button>
+                </div>
+                </div>
+                {% elseif (entry.stock == 5) %}
                 <!-- Start. Collect information about Variants, for future processing -->
                                                                                                 <div class="frame-count-buy js-variant-{{entry.id}} js-variant">
                         <div class="btn-buy btn-cart d_n">
@@ -277,7 +286,7 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
                         <span class="text-el">Купить</span>
                     </button>
                 </div>
-        </div>
+        </div>{% endif %}
             </div>
 </div>
 <!-- End. Collect information about Variants, for future processing -->

@@ -13,7 +13,7 @@
           <div class="jcarousel-clip jcarousel-clip-horizontal" style="position: relative;">
             <ul class="items items-catalog items-h-carousel items-product jcarousel-list jcarousel-list-horizontal" style="overflow: hidden; position: relative; top: 0px; margin: 0px; padding: 0px; left: 0px; width: 2568px;">
                 {% for entry in entries %}
-                              <li class="globalFrameProduct to-cart jcarousel-item jcarousel-item-horizontal jcarousel-item-1 jcarousel-item-1-horizontal" data-pos="top" jcarouselindex="1" style="float: left; list-style: none; width: 411px;">
+                              <li class="globalFrameProduct to-cart jcarousel-item jcarousel-item-horizontal jcarousel-item-{{loop.index}} jcarousel-item-{{loop.index}}-horizontal" data-pos="top" jcarouselindex="{{loop.index}}" style="float: left; list-style: none; width: 411px;">
                                 <!-- Start. Photo & Name product -->
                                 
                                 <a href="{{entry.fulllink}}" class="frame-photo-title">
@@ -48,17 +48,17 @@
                                       <span class="price-new">
                                         <span>
                                           <span class="price priceVariant">
-                                            {% if (entry.price) %}{{ entry.price }}{% else %}0{% endif %}
+                                            {% if (entry.price) %}{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}
                                           </span>
-                                          $
+                                          {{ system_flags.current_currency.sign }}
                                         </span>
                                       </span>
                                       <span class="price-add">
                                         <span>
                                           <span class="price addCurrPrice">
-                                            {% if (entry.compare_price) %}{{ entry.compare_price }}{% else %}0{% endif %}
+                                            {% if (entry.compare_price) %}{{ (entry.compare_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}
                                           </span>
-                                          $
+                                          {{ system_flags.current_currency.sign }}
                                         </span>
                                       </span>
                                     </span>

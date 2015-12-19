@@ -40,15 +40,15 @@
 
 <div class="frame-inside page-product">
    <div class="container">
-            <div class="clearfix item-product {% if (stock == 0) or (stock == 2) %}not-avail{% elseif (stock == 1) %}to-cart{% endif %}">
+            <div class="clearfix item-product {% if (stock == 0) or (stock == 1) %}not-avail{% elseif (stock == 5) %}to-cart{% endif %}">
       <div class="right-product">
         <!--Start. Payments method form -->
         <div class="" data-mq-max="1280" data-mq-min="0" data-mq-target="#deliveryTabs">
           <div class="frame-delivery-payment"><dl><dt class="title f-s_0"><span class="icon_delivery">&nbsp;</span><span class="text-el">Доставка</span><span class="icon_info_t" data-rel="tooltip" data-placement="left" data-other-class="info-patch" data-title="При желании Вы можете сами забрать купленный товар в наших офисах<br></span> 
 Бесплатная доставка от 2000 руб.">&nbsp;</span></dt><dd class="frame-list-delivery">
-{{ plugin_eshop_description_delivery }}
+{{ system_flags.eshop_description_delivery }}
 </dd><dt class="title f-s_0"><span class="icon_payment">&nbsp;</span><span class="text-el">Оплата</span><span class="icon_info_t" data-placement="left" data-rel="tooltip" data-other-class="info-patch" data-title="Сервис решает задачи по организации процесса приема платежей с помощью подключения всех (из возможного множества) платежных систем.">&nbsp;</span></dt><dd class="frame-list-payment">
-{{ plugin_eshop_description_order }}
+{{ system_flags.eshop_description_order }}
 <!--
 <ul>
 <li>Наличными при получении</li>
@@ -74,7 +74,7 @@
                 <ul class="items items-default items-h-carousel items-product ">
                     
 {% for entry in entriesRelated %}
-<li class="globalFrameProduct {% if (entry.stock == 0) or (entry.stock == 2) %}not-avail{% elseif (entry.stock == 1) %}to-cart{% endif %}" data-pos="top">
+<li class="globalFrameProduct {% if (entry.stock == 0) or (entry.stock == 1) %}not-avail{% elseif (entry.stock == 5) %}to-cart{% endif %}" data-pos="top">
     <!-- Start. Photo & Name product -->
     <a href="{{entry.fulllink}}" class="frame-photo-title">
         <span class="photo-block">
@@ -93,12 +93,12 @@
             <span class="current-prices f-s_0">
                 <span class="price-new">
                     <span>
-<span class="price priceVariant">{% if (entry.price) %}{{ entry.price }}{% else %}0{% endif %}</span> $
+<span class="price priceVariant">{% if (entry.price) %}{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}</span> {{ system_flags.current_currency.sign }}
                     </span>
                 </span>
                                 <span class="price-add">
                     <span>
-<span class="price addCurrPrice">{% if (entry.compare_price) %}{{ entry.compare_price }}{% else %}0{% endif %}</span> €
+<span class="price addCurrPrice">{% if (entry.compare_price) %}{{ (entry.compare_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}</span> {{ system_flags.current_currency.sign }}
                     </span>
                 </span>
                             </span>
@@ -256,12 +256,12 @@
         <span class="current-prices f-s_0">
       <span class="price-new">
        <span>
-        <span class="price priceVariant">{% if (price) %}{{ price }}{% else %}0{% endif %}</span> $
+        <span class="price priceVariant">{% if (price) %}{{ (price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}</span> {{ system_flags.current_currency.sign }}
       </span>
     </span>
         <span class="price-add">
       <span>
-        (<span class="price addCurrPrice">{% if (compare_price) %}{{ compare_price }}{% else %}0{% endif %}</span> €)
+        (<span class="price addCurrPrice">{% if (compare_price) %}{{ (compare_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}</span> {{ system_flags.current_currency.sign }})
 
       </span>
     </span>
@@ -270,7 +270,7 @@
 </div>
 <!-- End. Prices-->
 <div class="funcs-buttons">
-{% if (stock == 1) %}
+{% if (stock == 5) %}
 <!-- Start. Collect information about Variants, for future processing -->
 <div class="frame-count-buy js-variant-5853 js-variant">
 <div class="frame-count frameCount">
@@ -317,7 +317,7 @@
 </div>
 <div class="label-is-aviable">
   <span class="icon-no-aviable"></span>
-  <span class="text-el">{% if (stock == 0) %}Нет в наличии{% elseif (stock == 2) %}На заказ{% endif %}</span>
+  <span class="text-el">{% if (stock == 0) %}Нет в наличии{% elseif (stock == 1) %}На заказ{% endif %}</span>
 </div>
 </div>
 </div>
@@ -368,6 +368,11 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
  {{ annotation }}
  </div>
 <!--  End. Description -->
+
+<div class="ratebox2 pull-right" data-id="{{id}}">
+    {{ likes_form }}
+</div>
+
 <!--Start .Share-->
 <div class="social-product">
   <div class="social-like d_i-b">
@@ -417,7 +422,7 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
     <button type="button" data-href="#comment" onclick="Comments.renderPosts($('#comment .inside-padd'),{'visibleMainForm': '1'})">
       <span class="icon_comment-tab"></span>
       <span class="text-el">
-        <span id="cc">4 отзыва</span>
+        <span id="cc">отзывы</span>
       </span>
     </button>
   </li>
@@ -506,217 +511,20 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
                     <button type="button"><span class="text-el" data-hide="<span class=&quot;d_l_1&quot;>Скрыть</span> &#8593;" data-show="<span class=&quot;d_l_1&quot;>Смотреть все ответы</span> &#8595;"></span></button>
                 </div>
             </li>
-                        <li>
-                <input type="hidden" name="comment_item_id" value="97">
-                <div class="o_h global-frame-comment-sub1">
-                    <div class="author-data-comment author-data-comment-sub1">
-                        <span class="f-s_0 frame-autor-comment"><span class="icon_comment"></span><span class="author-comment">vanja</span></span>
-                        <span class="date-comment">
-                            <span class="day">12 </span>
-                            <span class="month">Мая </span>
-                            <span class="year">2014 </span>
-                        </span>
-                    </div>
-                    <div class="frame-mark">
-                                                <div class="func-button-comment">
-                            <span class="btn like">
-                                <button type="button" class="usefullyes" data-comid="97">
-                                    <span class="icon_like"></span>
-                                    <span class="text-el d_l_1">Полезно <span class="yesholder97">(2)</span></span>
-                                </button>
-                            </span>
-                            <span class="btn dis-like">
-                                <button type="button" class="usefullno" data-comid="97">
-                                    <span class="icon_dislike"></span>
-                                    <span class="text-el d_l_1">Не полезно <span class="noholder97">(2)</span></span>
-                                </button>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="frame-comment-sub1">
-                        <div class="frame-comment">
-                            <p>бобма а не телефон</p>
-                                                                                </div>
+                        
 
-                                                <div class="btn">
-                            <button type="button" data-rel="cloneAddPaste" data-parid="97">
-                                <span class="icon_comment"></span>
-                                <span class="text-el d_l_1 f-s_11">Ответить</span>
-                            </button>
-                        </div>
-                                            </div>
-                </div>
-                <div data-place="97"></div>
-                                                <div class="btn-all-comments">
-                    <button type="button"><span class="text-el" data-hide="<span class=&quot;d_l_1&quot;>Скрыть</span> &#8593;" data-show="<span class=&quot;d_l_1&quot;>Смотреть все ответы</span> &#8595;"></span></button>
-                </div>
-            </li>
-                        <li>
-                <input type="hidden" name="comment_item_id" value="104">
-                <div class="o_h global-frame-comment-sub1">
-                    <div class="author-data-comment author-data-comment-sub1">
-                        <span class="f-s_0 frame-autor-comment"><span class="icon_comment"></span><span class="author-comment">Олег</span></span>
-                        <span class="date-comment">
-                            <span class="day">06 </span>
-                            <span class="month">Июня </span>
-                            <span class="year">2014 </span>
-                        </span>
-                    </div>
-                    <div class="frame-mark">
-                                                <div class="func-button-comment">
-                            <span class="btn like">
-                                <button type="button" class="usefullyes" data-comid="104">
-                                    <span class="icon_like"></span>
-                                    <span class="text-el d_l_1">Полезно <span class="yesholder104">(1)</span></span>
-                                </button>
-                            </span>
-                            <span class="btn dis-like">
-                                <button type="button" class="usefullno" data-comid="104">
-                                    <span class="icon_dislike"></span>
-                                    <span class="text-el d_l_1">Не полезно <span class="noholder104">(2)</span></span>
-                                </button>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="frame-comment-sub1">
-                        <div class="frame-comment">
-                            <p>Крутой телефон)))))))))))))0</p>
-                                                                                </div>
-
-                                                <div class="btn">
-                            <button type="button" data-rel="cloneAddPaste" data-parid="104">
-                                <span class="icon_comment"></span>
-                                <span class="text-el d_l_1 f-s_11">Ответить</span>
-                            </button>
-                        </div>
-                                            </div>
-                </div>
-                <div data-place="104"></div>
-                                                <div class="btn-all-comments">
-                    <button type="button"><span class="text-el" data-hide="<span class=&quot;d_l_1&quot;>Скрыть</span> &#8593;" data-show="<span class=&quot;d_l_1&quot;>Смотреть все ответы</span> &#8595;"></span></button>
-                </div>
-            </li>
-                        <li>
-                <input type="hidden" name="comment_item_id" value="112">
-                <div class="o_h global-frame-comment-sub1">
-                    <div class="author-data-comment author-data-comment-sub1">
-                        <span class="f-s_0 frame-autor-comment"><span class="icon_comment"></span><span class="author-comment">Vasya</span></span>
-                        <span class="date-comment">
-                            <span class="day">27 </span>
-                            <span class="month">Августа </span>
-                            <span class="year">2014 </span>
-                        </span>
-                    </div>
-                    <div class="frame-mark">
-                                                <div class="mark-pr">
-                            <div class="star-small d_i-b">
-                                <div class="productRate star-small">
-                                    <div style="width: 40%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                                                <div class="func-button-comment">
-                            <span class="btn like">
-                                <button type="button" class="usefullyes" data-comid="112">
-                                    <span class="icon_like"></span>
-                                    <span class="text-el d_l_1">Полезно <span class="yesholder112">(1)</span></span>
-                                </button>
-                            </span>
-                            <span class="btn dis-like">
-                                <button type="button" class="usefullno" data-comid="112">
-                                    <span class="icon_dislike"></span>
-                                    <span class="text-el d_l_1">Не полезно <span class="noholder112">(0)</span></span>
-                                </button>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="frame-comment-sub1">
-                        <div class="frame-comment">
-                            <p>хундындря</p>
-                                                                                </div>
-
-                                                <div class="btn">
-                            <button type="button" data-rel="cloneAddPaste" data-parid="112">
-                                <span class="icon_comment"></span>
-                                <span class="text-el d_l_1 f-s_11">Ответить</span>
-                            </button>
-                        </div>
-                                            </div>
-                </div>
-                <div data-place="112"></div>
-                                                <div class="btn-all-comments">
-                    <button type="button"><span class="text-el" data-hide="<span class=&quot;d_l_1&quot;>Скрыть</span> &#8593;" data-show="<span class=&quot;d_l_1&quot;>Смотреть все ответы</span> &#8595;"></span></button>
-                </div>
-            </li>
-                    </ul>
-                <button class="t-d_n f-s_0 s-all-d ref d_n_" data-trigger="[data-href='#comment']" data-scroll="true">
+        </ul>
+        <!--
+        <button class="t-d_n f-s_0 s-all-d ref d_n_" data-trigger="[data-href='#comment']" data-scroll="true">
             <span class="icon_arrow"></span>
             <span class="text-el">Смотреть все ответы</span>
         </button>
+        -->
             </div>
-            <div class="drop comments-main-form  active inherit" style="display: block;">
-        <div class="frame-comments layout-highlight">
-            <div class="title-comment">
-                <div class="title">Оставить отзыв</div>
-            </div>
-            <!-- Start of new comment fild -->
-            <div class="form-comment main-form-comments">
-                <div class="inside-padd">
-                    <form method="post">
-                        <div class="mainPlace"></div>
 
-                        <div class="frame-label">
-                            <div class="frame-form-field o_h">
-                                                                <label style="width: 36%;float:left;margin-right: 4%;">
-                                    <span class="frame-form-field">
-                                        <input type="text" name="comment_author" value="" placeholder="Ваше имя">
-                                    </span>
-                                </label>
-                                <label style="width: 36%;float:left;margin-right: 2%;">
-                                    <span class="frame-form-field">
-                                        <input type="text" name="comment_email" id="comment_email" value="" placeholder="Электронная почта">
-                                    </span>
-                                </label>
-                                                                <!-- Start star reiting -->
-                                <div class="f_l" style="line-height: 32px;">
-                                    <span class="d_i-b v-a_m">Поставьте оценку</span>
-                                    <div class="d_i-b v-a_m">
-                                        <div class="star">
-                                            <div class="productRate star-big clicktemprate">
-                                                <div class="for_comment" style="width: 0%"></div>
-                                                <input class="ratec" name="ratec" type="hidden" value="">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- End star reiting -->
+{{ comments_form }}
 
-                            </div>
-                        </div>
-
-
-                        <label>
-                            <span class="frame-form-field">
-                                <textarea name="comment_text" class="comment_text" placeholder="Текст отзыва"></textarea>
-                            </span>
-                        </label>
-
-                        
-                        <div class="frame-label">
-                            <span class="frame-form-field">
-                                <div class="btn-form">
-                                    <input type="submit" value="Комментировать" onclick="Comments.post(this,{'visibleMainForm': '1'}, '.mainPlace')">
-                                </div>
-                            </span>
-                        </div>
-                    </form>
-                </div>
-                <!-- End of new comment fild -->
-            </div>
-        </div>
-    </div>
-    
-    <div class="frame-drop-comment" data-rel="whoCloneAddPaste">
+<div class="frame-drop-comment" data-rel="whoCloneAddPaste">
         <div class="form-comment layout-highlight frame-comments">
             <div class="title-comment">
                 <div class="title">Ваш ответ</div>
@@ -769,7 +577,8 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
     <div class="usemoderation">
         <div class="msg">
             <div class="success">
-                Ваш комментарий будет опубликован после модерации администратором            </div>
+                Ваш комментарий будет опубликован после модерации администратором
+            </div>
         </div>
     </div>
 </div>

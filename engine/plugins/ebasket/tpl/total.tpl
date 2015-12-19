@@ -15,7 +15,7 @@
                         <span class="text-el">&nbsp;</span>
                         <span class="text-el">товар</span>
                         <span class="divider text-el">Ц</span>
-                        <span class="d_i-b"><span class="text-el" id="basket_price">{{ price }}</span><span class="text-el" id="basket_price"> $</span></span>
+                        <span class="d_i-b"><span class="text-el" id="basket_price">{{ (price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</span><span class="text-el" id="basket_price"> {{ system_flags.current_currency.sign }}</span></span>
                     </span>
                     {% else %}
                     <span class="d_b" style="padding-top:3px;">

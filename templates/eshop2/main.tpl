@@ -12,12 +12,21 @@
     <link rel="stylesheet" href="{{ tpl_url }}/css/colorscheme.css">
     <link rel="stylesheet" href="{{ tpl_url }}/css/color.css">
     <link rel="stylesheet" href="{{ tpl_url }}/css/adaptive.css">
+    <link rel="stylesheet" href="{{ tpl_url }}/css/font-awesome.min.css">
     {% if pluginIsActive('rss_export') %}
     <link href="{{ home }}/rss.xml" rel="alternate" type="application/rss+xml" title="RSS" />
     {% endif %}
     <script src="{{ tpl_url }}/js/jquery-1.8.3.min.js">
     </script>
     
+    <script type="text/javascript" src="{{ tpl_url }}/js/jquery.dropdown.min.js"></script>
+    <link href="{{ tpl_url }}/css/jquery.dropdown.min.css" rel="stylesheet" type="text/css" />
+
+
+    <script type="text/javascript" src="{{ tpl_url }}/js/cusel_original.js"></script>
+
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js" type="text/javascript"></script>
+
     <script type="text/javascript">
       var locale = "";
     </script>
@@ -148,8 +157,9 @@
                   </li>
                   
                   <li>
-                    <a href="{{home}}/kontakty" target="_self" title="Контакты">
-                      Контакты
+
+                    <a title="Валюты" href="#" data-jq-dropdown="#jq-dropdown-1">
+                      Валюты
                     </a>
                   </li>
                   
@@ -269,7 +279,7 @@
           </div>
           <div class="frame-time-work">
 
-              {{ plugin_eshop_description_phones }}
+              {{ system_flags.eshop_description_phones }}
             <!--
             <div class="frame-ico">
               <span class="icon_work">
@@ -1149,11 +1159,97 @@
               </div>
             </div>
           </div>
-          
+                    
           {{ plugin_ebasket_notify }}
 
-          <script>
-              
+        <div id="jq-dropdown-1" class="jq-dropdown jq-dropdown-tip">
+            <ul class="jq-dropdown-menu">
+                {% for cc in system_flags.eshop_currency %}
+                    <li><a href="{{ cc.currency_link }}">{{ cc.code }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+<style>
+.pull-right {
+    float: right;
+}
+
+.btn-default {
+    color: #333;
+    background-color: #fff;
+    border-color: #ccc;
+}
+.btn {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+
+.ratingtypeplus {
+    color: #6c838e;
+    padding: 0 0 0 5px;
+}
+    
+.ratebox2 {
+line-height:30px;
+color:#6A920F;
+
+background: #ddd;
+
+border: 1px solid transparent;
+}
+
+.ratebox2 i {
+color:#C1C1C1;
+}
+
+.rate {
+font-size:18px;
+}
+
+.ratebox2:hover .btn {
+background:#f5f5f5;
+}
+
+.ratebox2:hover i {
+color:#E83564;
+}
+
+.rate i:hover {
+color:#D9534F;
+}
+
+.rplus i {
+font-size:18px;
+color:#C1C1C1;
+}
+
+.rplus {
+font-size:16px;
+color:#6A920F;
+}
+</style>
+
+
+<script>
 $(document).ready(function() {
     
     $(".orderBut").click(function(e){
@@ -1244,11 +1340,30 @@ $(document).ready(function() {
 
     });
     
+    $(".ratebox2").click(function() {
+        
+        var id = $(this).attr('data-id');
 
+        $.post('{{home}}/engine/rpc.php', { json : 1, methodName : 'eshop_likes_result', rndval: new Date().getTime(), params : json_encode({'action': 'do_like', 'id' : id }) }, function(data) {
+
+                // Try to decode incoming data
+                try {
+                    resTX = data;
+                //	alert(resTX['data']['feedback_text']);
+                } catch (err) { alert('Error parsing JSON output. Result: '+linkTX.response); }
+                if (!resTX['status']) {
+                    alert('Error ['+resTX['errorCode']+']: '+resTX['errorText']);
+                } else {
+                    $(".ratebox2").html(resTX['update']);
+                }
+                
+            }).error(function() { 
+                alert('HTTP error during request', 'ERROR'); 
+        });
+
+    });
+ 
 });    
-
-
-
 
               
             (function($){

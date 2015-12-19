@@ -163,9 +163,9 @@
         <td width="50%" class="contentEntry1">Цены<br /><small></small></td>
         <td width="50%" class="contentEntry2"><input type="text" size="10" name="price" value="{{entries.prices[0].price}}" > <input type="text" size="10" name="compare_price" value="{{entries.prices[0].compare_price}}" > 
         <select name="stock" style="width: 200px;">
-            <option {% if entries.mode == 'add' %}selected="selected"{% else %}{% if entries.prices[0].stock == '1' %}selected="selected"{% endif %}{% endif %} value="1">Есть</option>
+            <option {% if entries.mode == 'add' %}selected="selected"{% else %}{% if entries.prices[0].stock == '5' %}selected="selected"{% endif %}{% endif %} value="5">Есть</option>
             <option {% if entries.prices[0].stock == '0' %}selected="selected"{% endif %}value="0">Нет</option>
-            <option {% if entries.prices[0].stock == '2' %}selected="selected"{% endif %}value="2">На заказ</option>
+            <option {% if entries.prices[0].stock == '1' %}selected="selected"{% endif %}value="1">На заказ</option>
         </select></td>
     </tr>
 

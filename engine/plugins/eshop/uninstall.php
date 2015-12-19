@@ -19,6 +19,10 @@ $db_update = array(
 		'action'	=>	'drop',
 	),
 	array(
+		'table'		=>	'eshop_products_likes',
+		'action'	=>	'drop',
+	),
+	array(
 		'table'		=>	'eshop_products_view',
 		'action'	=>	'drop',
 	),
@@ -72,6 +76,10 @@ $db_update = array(
 	),
     array(
 		'table'		=>	'eshop_images',
+		'action'	=>	'drop',
+	),
+    array(
+		'table'		=>	'eshop_currencies',
 		'action'	=>	'drop',
 	),
 );

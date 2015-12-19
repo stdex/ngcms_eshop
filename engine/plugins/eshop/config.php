@@ -29,6 +29,14 @@ switch ($_REQUEST['action']) {
     case 'list_order':      list_order();                          break;
     case 'edit_order':      edit_order();                          break;
     case 'modify_order':    modify_order(); list_order();          break;
+
+    case 'list_comment':    list_comment();                        break;
+    case 'modify_comment':  modify_comment(); list_comment();      break;
+
+    case 'list_currencies': list_currencies();                     break;
+    case 'add_currency':    add_currency();                        break;
+    case 'edit_currency':   edit_currency();                       break;
+    case 'del_currency':    del_currency(); list_currencies();     break;
     
     case 'options':         options();                             break;
 
@@ -180,11 +188,15 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         }
 
         $SQL['meta_title'] = input_filter_com(convert($_REQUEST['meta_title']));
+        if(empty($SQL['meta_title']))
+        {
+            $SQL['meta_title'] = $SQL['name'];
+        }
         $SQL['meta_keywords'] = input_filter_com(convert($_REQUEST['meta_keywords']));
         $SQL['meta_description'] = input_filter_com(convert($_REQUEST['meta_description']));
         
-        $SQL['annotation'] = input_filter_com(convert($_REQUEST['annotation']));
-        $SQL['body'] = input_filter_com(convert($_REQUEST['body']));
+        $SQL['annotation'] = $_REQUEST['annotation'];
+        $SQL['body'] = $_REQUEST['body'];
         
         $SQL['active'] = intval($_REQUEST['active']);
         $SQL['featured'] = intval($_REQUEST['featured']);
@@ -1586,7 +1598,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     $tpath = locatePluginTemplates(array('config/main', 'config/add_order'), 'eshop', 1);
     
     $id = intval($_REQUEST['id']);
-    $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_orders WHERE id = '.db_squote($id).' LIMIT 1');
+    $row = $mysql->record('SELECT *, o.id as id, o.ip as ip, o.name as name, u.name as author FROM '.prefix.'_eshop_orders o LEFT JOIN '.prefix.'_users u ON o.author_id = u.id WHERE o.id = '.db_squote($id).' LIMIT 1');
     
     if (isset($_REQUEST['submit']))
     {
@@ -1644,6 +1656,10 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
                 $basket []= $rec;
     }
     
+    $row['profile_link'] = checkLinkAvailable('uprofile', 'show')?
+                    generateLink('uprofile', 'show', array('name' => $row['author'], 'id' => $row['author_id'])):
+                    generateLink('core', 'plugin', array('plugin' => 'uprofile', 'handler' => 'show'), array('id' => $row['author_id']));
+    
     $tEntry = $row;
     $tEntry['error'] = $error_input;
     $tEntry['basket'] = $basket;
@@ -1681,7 +1697,7 @@ global $mysql;
     
     if( empty($id) )
     {
-        return msg(array("type" => "error", "text" => "Вы выбран ID!"));
+        return msg(array("type" => "error", "text" => "Не выбран ID!"));
     }
     
     switch($subaction) {
@@ -1695,6 +1711,366 @@ global $mysql;
         msg(array("type" => "info", "info" => "Записи с ID${id} удалены!"));
     }
 }
+
+function list_comment($params)
+{
+global $tpl, $mysql, $twig;
+
+    $tpath = locatePluginTemplates(array('config/main', 'config/list_comment'), 'eshop', 1);
+    
+    $tVars = array();
+    
+    $news_per_page  = isset($_REQUEST['rpp'])?intval($_REQUEST['rpp']):intval($admCookie['eshop']['pp_comment']);
+    // - Set default value for `Records Per Page` parameter
+    if (($news_per_page < 2)||($news_per_page > 2000))
+        $news_per_page = 5;
+    
+    // - Save into cookies current value
+    $admCookie['eshop']['pp_comment'] = $news_per_page;
+    admcookie_set($admCookie);
+
+    $conditions = array();
+
+    $fSort = "ORDER BY c.postdate ASC";
+    $sqlQPart = "from ".prefix."_eshop_products_comments c LEFT JOIN ".prefix."_users u ON c.author_id = u.id LEFT JOIN ".prefix."_eshop_products p ON c.product_id = p.id ".(count($conditions)?"where ".implode(" AND ", $conditions):'').' '.$fSort;
+    $sqlQ = "select c.id as cid, u.id as uid, u.name as uname, c.name as name, p.id as product_id, p.name as title, c.mail as mail, c.postdate as postdate, c.author as author, c.author_id as author_id, u.avatar as avatar, c.reg as reg, c.text as text ".$sqlQPart;
+    
+    $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
+    
+    $pageNo     = intval($_REQUEST['page'])?$_REQUEST['page']:0;
+    if ($pageNo < 1)    $pageNo = 1;
+    if (!$start_from)   $start_from = ($pageNo - 1)* $news_per_page;
+    
+    $count = $mysql->result($sqlQCount);
+    $countPages = ceil($count / $news_per_page);
+    
+    foreach ($mysql->select($sqlQ.' LIMIT '.$start_from.', '.$news_per_page) as $row)
+    {
+        // Add [hide] tag processing
+        $text	= $row['text'];
+
+        if ($config['use_bbcodes'])			{ $text = $parse -> bbcodes($text); }
+        if ($config['use_htmlformatter'])	{ $text = $parse -> htmlformatter($text); }
+        if ($config['use_smilies'])			{ $text = $parse -> smilies($text); }
+
+            if ($config['use_avatars']) {
+            if ($row['avatar']) {
+                $avatar = avatars_url."/".$row['avatar'];
+            } else {
+                    $avatar = $noAvatarURL;
+            }
+        } else {
+            $avatar = '';
+        }
+        
+        $view_link = checkLinkAvailable('eshop', 'show')?
+            generateLink('eshop', 'show', array('id' => $row['product_id'])):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['product_id']));
+        
+        $tEntries[] = array (
+                'id' => $row['cid'],
+                'mail' =>	$row['mail'],
+                'author' => $row['name'],
+                'date' => $row['postdate'],
+                'profile_link' => checkLinkAvailable('uprofile', 'show')?
+                    generateLink('uprofile', 'show', array('name' => $row['author'], 'id' => $row['author_id'])):
+                    generateLink('core', 'plugin', array('plugin' => 'uprofile', 'handler' => 'show'), array('id' => $row['author_id'])),
+                'avatar' => $avatar,
+                'name' => $row['uname'],
+                'commenttext' => $text,
+                'title' => $row['title'],
+                'view_link' => $view_link,
+                'product_edit_link' => "?mod=extra-config&plugin=eshop&action=edit_product&id=".$row['id']."",
+                'reg' => $row['reg'],
+                );
+                
+    }
+ 
+    $xt = $twig->loadTemplate($tpath['config/list_comment'].'config/'.'list_comment.tpl');
+
+    $tVars = array(
+        'entries' => isset($tEntries)?$tEntries:'',
+        'pagesss' => generateAdminPagelist( array('current' => $pageNo, 'count' => $countPages, 'url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop&action=list_comment'.($news_per_page?'&rpp='.$news_per_page:'').'&page=%page%')),
+        'rpp'   =>  $news_per_page,
+    );
+    
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Комментарии',
+    );
+    
+    print $xg->render($tVars);
+
+}
+
+function modify_comment()
+{
+global $mysql;
+    
+    $selected_comment = $_REQUEST['selected_comment'];
+    $subaction  =   $_REQUEST['subaction'];
+    
+    $id = implode( ',', $selected_comment );
+    
+    if( empty($id) )
+    {
+        return msg(array("type" => "error", "text" => "Не выбран ID!"));
+    }
+    
+    switch($subaction) {
+        case 'mass_delete'       : $del = true; break;
+    }
+
+    if(isset($del))
+    {
+        $mysql->query("delete from ".prefix."_eshop_products_comments where id in ({$id})");
+        msg(array("type" => "info", "info" => "Записи с ID${id} удалены!"));
+    }
+}
+
+
+function add_currency($params)
+{
+global $tpl, $template, $config, $mysql, $lang, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_currencies'), 'eshop', 1);
+
+    if (isset($_REQUEST['submit']))
+    {
+
+        $SQL['name'] = input_filter_com(convert($_REQUEST['name']));
+        if(empty($SQL['name']))
+        {
+            $error_text[] = 'Название валюты не задано';
+        }
+        
+        $SQL['sign'] = input_filter_com(convert($_REQUEST['sign']));
+        if(empty($SQL['sign']))
+        {
+            $error_text[] = 'Знак валюты не задан';
+        }
+        
+        $SQL['code'] = input_filter_com(convert($_REQUEST['code']));
+        if(empty($SQL['code']))
+        {
+            $error_text[] = 'Код валюты не задан';
+        }
+
+        $SQL['rate_from'] = input_filter_com(convert($_REQUEST['rate_from']));
+        if(empty($SQL['rate_from']))
+        {
+            $error_text[] = 'Конверсия не задана';
+        }
+        
+        $SQL['rate_to'] = 1;
+        $SQL['cents'] = 1;
+        $SQL['position'] = 2;
+        $SQL['enabled'] = 1;
+        
+        if(empty($error_text))
+        {
+            $vnames = array();
+            foreach ($SQL as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
+            $mysql->query('INSERT INTO '.prefix.'_eshop_currencies SET '.implode(', ',$vnames).' ');
+            
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_currencies');
+        }
+
+    }
+    
+    if(!empty($error_text))
+    {
+        foreach($error_text as $error)
+        {
+            $error_input .= msg(array("type" => "error", "text" => $error));
+        }
+    } else {
+        $error_input ='';
+    }
+
+    foreach ($SQL as $k => $v) { 
+        $tEntry[$k] = $v;
+    }
+    
+    $tEntry['error'] = $error_input;
+    $tEntry['mode'] = "add";
+
+    $xt = $twig->loadTemplate($tpath['config/add_currencies'].'config/'.'add_currencies.tpl');
+    
+    $tVars = array(
+        'entries' => isset($tEntry)?$tEntry:'' 
+    );
+
+    
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Категории: Добавление валюты',
+    );
+    
+    print $xg->render($tVars);
+}
+
+function edit_currency($params)
+{
+global $tpl, $template, $config, $mysql, $lang, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_currencies'), 'eshop', 1);
+    
+    $id = intval($_REQUEST['id']);
+    $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_currencies WHERE id = '.db_squote($id).' LIMIT 1');
+    
+    if (isset($_REQUEST['submit']))
+    {
+
+        $SQL['name'] = input_filter_com(convert($_REQUEST['name']));
+        if(empty($SQL['name']))
+        {
+            $error_text[] = 'Название валюты не задано';
+        }
+        
+        $SQL['sign'] = input_filter_com(convert($_REQUEST['sign']));
+        if(empty($SQL['sign']))
+        {
+            $error_text[] = 'Знак валюты не задан';
+        }
+        
+        $SQL['code'] = input_filter_com(convert($_REQUEST['code']));
+        if(empty($SQL['code']))
+        {
+            $error_text[] = 'Код валюты не задан';
+        }
+
+        $SQL['rate_from'] = input_filter_com(convert($_REQUEST['rate_from']));
+        if(empty($SQL['rate_from']))
+        {
+            $error_text[] = 'Конверсия не задана';
+        }
+        
+        $SQL['rate_to'] = 1;
+        $SQL['cents'] = 1;
+        $SQL['position'] = 2;
+        $SQL['enabled'] = 1;
+        
+        if(empty($error_text))
+        {
+            $vnames = array();
+            foreach ($SQL as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
+            $mysql->query('UPDATE '.prefix.'_eshop_currencies SET '.implode(', ',$vnames).' WHERE id = \''.intval($id).'\' ');
+            
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_currencies');
+        }
+
+    }
+    
+    if(!empty($error_text))
+    {
+        foreach($error_text as $error)
+        {
+            $error_input .= msg(array("type" => "error", "text" => $error));
+        }
+    } else {
+        $error_input ='';
+    }
+
+    foreach ($row as $k => $v) { 
+        $tEntry[$k] = $v;
+    }
+    
+    $tEntry['error'] = $error_input;
+    $tEntry['mode'] = "edit";
+
+    $xt = $twig->loadTemplate($tpath['config/add_currencies'].'config/'.'add_currencies.tpl');
+    
+    $tVars = array(
+        'entries' => isset($tEntry)?$tEntry:'' 
+    );
+    
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Валюты: Редактирование валюты',
+    );
+    
+    print $xg->render($tVars);
+}
+
+function del_currency($params)
+{global $mysql;
+    
+    $id = intval($_REQUEST['id']);
+    
+    if( empty($id) )
+    {
+        return msg(array("type" => "error", "text" => "Ошибка, вы не выбрали что хотите удалить"));
+    }
+    
+    if( $id == "1" )
+    {
+        return msg(array("type" => "error", "text" => "Ошибка, вы не можете уалить основную валюту"));
+    }
+    
+    $mysql->query("DELETE FROM ".prefix."_eshop_currencies WHERE id = {$id}");
+    msg(array("type" => "info", "info" => "Валюта удалена"));
+    
+}
+
+function list_currencies($params)
+{
+global $tpl, $mysql, $twig;
+
+    $tpath = locatePluginTemplates(array('config/main', 'config/list_currencies'), 'eshop', 1);
+    
+    $tVars = array();
+
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_currencies ORDER BY position, id") as $row)
+    {
+    
+        $row['edit_link'] = "?mod=extra-config&plugin=eshop&action=edit_currency&id=".$row['id']."";
+        $tEntry[] = $row;
+
+    }
+
+    $xt = $twig->loadTemplate($tpath['config/list_currencies'].'config/'.'list_currencies.tpl');
+    
+    $tVars = array( 
+        'entries' => isset($tEntry)?$tEntry:'' 
+    );
+    
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Валюты',
+    );
+    
+    print $xg->render($tVars);
+
+}
+
+
 
 function urls()
 {global $tpl, $mysql, $twig;
@@ -1743,6 +2119,18 @@ function urls()
             $ULIB->registerCommand('eshop', 'compare',
                 array (
                         'descr' => array ('russian' => 'Сравнение продукции'),
+                )
+            );
+            
+            $ULIB->registerCommand('eshop', 'currency',
+                array (
+                        'descr' => array ('russian' => 'Валюты'),
+                )
+            );
+            
+            $ULIB->registerCommand('eshop', 'xml_export',
+                array (
+                        'descr' => array ('russian' => 'Экспорт XML'),
                 )
             );
 
@@ -2006,6 +2394,74 @@ function urls()
               )
             );
             
+           $UHANDLER->registerHandler(0,
+                array (
+                'pluginName' => 'eshop',
+                'handlerName' => 'currency',
+                'flagPrimary' => true,
+                'flagFailContinue' => false,
+                'flagDisabled' => false,
+                'rstyle' => 
+                array (
+                  'rcmd' => '/eshop/currency/',
+                  'regex' => '#^/eshop/currency/$#',
+                  'regexMap' => 
+                  array (
+                    1 => 'page',
+                  ),
+                  'reqCheck' => 
+                  array (
+                  ),
+                  'setVars' => 
+                  array (
+                  ),
+                  'genrMAP' => 
+                  array (
+                    0 => 
+                    array (
+                      0 => 0,
+                      1 => '/eshop/currency/',
+                      2 => 0,
+                    ),
+                  ),
+                ),
+              )
+            );            
+
+           $UHANDLER->registerHandler(0,
+                array (
+                'pluginName' => 'eshop',
+                'handlerName' => 'xml_export',
+                'flagPrimary' => true,
+                'flagFailContinue' => false,
+                'flagDisabled' => false,
+                'rstyle' => 
+                array (
+                  'rcmd' => '/eshop/xml_export/',
+                  'regex' => '#^/eshop/xml_export/$#',
+                  'regexMap' => 
+                  array (
+                    1 => 'page',
+                  ),
+                  'reqCheck' => 
+                  array (
+                  ),
+                  'setVars' => 
+                  array (
+                  ),
+                  'genrMAP' => 
+                  array (
+                    0 => 
+                    array (
+                      0 => 0,
+                      1 => '/eshop/xml_export/',
+                      2 => 0,
+                    ),
+                  ),
+                ),
+              )
+            );
+            
             $UHANDLER->saveConfig();
         } else {
             $ULIB = new urlLibrary();
@@ -2015,6 +2471,8 @@ function urls()
             $ULIB->removeCommand('eshop', 'search');
             $ULIB->removeCommand('eshop', 'stocks');
             $ULIB->removeCommand('eshop', 'compare');
+            $ULIB->removeCommand('eshop', 'currency');
+            $ULIB->removeCommand('eshop', 'xml_export');
             $ULIB->saveConfig();
             $UHANDLER = new urlHandler();
             $UHANDLER->loadConfig();
@@ -2023,6 +2481,8 @@ function urls()
             $UHANDLER->removePluginHandlers('eshop', 'search');
             $UHANDLER->removePluginHandlers('eshop', 'stocks');
             $UHANDLER->removePluginHandlers('eshop', 'compare');
+            $UHANDLER->removePluginHandlers('eshop', 'currency');
+            $UHANDLER->removePluginHandlers('eshop', 'xml_export');
             $UHANDLER->saveConfig();
         }
         

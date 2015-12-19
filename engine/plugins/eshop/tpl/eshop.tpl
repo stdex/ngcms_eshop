@@ -32,6 +32,7 @@
 
 <div class="frame-inside page-category">
         <div class="container">
+            <!--
             <div class="filter left-catalog">
                 <div id="small-filter-btn" class="btn-additional-s_c2 mq-w-320 mq-block m-b_0  is-open">
                     <button type="button">
@@ -42,14 +43,13 @@
                     </button>
                 </div>
                 <div class="filter-slide  open-filter">
-                                        <!-- Load filter-->
-                    <!-- end of selected filters block -->
+
 
 <form method="get" id="catalogForm">
     <input type="hidden" name="order" value="action">
     <input type="hidden" name="user_per_page" value="12">
     <div class="frame-filter p_r">
-        <script type="text/javascript">
+<script type="text/javascript">
     totalProducts = parseInt('20');
     function createObjSlider(minCost, maxCost, defMin, defMax, curMin, curMax, lS, rS){
         this.minCost = minCost;
@@ -63,7 +63,8 @@
     };
     sliders = new Object();
     sliders.slider1 = new createObjSlider('.minCost', '.maxCost', 69, 1010, 69, 1010, 'lp', 'rp');
-</script><div class="preloader wo-i" style="display: none;"></div>
+</script>
+<div class="preloader wo-i" style="display: none;"></div>
 <div id="slider-range"></div>
 <div class="frames-checks-sliders">
     <div class="frame-slider" data-rel="sliders.slider1">
@@ -414,21 +415,22 @@
 </form>
 <script>
 </script>                </div>
-            </div>
             
+            </div>
+            -->
             {% if (info) %}
                 <div class="feed-me">
                 {{info}}
                 </div>
             {% endif %}
             
-            <div class="right-catalog">
+            <div class="right-catalog" style="width:100% !important;margin-left: 0;">
                 <!-- Start. Category name and count products in category-->
                 <div class="f-s_0 title-category">
                     <div class="frame-title">
                         <h1 class="title">{{ cat_info.name }}</h1>
                     </div>
-                    <span class="count">20</span>
+                    <span class="count">{{ cat_info.cnt }}</span>
                 </div>
                 <!-- End. Category name and count products in category-->
                                 <!--Start. Banners block-->
@@ -439,6 +441,33 @@
             <div class="inside-padd">
                 <!-- Start. Order by block -->
                 <div class="frame-sort d_i-b v-a_t">
+
+<script type="text/javascript">
+jQuery(document).ready(function(){
+
+var params = {
+    changedEl: ".lineForm select",
+    visRows: 50,
+
+}
+
+cuSel(params);
+
+});
+</script>
+<form method="post" id="catalogForm">
+<div class="lineForm">
+    <select class="sort" id="sort" name="order">
+        <option value="date_desc" {% if (filter.order == 'date_desc') %}selected{% endif %}>По дате</option>
+        <option value="name_asc" {% if (filter.order == 'name_asc') %}selected{% endif %}>По названию (А-Я)</option>
+        <option value="price_asc" {% if (filter.order == 'price_asc') %}selected{% endif %}>От дешевых к дорогим</option>
+        <option value="price_desc" {% if (filter.order == 'price_desc') %}selected{% endif %}>От дорогих к дешевым</option>
+        <option value="stock_desc" {% if (filter.order == 'stock_desc') %}selected{% endif %}>По наличию</option>
+        <option value="likes_desc" {% if (filter.order == 'likes_desc') %}selected{% endif %}>По популярности</option>
+    </select>
+</div>
+</form>
+                    <!--
                     <div class="lineForm">
                         <div class="cusel sort" id="cuselFrame-sort" style="width:176px" tabindex="0"><div class="cuselFrameRight"></div><div class="cuselText">Акции</div><div class="cusel-scroll-wrap" style="display: none; visibility: visible;"><div class="jScrollPaneContainer" style="height: 192px; width: 180px;"><div class="cusel-scroll-pane" id="cusel-scroll-sort" style="overflow: hidden; width: 180px; height: 192px; padding: 0px;">
                                                                                         <span val="action" class="cuselActive">Акции</span>
@@ -451,12 +480,13 @@
                                                             <span val="name">По названию (А-Я)</span>
                                                     </div></div></div><input type="hidden" id="sort" name="order" value="action"></div>
                     </div>
+                    -->
                 </div>
                 <!-- End. Order by block -->
                 <!--         Start. Product per page  -->
+                <!--
                 <div class="frame-count-onpage d_i-b v-a_t">
                                                                                     <div class="lineForm">
-                        <!--                Load settings-->
                                                 <div class="cusel" id="cuselFrame-sort2" style="width:159px" tabindex="0"><div class="cuselFrameRight"></div><div class="cuselText">12 товаров на странице</div><div class="cusel-scroll-wrap" style="display: none; visibility: visible;"><div class="jScrollPaneContainer" style="height: 72px; width: 189px;"><div class="cusel-scroll-pane" id="cusel-scroll-sort2" style="overflow: hidden; width: 189px; height: 72px; padding: 0px;">
                                                             <span selected="selected" val="12" class="cuselActive">12 товаров на странице</span>
                                                             <span val="24">24 товара на странице</span>
@@ -464,6 +494,7 @@
                                                     </div></div></div><input type="hidden" id="sort2" name="user_per_page" value="12"></div>
                     </div>
                 </div>
+                -->
                 <!--         End. Product per page  -->
                 <!--        Start. Show products as list or table-->
                 <nav class="frame-catalog-view d_i-b v-a_t">
@@ -493,7 +524,7 @@
 
 
 {% for entry in entries %}
-<li class="globalFrameProduct {% if (entry.stock == 0) or (entry.stock == 2) %}not-avail{% elseif (entry.stock == 1) %}to-cart{% endif %}" data-pos="top">
+<li class="globalFrameProduct {% if (entry.stock == 0) or (entry.stock == 1) %}not-avail{% elseif (entry.stock == 5) %}to-cart{% endif %}" data-pos="top">
     <!-- Start. Photo & Name product -->
     <a href="{{entry.fulllink}}" class="frame-photo-title">
         <span class="photo-block">
@@ -535,12 +566,12 @@
             <span class="current-prices f-s_0">
                 <span class="price-new">
                     <span>
-<span class="price priceVariant">{% if (entry.price) %}{{ entry.price }}{% else %}0{% endif %}</span> $
+<span class="price priceVariant">{% if (entry.price) %}{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}</span> {{ system_flags.current_currency.sign }}
                     </span>
                 </span>
                                 <span class="price-add">
                     <span>
-<span class="price addCurrPrice">{% if (entry.compare_price) %}{{ entry.compare_price }}{% else %}0{% endif %}</span> $
+<span class="price addCurrPrice">{% if (entry.compare_price) %}{{ (entry.compare_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}</span> {{ system_flags.current_currency.sign }}
                     </span>
                 </span>
                             </span>
@@ -550,7 +581,7 @@
                         
                 <div class="funcs-buttons frame-without-top" style="position: relative; top: 0px;">
             <div class="no-vis-table">
-                {% if (entry.stock == 0) or (entry.stock == 2) %}
+                {% if (entry.stock == 0) or (entry.stock == 1) %}
                 <div class="js-variant-5834 js-variant">
                 <div class="alert-exists">Нет в наличии</div>
                 <div class="btn-not-avail">
@@ -558,7 +589,7 @@
                 </button>
                 </div>
                 </div>
-                {% elseif (entry.stock == 1) %}
+                {% elseif (entry.stock == 5) %}
                 <!-- Start. Collect information about Variants, for future processing -->
                 <div class="frame-count-buy js-variant-{{entry.id}} js-variant">
                     <div class="btn-buy btn-cart d_n">

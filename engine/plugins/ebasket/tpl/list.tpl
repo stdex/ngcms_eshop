@@ -127,7 +127,7 @@
                                 <span class="current-prices f-s_0">
                                     <span class="price-new">
                                         <span>
-                                            <span class="price">{{ entry.price }}</span> $
+                                            <span class="price">{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.current_currency.sign }}
                                         </span>
                                     </span>
                                 </span>
@@ -167,7 +167,7 @@
                         <td colspan="3">
                             <span class="s-t f_l">Cтоимость товаров:</span>
                             <div class="f_r">
-                                <span class="price f-w_b">{{ total }}</span> $
+                                <span class="price f-w_b">{{ (total * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.current_currency.sign }}
                             </div>
                         </td>
                     </tr>
@@ -190,7 +190,7 @@
                             <span class="price-new">
                                 <span>
 
-                                    <span id="finalAmount" class="price">{{ total }}</span> $
+                                    <span id="finalAmount" class="price">{{ (total * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.current_currency.sign }}
 
                                 </span>
                             </span>
@@ -450,7 +450,7 @@
                                 <span class="current-prices f-s_0">
                                     <span class="price-new">
                                         <span>
-                                            <span class="price">{{ entry.price }}</span> $
+                                            <span class="price">{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.current_currency.sign }}
                                         </span>
                                     </span>
                                 </span>
@@ -490,7 +490,7 @@
                         <td colspan="3">
                             <span class="s-t f_l">Cтоимость товаров:</span>
                             <div class="f_r">
-                                <span class="price f-w_b">{{ total }}</span> $
+                                <span class="price f-w_b">{{ (total * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.current_currency.sign }}
                             </div>
                         </td>
                     </tr>
@@ -513,7 +513,7 @@
                             <span class="price-new">
                                 <span>
 
-                                    <span id="finalAmount" class="price">{{ total }}</span> $
+                                    <span id="finalAmount" class="price">{{ (total* system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.current_currency.sign }}
 
                                 </span>
                             </span>
