@@ -261,6 +261,7 @@ function plugin_eshop_install($action) {
         'fields'	=> array(
             array('action'	=> 'cmodify', 'name' => 'id', 'type' => 'int(11)', 'params' => 'NOT NULL AUTO_INCREMENT'),
             array('action'	=> 'cmodify', 'name' => 'author_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
+            array('action'	=> 'cmodify', 'name' => 'uniqid', 'type' => 'varchar(500)', 'params' => 'NOT NULL default \'0\''),
             
             array('action'	=> 'cmodify', 'name' => 'dt', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
             array('action'	=> 'cmodify', 'name' => 'paid', 'type' => 'tinyint(1)', 'params' => 'NOT NULL default \'0\''),
@@ -360,7 +361,25 @@ function plugin_eshop_install($action) {
             array('action'	=> 'cmodify', 'name' => 'position', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
             array('action'	=> 'cmodify', 'name' => 'enabled', 'type' => 'tinyint(1)', 'params' => 'NOT NULL default \'1\''),
         )
-    )
+    ),
+
+    array(
+        'table'  => 'eshop_ebasket',
+        'action' => 'cmodify',
+        'key'    => 'primary key(id)',
+        'fields' => array(
+            array('action' => 'cmodify', 'name' => 'id', 'type' => 'int', 'params' => 'not null auto_increment'),
+            array('action' => 'cmodify', 'name' => 'user_id', 'type' => 'int', 'params' => 'default 0'),
+            array('action' => 'cmodify', 'name' => 'cookie', 'type' => 'char(50)', 'params' => 'default ""'),
+            array('action' => 'cmodify', 'name' => 'linked_ds', 'type' => 'int', 'params' => 'default 0'),
+            array('action' => 'cmodify', 'name' => 'linked_id', 'type' => 'int', 'params' => 'default 0'),
+            array('action' => 'cmodify', 'name' => 'title', 'type' => 'char(120)', 'params' => 'default ""'),
+            array('action' => 'cmodify', 'name' => 'linked_fld', 'type' => 'text'),
+            array('action' => 'cmodify', 'name' => 'price', 'type' => 'decimal(12,2)', 'params' => 'default 0'),
+            array('action' => 'cmodify', 'name' => 'count', 'type' => 'int', 'params' => 'default 0'),
+        )
+    ),    
+
 );
 
     switch ($action)

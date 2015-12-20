@@ -184,7 +184,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         $SQL['url'] = input_filter_com(convert($_REQUEST['url']));
         if(empty($SQL['url']))
         {
-            $SQL['url'] = $parse->translit(trim($_REQUEST['url']),1, 1);
+            $SQL['url'] = $parse->translit($SQL['name'],1, 1);
         }
 
         $SQL['meta_title'] = input_filter_com(convert($_REQUEST['meta_title']));
@@ -222,7 +222,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
             $qid = $mysql->lastid('eshop_products');
             
             if($images != NULL) {
-                foreach ($images as $img) {
+                foreach ($images as $inx_img => $img) {
                     $timestamp = time();
                     $iname = $timestamp."-".$img;
                     
@@ -234,7 +234,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                     $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/thumb/'.$iname;
                     rename($temp_name, $current_name);
                     
-                    $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`) VALUES ('$iname','$qid')");
+                    $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')");
                 }
             }
             
@@ -333,6 +333,70 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
 
     $qid = intval($_REQUEST['id']);
     $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_products LEFT JOIN '.prefix.'_eshop_products_categories ON '.prefix.'_eshop_products.id='.prefix.'_eshop_products_categories.product_id WHERE id = '.db_squote($qid).' LIMIT 1');
+
+    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
+    $cats = getCats($res);
+
+    $options_array = array();
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_options LEFT JOIN ".prefix."_eshop_features ON ".prefix."_eshop_features.id=".prefix."_eshop_options.feature_id WHERE ".prefix."_eshop_options.product_id = '$qid' ORDER BY position, id") as $orow)
+    {
+        $options_array[$orow['id']] = $orow['value'];
+    }
+    
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $frow)
+    {
+        $features_array[] = 
+            array(
+                'id' => $frow['id'],
+                'name' => $frow['name'],
+                'position' => $frow['position'],
+                'in_filter' => $frow['in_filter'],
+                'value' => $options_array[$frow['id']]
+                );
+    }
+    
+    $positions_img = array();
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_images WHERE product_id = '$qid' ORDER BY position, id") as $irow)
+    {
+        $images_array[] = 
+            array(
+                'id' => $irow['id'],
+                'filepath' => $irow['filepath'],
+                'product_id' => $irow['product_id'],
+                'position' => $irow['position'],
+                'del_link' => home.'/engine/admin.php?mod=extra-config&plugin=eshop&action=edit_product&id='.$qid.'&delimg='.$irow['id'].'&filepath='.$irow['filepath'].'',
+                );
+        $positions_img[] = $irow['position'];
+    }
+    
+    if(!empty($positions_img)) {
+        $max_img_pos = max($positions_img) + 1;
+    }
+    else {
+        $max_img_pos = 0;
+    }
+    
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_related_products rp LEFT JOIN ".prefix."_eshop_products p ON p.id=rp.related_id WHERE rp.product_id = '$qid' ORDER BY rp.position") as $rrow)
+    {
+        $related_array[] = 
+            array(
+                'name' => $rrow['name'],
+                'product_id' => $rrow['product_id'],
+                'related_id' => $rrow['related_id'],
+                'position' => $rrow['position']
+                );
+    }
+    
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_variants WHERE product_id = '$qid' ORDER BY position, id") as $vrow)
+    {
+        $price_array[] = 
+            array(
+                'id' => $vrow['id'],
+                'price' => $vrow['price'],
+                'compare_price' => $vrow['compare_price'],
+                'stock' => $vrow['stock']
+                );
+    }
  
     if (isset($_REQUEST['handler']))
     {
@@ -345,11 +409,10 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         
         $SQL['code'] = input_filter_com(convert($_REQUEST['code']));
 
-
         $SQL['url'] = input_filter_com(convert($_REQUEST['url']));
         if(empty($SQL['url']))
         {
-            $SQL['url'] = $parse->translit(trim($_REQUEST['url']),1, 1);
+            $SQL['url'] = $parse->translit($SQL['name'],1, 1);
         }
 
         $SQL['meta_title'] = input_filter_com(convert($_REQUEST['meta_title']));
@@ -381,7 +444,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
             $mysql->query('UPDATE '.prefix.'_eshop_products SET '.implode(', ',$vnames).' WHERE id = \''.intval($qid).'\'  ');
 
             if($images != NULL) {
-                foreach ($images as $img) {
+                foreach ($images as $inx_img => $img) {
                     $timestamp = time();
                     $iname = $timestamp."-".$img;
                     
@@ -393,7 +456,9 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                     $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/thumb/'.$iname;
                     rename($temp_name, $current_name);
                     
-                    $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`) VALUES ('$iname','$qid')");
+                    $pos = $max_img_pos + $inx_img;
+                    
+                    $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$pos')");
                 }
             }
             
@@ -450,62 +515,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     foreach ($row as $k => $v) { 
         $tEntry[$k] = $v;
     }
-        
-    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
-    $cats = getCats($res);
 
-
-    $options_array = array();
-    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_options LEFT JOIN ".prefix."_eshop_features ON ".prefix."_eshop_features.id=".prefix."_eshop_options.feature_id WHERE ".prefix."_eshop_options.product_id = '$qid' ORDER BY position, id") as $orow)
-    {
-        $options_array[$orow['id']] = $orow['value'];
-    }
-    
-    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $frow)
-    {
-        $features_array[] = 
-            array(
-                'id' => $frow['id'],
-                'name' => $frow['name'],
-                'position' => $frow['position'],
-                'in_filter' => $frow['in_filter'],
-                'value' => $options_array[$frow['id']]
-                );
-    }
-    
-    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_images WHERE product_id = '$qid' ORDER BY position, id") as $irow)
-    {
-        $images_array[] = 
-            array(
-                'id' => $irow['id'],
-                'filepath' => $irow['filepath'],
-                'product_id' => $irow['product_id'],
-                'position' => $irow['position'],
-                'del_link' => home.'/engine/admin.php?mod=extra-config&plugin=eshop&action=edit_product&id='.$qid.'&delimg='.$irow['id'].'&filepath='.$irow['filepath'].'',
-                );
-    }
-    
-    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_related_products rp LEFT JOIN ".prefix."_eshop_products p ON p.id=rp.related_id WHERE rp.product_id = '$qid' ORDER BY rp.position") as $rrow)
-    {
-        $related_array[] = 
-            array(
-                'name' => $rrow['name'],
-                'product_id' => $rrow['product_id'],
-                'related_id' => $rrow['related_id'],
-                'position' => $rrow['position']
-                );
-    }
-    
-    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_variants WHERE product_id = '$qid' ORDER BY position, id") as $vrow)
-    {
-        $price_array[] = 
-            array(
-                'id' => $vrow['id'],
-                'price' => $vrow['price'],
-                'compare_price' => $vrow['compare_price'],
-                'stock' => $vrow['stock']
-                );
-    }
     
     if (isset($_REQUEST['delimg']) && isset($_REQUEST['filepath']))
     {
@@ -810,7 +820,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
 
 function add_cat($params)
 {
-global $tpl, $template, $config, $mysql, $lang, $twig;
+global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     $tpath = locatePluginTemplates(array('config/main', 'config/add_cat'), 'eshop', 1);
     
     if (isset($_REQUEST['submit']))
@@ -831,10 +841,15 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
         $url = input_filter_com(convert($_REQUEST['url']));
         if(empty($url))
         {
-            $error_text[] = 'URL категории не задан';
+            $url = $parse->translit($cat_name,1, 1);
         }
 
         $meta_title = input_filter_com(convert($_REQUEST['meta_title']));
+        if(empty($meta_title))
+        {
+            $meta_title = $cat_name;
+        }
+        
         $meta_keywords = input_filter_com(convert($_REQUEST['meta_keywords']));
         $meta_description = input_filter_com(convert($_REQUEST['meta_description']));
         
@@ -867,7 +882,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
                 )
             ');
             
-            #generate_catz_cache(true);
+            generate_catz_cache(true);
             
             redirect_eshop('?mod=extra-config&plugin=eshop&action=list_cat');
         }
@@ -929,7 +944,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
 
 function edit_cat($params)
 {
-global $tpl, $template, $config, $mysql, $lang, $twig;
+global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     $tpath = locatePluginTemplates(array('config/main', 'config/add_cat'), 'eshop', 1);
     
     $id = intval($_REQUEST['id']);
@@ -953,7 +968,13 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
         $url = input_filter_com(convert($_REQUEST['url']));
         if(empty($url))
         {
-            $error_text[] = 'URL категории не задан';
+            $url = $parse->translit($cat_name,1, 1);
+        }
+
+        $meta_title = input_filter_com(convert($_REQUEST['meta_title']));
+        if(empty($meta_title))
+        {
+            $meta_title = $cat_name;
         }
 
         $meta_title = input_filter_com(convert($_REQUEST['meta_title']));
@@ -1000,7 +1021,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
                 WHERE id = '.$id.'
             ');
 
-            #generate_catz_cache(true);
+            generate_catz_cache(true);
             
             redirect_eshop('?mod=extra-config&plugin=eshop&action=list_cat');
         }
@@ -2085,7 +2106,7 @@ function urls()
             
             $ULIB->registerCommand('eshop', '',
                 array ('vars' =>
-                        array(  'cat' => array('matchRegex' => '\d+', 'descr' => array('russian' => 'Категории')),
+                        array(  'cat' => array('matchRegex' => '\d+', 'descr' => array('russian' => 'ID категории')),
                                 'page' => array('matchRegex' => '\d{1,4}', 'descr' => array('russian' => 'Постраничная навигация'))
                         ),
                         'descr' => array ('russian' => 'Главная страница'),
@@ -2131,6 +2152,18 @@ function urls()
             $ULIB->registerCommand('eshop', 'xml_export',
                 array (
                         'descr' => array ('russian' => 'Экспорт XML'),
+                )
+            );
+            
+            $ULIB->registerCommand('eshop', 'ebasket_list',
+                array (
+                        'descr' => array ('russian' => 'Корзина'),
+                )
+            );
+
+            $ULIB->registerCommand('eshop', 'order',
+                array (
+                        'descr' => array ('russian' => 'Заказы'),
                 )
             );
 
@@ -2461,6 +2494,75 @@ function urls()
                 ),
               )
             );
+
+           $UHANDLER->registerHandler(0,
+                array (
+                'pluginName' => 'eshop',
+                'handlerName' => 'ebasket_list',
+                'flagPrimary' => true,
+                'flagFailContinue' => false,
+                'flagDisabled' => false,
+                'rstyle' => 
+                array (
+                  'rcmd' => '/eshop/ebasket_list/',
+                  'regex' => '#^/eshop/ebasket_list/$#',
+                  'regexMap' => 
+                  array (
+                    1 => 'page',
+                  ),
+                  'reqCheck' => 
+                  array (
+                  ),
+                  'setVars' => 
+                  array (
+                  ),
+                  'genrMAP' => 
+                  array (
+                    0 => 
+                    array (
+                      0 => 0,
+                      1 => '/eshop/ebasket_list/',
+                      2 => 0,
+                    ),
+                  ),
+                ),
+              )
+            );
+
+           $UHANDLER->registerHandler(0,
+                array (
+                'pluginName' => 'eshop',
+                'handlerName' => 'order',
+                'flagPrimary' => true,
+                'flagFailContinue' => false,
+                'flagDisabled' => false,
+                'rstyle' => 
+                array (
+                  'rcmd' => '/eshop/order/',
+                  'regex' => '#^/eshop/order/$#',
+                  'regexMap' => 
+                  array (
+                    1 => 'page',
+                  ),
+                  'reqCheck' => 
+                  array (
+                  ),
+                  'setVars' => 
+                  array (
+                  ),
+                  'genrMAP' => 
+                  array (
+                    0 => 
+                    array (
+                      0 => 0,
+                      1 => '/eshop/order/',
+                      2 => 0,
+                    ),
+                  ),
+                ),
+              )
+            );
+
             
             $UHANDLER->saveConfig();
         } else {
@@ -2473,6 +2575,8 @@ function urls()
             $ULIB->removeCommand('eshop', 'compare');
             $ULIB->removeCommand('eshop', 'currency');
             $ULIB->removeCommand('eshop', 'xml_export');
+            $ULIB->removeCommand('eshop', 'ebasket_list');
+            $ULIB->removeCommand('eshop', 'order');
             $ULIB->saveConfig();
             $UHANDLER = new urlHandler();
             $UHANDLER->loadConfig();
@@ -2483,6 +2587,8 @@ function urls()
             $UHANDLER->removePluginHandlers('eshop', 'compare');
             $UHANDLER->removePluginHandlers('eshop', 'currency');
             $UHANDLER->removePluginHandlers('eshop', 'xml_export');
+            $UHANDLER->removePluginHandlers('eshop', 'ebasket_list');
+            $UHANDLER->removePluginHandlers('eshop', 'order');
             $UHANDLER->saveConfig();
         }
         

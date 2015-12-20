@@ -20,9 +20,7 @@
         <td width="50%" class="contentEntry1">Тип<br /><small></small></td>
         <td width="50%" class="contentEntry2"><input type="text" size="80" name="type" value="{% if (entries.type == 1) %}Обычный{% elseif (entries.type == 2) %}Купить в один клик{% elseif (entries.type == 3) %}Узнать о наличии{% endif %}" disabled="disabled"/></td>
     </tr>
-    
-    {{ debugValue(entries) }}
-    
+
     {% if (entries.author_id) %}
     <tr>
         <td width="50%" class="contentEntry1">Пользователь<br /><small></small></td>

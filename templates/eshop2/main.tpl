@@ -127,31 +127,31 @@
                 <ul class="nav nav-default-inline mq-w-768 mq-max mq-block" data-mq-max="768" data-mq-min="0" data-mq-target="#topMenuInMainMenu">
                   
                   <li>
-                    <a href="{{home}}/o-magazine" target="_self" title="О компании">
+                    <a href="{{home}}" target="_self" title="О компании">
                       О компании
                     </a>
                   </li>
                   
                   <li>
-                    <a href="{{home}}/dostavka" target="_self" title="Доставка">
+                    <a href="{{home}}" target="_self" title="Доставка">
                       Доставка
                     </a>
                   </li>
                   
                   <li>
-                    <a href="{{home}}/oplata" target="_self" title="Оплата">
+                    <a href="{{home}}" target="_self" title="Оплата">
                       Оплата
                     </a>
                   </li>
                   
                   <li>
-                    <a href="{{home}}/novosti" target="_self" title="Новости">
+                    <a href="{{home}}" target="_self" title="Новости">
                       Новости
                     </a>
                   </li>
                   
                   <li>
-                    <a href="{{home}}/shop/brand" target="_self" title="Бренды">
+                    <a href="{{home}}" target="_self" title="Бренды">
                       Бренды
                     </a>
                   </li>
@@ -202,17 +202,24 @@
           
         </li>
         <li class="compare-button">
-            {{ plugin_eshop_compare }}
+            {{ eshop_compare }}
         </li>
         <!--Start. Top menu and authentication data block-->
         <li class="btn-personal-area">
-          <button type="button" id="loginButton" data-drop=".drop-enter" data-source="{{home}}/auth" class="isDrop">
+          {% if not (global.flags.isLogged) %}
+          <button type="button" onclick="location = '{{home}}/login/'">
             <span class="icon_enter">
             </span>
             <span class="text-el">
               Вход
             </span>
           </button>
+          {% else %}
+          <button type="button" data-jq-dropdown="#jq-dropdown-2">
+            <span class="icon_profile"></span>
+            <span class="text-el">Профиль</span>
+          </button>
+          {% endif %}
         </li>
         <!--Else show link for personal cabinet -->
         <!--End. Top menu and authentication data block-->
@@ -302,7 +309,7 @@
           <!-- Start. Include cart data template-->
           <div id="tinyBask" class="frame-cleaner">
             
-            {{ plugin_ebasket }}
+            {{ eshop_ebasket }}
 
           </div>
           <!-- End. Include cart data template-->
@@ -350,9 +357,10 @@
                                                 </span>
                                               </a>
                                             </div>
-                                            <div class="frame-drop-menu left-drop" style="display: none; left: 0px;">
-                                            
-                                              {{ callPlugin('eshop.show_catz_tree') }}
+                                            <div class="frame-drop-menu left-drop">
+
+                                                {{ callPlugin('eshop.show_catz_tree') }}
+
                                               <!--
                                               <ul class="items">
                                                 <li class="column_0">
@@ -383,7 +391,7 @@
                                       <td>
                                         <div class="frame-item-menu frameItemMenu">
                                           <div class="frame-title">
-                                            <a href="{{home}}/shop/category/domashnee-video" title="Домашнее видео" class="title">
+                                            <a href="{{home}}" title="Домашнее видео" class="title">
                                               <span class="helper" style="height: 49px;">
                                               </span>
                                               <span class="text-el">
@@ -397,7 +405,7 @@
                                       <td>
                                         <div class="frame-item-menu frameItemMenu">
                                           <div class="frame-title">
-                                            <a href="{{home}}/shop/category/detskie-tovary" title="Детские товары" class="title">
+                                            <a href="{{home}}" title="Детские товары" class="title">
                                               <span class="helper" style="height: 49px;">
                                               </span>
                                               <span class="text-el">
@@ -411,7 +419,7 @@
                                       <td>
                                         <div class="frame-item-menu frameItemMenu">
                                           <div class="frame-title">
-                                            <a href="{{home}}/shop/category/aktivnyi-otdyh-i-turizm" title="Активный отдых и туризм" class="title">
+                                            <a href="{{home}}" title="Активный отдых и туризм" class="title">
                                               <span class="helper" style="height: 49px;">
                                               </span>
                                               <span class="text-el">
@@ -425,7 +433,7 @@
                                       <td>
                                         <div class="frame-item-menu frameItemMenu">
                                           <div class="frame-title">
-                                            <a href="{{home}}/shop/category/muzykalnye-instrumenty" title="Музыкальные инструменты" class="title">
+                                            <a href="{{home}}" title="Музыкальные инструменты" class="title">
                                               <span class="helper" style="height: 49px;">
                                               </span>
                                               <span class="text-el">
@@ -471,19 +479,19 @@
                         <div class="content-carousel">
                           <div class="f_l">
                             <p>
-                              <a href="{{home}}/shop/product/mobilnyi-telefon-sony-xperia-v-lt25i-black">
+                              <a href="{{home}}">
                                 <img src="{{ tpl_url }}/img/1.jpg" alt="">
                               </a>
                             </p>
                           </div>
                           <div class="f_r">
                             <p>
-                              <a href="{{home}}/shop/product/karta-pamiati-kingston-microsd-16-gb-sdc4-16gb">
+                              <a href="{{home}}">
                                 <img src="{{ tpl_url }}/img/3.jpg" alt="">
                               </a>
                             </p>
                             <p>
-                              <a href="{{home}}/shop/product/garnitura-samsung-bhm1100-black">
+                              <a href="{{home}}">
                                 <img src="{{ tpl_url }}/img/4.jpg" alt="">
                               </a>
                             </p>
@@ -491,7 +499,7 @@
                           <ul class="cycle">
                             <!--remove class="cycle" if not cycle-->
                             <li>
-                              <a href="{{home}}/shop/product/mobilnyi-telefon-lg-nexus-4-e960-black">
+                              <a href="{{home}}">
                                 <img src="{{ tpl_url }}/img/2.jpg" alt="" style="display: inline;">
                               </a>
                             </li>
@@ -630,122 +638,9 @@
                       </div>
                     </div>
                   </div>
-                  <div class="frame-news">
-                    <div class="title-news">
-                      <div class="frame-title">
-                        <div class="title">
-                          <a href="{{home}}/novosti" class="t-d_n f-s_0 s-all-d">
-                            <span class="text-el">
-                              Новости и акции
-                            </span>
-                            <span class="icon_arrow">
-                            </span>
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                    <ul class="items items-news">
-                      <li class="is-photo">
-                        <a href="{{home}}/novosti/8r-biznes-v-seti" class="frame-photo-title">
-                          <span class="photo-block">
-                            <span class="helper">
-                            </span>
-                            <img src="{{ tpl_url }}/img/new1.jpg" alt="">
-                          </span>
-                          <span class="title">
-                            8Р - Бизнес в сети
-                          </span>
-                        </a>
-                        <div class="description">
-                          <p>
-                            Редкий предприниматель в наше время не задается вопросом: Как с помощью интернета увеличить продажи?
-                          </p>
-                          
-                          <div class="date f-s_0">
-                            <span class="icon_time">
-                            </span>
-                            <span class="text-el">
-                            </span>
-                            <span class="day">
-                              02 
-                            </span>
-                            <span class="month">
-                              Марта 
-                            </span>
-                            <span class="year">
-                              2013 
-                            </span>
-                          </div>
-                        </div>
-                      </li>
-                      <li class="is-photo">
-                        <a href="{{home}}/novosti/kak-dobavit-sait-v-iandeks-i-gugl-sovety-nachinaiushchim-vebmasteram" class="frame-photo-title">
-                          <span class="photo-block">
-                            <span class="helper">
-                            </span>
-                            <img src="{{ tpl_url }}/img/new2.jpg" alt="">
-                          </span>
-                          <span class="title">
-                            Как добавить сайт в Яндекс и Гугл. Советы начинающим вебмастерам
-                          </span>
-                        </a>
-                        <div class="description">
-                          <p>
-                            Создание сайта само по себе является нелегким и довольно продолжительным процессом.
-                          </p>
-                          
-                          <div class="date f-s_0">
-                            <span class="icon_time">
-                            </span>
-                            <span class="text-el">
-                            </span>
-                            <span class="day">
-                              02 
-                            </span>
-                            <span class="month">
-                              Марта 
-                            </span>
-                            <span class="year">
-                              2013 
-                            </span>
-                          </div>
-                        </div>
-                      </li>
-                      <li class="is-photo">
-                        <a href="{{home}}/novosti/kak-raskrutit-sait-metody-poiskovogo-prodvizheniia" class="frame-photo-title">
-                          <span class="photo-block">
-                            <span class="helper">
-                            </span>
-                            <img src="{{ tpl_url }}/img/new3.jpg" alt="">
-                          </span>
-                          <span class="title">
-                            Как раскрутить сайт? Методы поискового продвижения
-                          </span>
-                        </a>
-                        <div class="description">
-                          <p>
-                            Наличие корпоративного сайта уже стало стандартом де-факто и знаком хорошего тона любой компании, а не только известных игроков рынка.
-                          </p>
-                          
-                          <div class="date f-s_0">
-                            <span class="icon_time">
-                            </span>
-                            <span class="text-el">
-                            </span>
-                            <span class="day">
-                              02 
-                            </span>
-                            <span class="month">
-                              Марта 
-                            </span>
-                            <span class="year">
-                              2013 
-                            </span>
-                          </div>
-                        </div>
-                      </li>
-                    </ul>
-                  </div>
+                  
+                {{ callPlugin('xnews.show', { 'template' : 'xnews1', 'extractEmbeddedItems' : 1, 'count' : '3'}) }}
+
                 </div>
               </div>
               {% else %}
@@ -793,7 +688,7 @@
                   <div class="box-3">
                     <div class="inside-padd">
                       <div class="title-h1">
-                        <a href="{{home}}/shop/brand" class="t-d_n f-s_0 s-all-d">
+                        <a href="{{home}}" class="t-d_n f-s_0 s-all-d">
                           <span class="text-el">
                             Бренды
                           </span>
@@ -808,38 +703,38 @@
                               <div class="content-carousel">
                                 <ul class="items items-brands">
                                   <li>
-                                    <a href="{{home}}/shop/brand/pioneer" class="frame-photo-title">
+                                    <a href="{{home}}" class="frame-photo-title">
                                       <span class="photo-block">
                                         <span class="helper">
                                         </span>
-                                        <img data-original="{{home}}/uploads/shop/brands/pioneer.png" src="{{ tpl_url }}/img/blank.gif" title="Pioneer" alt="Pioneer" class="lazy">
+                                        <img src="{{tpl_url}}/img/brands/pioneer.png" title="Pioneer" alt="Pioneer">
                                       </span>
                                     </a>
                                   </li>
                                   <li>
-                                    <a href="{{home}}/shop/brand/sony" class="frame-photo-title">
+                                    <a href="{{home}}" class="frame-photo-title">
                                       <span class="photo-block">
                                         <span class="helper">
                                         </span>
-                                        <img data-original="{{home}}/uploads/shop/brands/sony.png" src="{{ tpl_url }}/img/blank.gif" title="Sony" alt="Sony" class="lazy">
+                                        <img src="{{tpl_url}}/img/brands/sony.png" title="Sony" alt="Sony">
                                       </span>
                                     </a>
                                   </li>
                                   <li>
-                                    <a href="{{home}}/shop/brand/apple" class="frame-photo-title">
+                                    <a href="{{home}}" class="frame-photo-title">
                                       <span class="photo-block">
                                         <span class="helper">
                                         </span>
-                                        <img data-original="{{home}}/uploads/shop/brands/apple.png" src="{{ tpl_url }}/img/blank.gif" title="Apple" alt="Apple" class="lazy">
+                                        <img src="{{tpl_url}}/img/brands/apple.png" title="Apple" alt="Apple">
                                       </span>
                                     </a>
                                   </li>
                                   <li>
-                                    <a href="{{home}}/shop/brand/samsung" class="frame-photo-title">
+                                    <a href="{{home}}" class="frame-photo-title">
                                       <span class="photo-block">
                                         <span class="helper">
                                         </span>
-                                        <img data-original="{{home}}/uploads/shop/brands/samsung.png" src="{{ tpl_url }}/img/blank.gif" title="Samsung" alt="Samsung" class="lazy">
+                                        <img src="{{tpl_url}}/img/brands/samsung.png" title="Samsung" alt="Samsung">
                                       </span>
                                     </a>
                                   </li>
@@ -924,37 +819,37 @@
                     <ul class="nav nav-vertical">
                       
                       <li>
-                        <a href="{{home}}/o-magazine" target="_self" title="О компании">
+                        <a href="{{home}}" target="_self" title="О компании">
                           О компании
                         </a>
                       </li>
                       
                       <li>
-                        <a href="{{home}}/dostavka" target="_self" title="Доставка">
+                        <a href="{{home}}" target="_self" title="Доставка">
                           Доставка
                         </a>
                       </li>
                       
                       <li>
-                        <a href="{{home}}/oplata" target="_self" title="Оплата">
+                        <a href="{{home}}" target="_self" title="Оплата">
                           Оплата
                         </a>
                       </li>
                       
                       <li>
-                        <a href="{{home}}/novosti" target="_self" title="Новости">
+                        <a href="{{home}}" target="_self" title="Новости">
                           Новости
                         </a>
                       </li>
                       
                       <li>
-                        <a href="{{home}}/shop/brand" target="_self" title="Бренды">
+                        <a href="{{home}}" target="_self" title="Бренды">
                           Бренды
                         </a>
                       </li>
                       
                       <li>
-                        <a href="{{home}}/kontakty" target="_self" title="Контакты">
+                        <a href="{{home}}" target="_self" title="Контакты">
                           Контакты
                         </a>
                       </li>
@@ -964,27 +859,27 @@
                   <div class="footer-category-menu">
                     <ul class="nav nav-vertical">
                       <li>
-                        <a href="{{home}}/shop/category/telefoniia-pleery-gps" title="Телефония, МР3-плееры, GPS" class="title">
+                        <a href="{{home}}" title="Телефония, МР3-плееры, GPS" class="title">
                           Телефония, МР3-плееры, GPS
                         </a>
                       </li>
                       <li>
-                        <a href="{{home}}/shop/category/domashnee-video" title="Домашнее видео" class="title">
+                        <a href="{{home}}" title="Домашнее видео" class="title">
                           Домашнее видео
                         </a>
                       </li>
                       <li>
-                        <a href="{{home}}/shop/category/detskie-tovary" title="Детские товары" class="title">
+                        <a href="{{home}}" title="Детские товары" class="title">
                           Детские товары
                         </a>
                       </li>
                       <li>
-                        <a href="{{home}}/shop/category/aktivnyi-otdyh-i-turizm" title="Активный отдых и туризм" class="title">
+                        <a href="{{home}}" title="Активный отдых и туризм" class="title">
                           Активный отдых и туризм
                         </a>
                       </li>
                       <li>
-                        <a href="{{home}}/shop/category/muzykalnye-instrumenty" title="Музыкальные инструменты" class="title">
+                        <a href="{{home}}" title="Музыкальные инструменты" class="title">
                           Музыкальные инструменты
                         </a>
                       </li>
@@ -1033,17 +928,17 @@
                   <div class="footer-profile">
                     <ul class="nav nav-vertical">
                       <li>
-                        <button type="button" data-trigger="#loginButton" title="Вход">
+                        <button type="button" onclick="location = '{{home}}/login/'" title="Вход">
                           Вход
                         </button>
                       </li>
                       <li>
-                        <button onclick="location = &#39;{{home}}/auth/register&#39;" title="Регистрация">
+                        <button onclick="location = '{{home}}/register/'" title="Регистрация">
                           Регистрация
                         </button>
                       </li>
                       <li>
-                        <button type="button" data-trigger="[data-drop=&#39;#ordercall&#39;]" title="Обратный звонок">
+                        <button type="button" title="Обратный звонок">
                           Обратный звонок
                         </button>
                       </li>
@@ -1160,13 +1055,21 @@
             </div>
           </div>
                     
-          {{ plugin_ebasket_notify }}
+          {{ eshop_ebasket_notify }}
 
         <div id="jq-dropdown-1" class="jq-dropdown jq-dropdown-tip">
             <ul class="jq-dropdown-menu">
                 {% for cc in system_flags.eshop_currency %}
                     <li><a href="{{ cc.currency_link }}">{{ cc.code }}</a></li>
                 {% endfor %}
+            </ul>
+        </div>
+
+        <div id="jq-dropdown-2" class="jq-dropdown jq-dropdown-tip">
+            <ul class="jq-dropdown-menu">
+                <li><a href="{{home}}/profile.html">Основные данные</a></li>
+                <li><a href="{{home}}/logout/">Выход</a></li>
+                
             </ul>
         </div>
 
@@ -1258,7 +1161,20 @@ $(document).ready(function() {
         if( count == undefined) {
             count = 1;
         }
-        rpcBasketRequest('plugin.ebasket.manage', {'action': 'add', 'ds':1,'id':id,'count':count});
+        
+        $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_ebasket_manage', rndval: new Date().getTime(), params : json_encode({'action': 'add', 'ds':1,'id':id,'count':count }) }, function(data) {
+            try {
+                resTX = data;
+            } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
+            if (!resTX['status']) {
+                alert('Error ('+resTX['errorCode']+'): '+resTX['errorText']);
+            } else {
+                document.getElementById('tinyBask').innerHTML = resTX['update'];
+            }
+        }).error(function() { 
+            alert('HTTP error during request', 'ERROR'); 
+        });
+
         $(".forCenter").css("display", "block");
         $(".overlayDrop").css("display", "block");
         e.preventDefault();

@@ -4,7 +4,9 @@ if (!defined('NGCMS'))
     exit('HAL');
 
 LoadPluginLang('eshop', 'main', '', '', '#');
+
 add_act('index', 'eshop_header_show');
+
 register_plugin_page('eshop','','eshop');
 register_plugin_page('eshop','show','show_eshop');
 register_plugin_page('eshop','search','search_eshop');
@@ -12,6 +14,11 @@ register_plugin_page('eshop','stocks','stocks_eshop');
 register_plugin_page('eshop','compare','compare_eshop');
 register_plugin_page('eshop','currency','currency_eshop');
 register_plugin_page('eshop','xml_export','xml_export_eshop');
+
+register_plugin_page('eshop','ebasket_list','plugin_ebasket_list');
+register_plugin_page('eshop','ebasket_update','plugin_ebasket_update');
+
+register_plugin_page('eshop','order','order_eshop');
 
 include_once(dirname(__FILE__).'/cache.php');
 
@@ -1376,6 +1383,295 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
 }
 
 
+//
+// Показать содержимое корзины
+function plugin_ebasket_list(){
+    global $mysql, $twig, $userROW, $template, $ip;
+
+    // Определяем условия выборки
+    $filter = array();
+    if (is_array($userROW)) {
+        $filter []= '(user_id = '.db_squote($userROW['id']).')';
+    }
+
+    if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {
+        $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';
+    }
+
+    // Выполняем выборку
+    $recs = array();
+    $total = 0;
+    if (count($filter)) {
+        foreach ($mysql->select("select * from ".prefix."_eshop_ebasket where ".join(" or ", $filter), 1) as $rec) {
+            $total += round($rec['price'] * $rec['count'], 2);
+
+            $rec['sum'] = sprintf('%9.2f', round($rec['price'] * $rec['count'], 2));
+            $rec['xfields'] = unserialize($rec['linked_fld']);
+            unset($rec['linked_fld']);
+
+            $recs []= $rec;
+        }
+    }
+
+    if (!empty($_POST))
+    {
+        $SQL['name'] = filter_var( $_REQUEST['userInfo']['fullName'], FILTER_SANITIZE_STRING );
+        if(empty($SQL['name']))
+        {
+            $error_text[] = 'Имя не задано';
+        }
+
+        $SQL['email'] = filter_var( $_REQUEST['userInfo']['email'], FILTER_SANITIZE_STRING );
+        if(empty($SQL['email']))
+        {
+            $error_text[] = 'Email не задан';
+        }
+
+        $SQL['phone'] = filter_var( $_REQUEST['userInfo']['phone'], FILTER_SANITIZE_STRING );
+        if(empty($SQL['phone']))
+        {
+            $error_text[] = 'Телефон не задан';
+        }
+        
+        $SQL['address'] = filter_var( $_REQUEST['userInfo']['deliverTo'], FILTER_SANITIZE_STRING );
+        if(empty($SQL['address']))
+        {
+            $error_text[] = 'Адрес доставки не задан';
+        }
+        
+        $SQL['comment'] = filter_var( $_REQUEST['userInfo']['commentText'], FILTER_SANITIZE_STRING );
+        
+        $SQL['dt'] = time() + ($config['date_adjust'] * 60);
+        $SQL['ip'] =  $ip;
+        
+        $SQL['type'] =  "1";
+        
+        $SQL['paid'] = 0;
+        $SQL['total_price'] = $total;
+        
+        if(isset($userROW)) {
+            $SQL['author_id'] = $userROW['id'];
+        }
+        
+        $SQL['uniqid'] = substr(str_shuffle(MD5(microtime())), 0, 10);
+
+        if(empty($error_text))
+        {
+            $vnames = array();
+            foreach ($SQL as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
+            $mysql->query('INSERT INTO '.prefix.'_eshop_orders SET '.implode(', ',$vnames).' ');
+            
+            $qid = $mysql->lastid('eshop_orders');
+            
+            if($qid != NULL) {
+                
+                foreach ($mysql->select("select * from ".prefix."_eshop_ebasket where ".join(" or ", $filter), 1) as $rec) {
+                    $r_linked_id = $rec['linked_id'];
+                    $r_title = $rec['title'];
+                    $r_count = $rec['count'];
+                    $r_price = $rec['price'];
+                    $r_linked_fld = $rec['linked_fld'];
+                    $mysql->query("INSERT INTO ".prefix."_eshop_order_basket (`order_id`, `linked_id`, `title`, `count`, `price`, `linked_fld`) VALUES ('$qid','$r_linked_id','$r_title','$r_count','$r_price','$r_linked_fld')");
+                }
+                
+                if (count($filter)) {
+                    $mysql->query("delete from ".prefix."_eshop_ebasket where ".join(" or ", $filter));
+                }
+                
+                // mail notify
+                
+                // Определяем условия выборки
+                $filter = array();
+                if ($qid) {
+                    $filter []= '(order_id = '.db_squote($qid).')';
+                }
+
+                $total = 0;
+                foreach ($mysql->select("select * from ".prefix."_eshop_order_basket where ".join(" or ", $filter), 1) as $rec) {
+                            $total += round($rec['price'] * $rec['count'], 2);
+
+                            $rec['sum'] = sprintf('%9.2f', round($rec['price'] * $rec['count'], 2));
+                            $rec['xfields'] = unserialize($rec['linked_fld']);
+                            unset($rec['linked_fld']);
+                            $basket []= $rec;
+                }
+                
+                $notify_tpath = locatePluginTemplates(array('ebasket/lfeedback'), 'eshop', pluginGetVariable('eshop', 'localsource'));
+                $notify_xt = $twig->loadTemplate($notify_tpath['ebasket/lfeedback'].'ebasket/'.'lfeedback.tpl');
+
+                $pVars = array(
+                    'recs'		=> count($recs),
+                    'entries'	=> $recs,
+                    'total'		=> sprintf('%9.2f', $total),
+                    'vnames'   => $vnames,
+                );
+            
+                $mailBody = $notify_xt->render($pVars);
+                $mailSubject = "Новый заказ с сайта";
+                $mailTo = pluginGetVariable('eshop', 'email_notify_orders');
+            
+                sendEmailMessage($mailTo, $mailSubject, $mailBody, $filename = false, $mail_from = false, $ctype = 'text/html');
+                
+                $notify_text[] = 'Заказ добавлен.';
+
+            }
+            
+        }
+
+    }
+
+    if(!empty($error_text))
+    {
+        foreach($error_text as $error)
+        {
+            //$error_input .= msg(array("type" => "error", "text" => $error));
+            $error_input .= "<p>".$error."</p>";
+        }
+    } else {
+        $error_input ='';
+    }
+
+    if(!empty($notify_text))
+    {
+        foreach($notify_text as $notify)
+        {
+            $notify_input .= msg(array("type" => "info", "text" => $notify));
+        }
+    } else {
+        $notify_input ='';
+    }
+
+    foreach ($SQL as $k => $v) { 
+        $tFormEntry[$k] = $v;
+    }
+        
+    $tFormEntry['error'] = $error_text;
+    $tFormEntry['notify'] = $notify_text;
+    $tFormEntry['id'] = $qid;
+    
+    $basket_link = checkLinkAvailable('eshop', 'ebasket_list')?
+            generateLink('eshop', 'ebasket_list', array()):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'ebasket_list'), array());
+
+
+    $tVars = array(
+        'formEntry'	=> $tFormEntry,
+        'recs'		=> count($recs),
+        'entries'	=> $recs,
+        'total'		=> sprintf('%9.2f', $total),
+        'basket_link' => $basket_link,
+    );
+
+    $tpath = locatePluginTemplates(array('ebasket/list'), 'eshop', pluginGetVariable('eshop', 'localsource'));
+
+    $xt = $twig->loadTemplate($tpath['ebasket/list'].'ebasket/'.'list.tpl');
+
+    $template['vars']['mainblock'] = $xt->render($tVars);
+}
+
+
+function order_eshop(){
+    global $mysql, $twig, $userROW, $template, $ip;
+
+    // Определяем условия выборки
+    $filter = array();
+    
+    $SQL['id'] = filter_var( $_REQUEST['id'], FILTER_SANITIZE_STRING );
+    if(empty($SQL['id']))
+    {
+        $error_text[] = 'ID не задано';
+    }
+    else {
+        $filter []= '(id = '.db_squote($SQL['id']).')';
+    }
+
+    $SQL['uniqid'] = filter_var( $_REQUEST['uniqid'], FILTER_SANITIZE_STRING );
+    if(empty($SQL['uniqid']))
+    {
+        $error_text[] = 'Uniqid не задан';
+    }
+    else {
+        $filter []= '(uniqid = '.db_squote($SQL['uniqid']).')';
+    }
+
+
+    /*
+    if (is_array($userROW)) {
+        $filter []= '(user_id = '.db_squote($userROW['id']).')';
+    }
+
+    if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {
+        $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';
+    }
+    * */
+
+    if(empty($error_text))
+    {
+        
+        $sqlQ = "SELECT * FROM ".prefix."_eshop_orders ".(count($filter)?"WHERE ".implode(" AND ", $filter):'')." LIMIT 1";
+        $row = $mysql->record($sqlQ);
+        
+        if(!empty($row)) {
+            $qid = $row['id'];
+
+            // Определяем условия выборки
+            $filter = array();
+            if ($qid) {
+                $filter []= '(order_id = '.db_squote($qid).')';
+            }
+
+            $total = 0;
+            foreach ($mysql->select("select * from ".prefix."_eshop_order_basket where ".join(" or ", $filter), 1) as $rec) {
+                        $total += round($rec['price'] * $rec['count'], 2);
+                        $rec['sum'] = sprintf('%9.2f', round($rec['price'] * $rec['count'], 2));
+                        $rec['xfields'] = unserialize($rec['linked_fld']);
+                        unset($rec['linked_fld']);
+                        $basket []= $rec;
+            }
+        }
+        else {
+            $error_text[] = 'Неврные парметры заказа';
+        }
+
+    }
+    
+    if(!empty($error_text))
+    {
+        foreach($error_text as $error)
+        {
+            //$error_input .= msg(array("type" => "error", "text" => $error));
+            $error_input .= "<p>".$error."</p>";
+        }
+    } else {
+        $error_input ='';
+    }
+
+    foreach ($row as $k => $v) { 
+        $tFormEntry[$k] = $v;
+    }
+        
+    $tFormEntry['error'] = $error_text;
+    $tFormEntry['id'] = $qid;
+    
+    $basket_link = checkLinkAvailable('eshop', 'ebasket_list')?
+            generateLink('eshop', 'ebasket_list', array()):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'ebasket_list'), array());
+
+    $tVars = array(
+        'formEntry'	=> $tFormEntry,
+        'recs'		=> count($basket),
+        'entries'	=> $basket,
+        'total'		=> sprintf('%9.2f', $total),
+        'basket_link' => $basket_link,
+    );
+
+    $tpath = locatePluginTemplates(array('order_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'));
+
+    $xt = $twig->loadTemplate($tpath['order_eshop'].'order_eshop.tpl');
+
+    $template['vars']['mainblock'] = $xt->render($tVars);
+}
+
 
 function build_tree($cats,$parent_id,$only_parent = false){
     if(is_array($cats) and isset($cats[$parent_id])){
@@ -1504,56 +1800,9 @@ function plugin_eshop_cron($isSysCron, $handler)
 {
 global $tpl, $cron, $mysql, $config, $lang, $parse, $PFILTERS;
 
-    if ($handler == 'eshop_expired') {
-        eshopUpdateExpiredAnnounces();
-    }
-
     if ($handler == 'eshop_views') {
         eshopUpdateDelayedCounters();
     }
-
-}
-
-// Update expired announces
-function eshopUpdateExpiredAnnounces() {
-global $tpl, $cron, $mysql, $config, $lang, $parse, $PFILTERS;
-        
-        foreach ($mysql->select("select * from ".prefix."_eshop where active = 1 AND (datediff(NOW(), FROM_UNIXTIME(vip_expired)) > 0) AND vip_expired != 0") as $irow) {
-            $mysql->query("UPDATE ".prefix."_eshop SET vip_expired = '', vip_added = '' WHERE id = '".$irow['id']."' ");
-        }
-        
-        foreach ($mysql->select("select * from ".prefix."_eshop where active = 1 AND datediff(NOW(),FROM_UNIXTIME(editdate)) > announce_period * 30") as $irow) {
-
-        $hashcode = rand_str();
-
-        $mysql->query("UPDATE ".prefix."_eshop SET active = 0, expired = '".$hashcode."' WHERE id = '".$irow['id']."' ");
-
-            //Email informer
-            if($irow['uid'] != 0) { $alink = generatePluginLink('uprofile', 'show', array('name' => $irow['name'], 'id' => $irow['uid']), array(), false, true); }
-            else { $alink = ''; }
-
-            $body = str_replace(
-                    array(	'{username}',
-                            '[userlink]',
-                            '[/userlink]',
-                            '{description}',
-                            '{announcename}',
-                            '{expired_expend}',
-                            ),
-                    array(	$irow['name'],
-                            ($irow['uid'])?'<a href="'.$alink.'">':'',
-                            ($irow['uid'])?'</a>':'',
-                            secure_html($irow['announce_description']),
-                            $irow['announce_name'],
-                            home.generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'expend'), array('id' => $irow['id'],'hashcode' => $hashcode)),
-                            ), $lang['eshop']['mail_exp']
-                );
-
-                zzMail($irow['author_email'], $lang['eshop']['mail_exp_title'], $body, 'html');
-        }
-
-        generate_entries_cnt_cache(true);
-        generate_catz_cache(true);
 
 }
 
@@ -1562,18 +1811,18 @@ function eshopUpdateDelayedCounters() {
     global $mysql;
 
     // Lock tables
-    $mysql->query("lock tables ".prefix."_eshop_view write, ".prefix."_eshop write");
+    $mysql->query("lock tables ".prefix."_eshop_products_view write, ".prefix."_eshop write");
 
     // Read data and update counters
-    foreach ($mysql->select("select * from ".prefix."_eshop_view") as $vrec) {
-        $mysql->query("update ".prefix."_eshop set views = views + ".intval($vrec['cnt'])." where id = ".intval($vrec['id']));
+    foreach ($mysql->select("select * from ".prefix."_eshop_products_view") as $vrec) {
+        $mysql->query("update ".prefix."_eshop_products set views = views + ".intval($vrec['cnt'])." where id = ".intval($vrec['id']));
     }
 
     // Truncate view table
     //$mysql->query("truncate table ".prefix."_eshop_view");
     // DUE TO BUG IN MYSQL - USE DELETE + OPTIMIZE
-    $mysql->query("delete from ".prefix."_eshop_view");
-    $mysql->query("optimize table ".prefix."_eshop_view");
+    $mysql->query("delete from ".prefix."_eshop_products_view");
+    $mysql->query("optimize table ".prefix."_eshop_products_view");
 
     // Unlock tables
     $mysql->query("unlock tables");

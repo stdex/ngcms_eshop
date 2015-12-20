@@ -131,21 +131,6 @@ function plugin_block_eshop($number, $mode, $cat, $overrideTemplateName, $cacheE
     return $output;
 }
 
-function plugin_m_eshop() {
-    global $config;
-
-    $eshop_dir = get_plugcfg_dir('eshop');
-    generate_entries_cnt_cache();
-
-    if(file_exists($eshop_dir.'/cache_entries_cnt.php')){
-        $output = unserialize(file_get_contents($eshop_dir.'/cache_entries_cnt.php'));
-    } else {
-        $output = '';
-    }
-
-    return $output;
-}
-
 function plugin_m_eshop_catz_tree() {
     global $config;
 
@@ -175,14 +160,6 @@ function plugin_block_eshop_showTwig($params) {
 }
 
 //
-// Twig блок для вывода общего количества продукции
-function plugin_m_eshop_showTwig($params) {
-    global $CurrentHandler, $config;
-
-    return plugin_m_eshop();
-}
-
-//
 // Twig блок для вывода дерева категорий
 function plugin_m_eshop_catz_tree_showTwig($params) {
     global $CurrentHandler, $config;
@@ -191,5 +168,4 @@ function plugin_m_eshop_catz_tree_showTwig($params) {
 }
 
 twigRegisterFunction('eshop', 'show', plugin_block_eshop_showTwig);
-twigRegisterFunction('eshop', 'show_entries_cnt', plugin_m_eshop_showTwig);
 twigRegisterFunction('eshop', 'show_catz_tree', plugin_m_eshop_catz_tree_showTwig);

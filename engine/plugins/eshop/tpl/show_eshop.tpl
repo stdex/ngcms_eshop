@@ -709,7 +709,7 @@ $(document).ready(function() {
         var phone = $("#fastorder-frame").find("input[name='phone']").val();
         var address = $("#fastorder-frame").find("input[name='address']").val();
 
-        $.post('/engine/rpc.php', { json : 1, methodName : 'plugin.ebasket.manage', rndval: new Date().getTime(), params : json_encode({'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '2', 'name': name, 'phone': phone, 'address': address}) }, function(data) {
+        $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_ebasket_manage', rndval: new Date().getTime(), params : json_encode({'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '2', 'name': name, 'phone': phone, 'address': address}) }, function(data) {
             // Try to decode incoming data
             try {
                 resTX = data;
@@ -736,7 +736,7 @@ $(document).ready(function() {
         var phone = $("#fastprice-frame").find("input[name='phone']").val();
         var address = $("#fastprice-frame").find("input[name='address']").val();
 
-        $.post('/engine/rpc.php', { json : 1, methodName : 'plugin.ebasket.manage', rndval: new Date().getTime(), params : json_encode({'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '3', 'name': name, 'phone': phone, 'address': address}) }, function(data) {
+        $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_ebasket_manage', rndval: new Date().getTime(), params : json_encode({'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '3', 'name': name, 'phone': phone, 'address': address}) }, function(data) {
             // Try to decode incoming data
             try {
                 resTX = data;

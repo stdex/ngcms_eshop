@@ -687,8 +687,7 @@ function cuSel(a) {
             return this.unbind("mousewheel", a)
         }
     })
-})(jQuery)
-
+})(jQuery);
 
 (function(e, t) {
     function i(t, i) {

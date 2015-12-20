@@ -1,24 +1,51 @@
 [TWIG]
-<article class="full-post">
-	<h1 class="title">{{ news.title }}</h1>
-	<span class="meta">{{ news.date }} | {% if pluginIsActive('uprofile') %}<a href="{{ news.author.url }}">{% endif %}{{ news.author.name }}{% if pluginIsActive('uprofile') %}</a>{% endif %}</span>
-	<p>{{ news.short }}{{ news.full }}</p>
-	{% if (news.flags.hasPagination) %}
-		<div class="pagination">
-			<ul>
-				{{ news.pagination }}
-			</ul>
-		</div>
-	{% endif %}
-	<div class="post-full-footer">
-		{% if pluginIsActive('tags') %}{% if (p.tags.flags.haveTags) %}<div class="post-full-tags">Теги: {{ tags }}</div>{% endif %}{% endif %}
-		<div class="post-full-meta">Просмотров: {{ news.views }} {% if pluginIsActive('comments') %}| Комментариев: {comments-num}{% endif %}</div>
-		{% if pluginIsActive('rating') %}<div class="post-rating">Рейтинг: <span class="post-rating-inner">{{ plugin_rating }}</span></div>{% endif %}
-	</div>
-</article>
-{% if pluginIsActive('similar') %}{{ plugin_similar_tags }}{% endif %}
-{% if pluginIsActive('comments') %}
-	<div class="title">Комментарии ({comments-num})</div>
-	{{ plugin_comments }}
-{% endif %}
+<div class="content">
+    <div class="frame-crumbs">
+        <div class="crumbs" xmlns:v="http://rdf.data-vocabulary.org/#">
+            <div class="container">
+                <ul class="items items-crumbs">
+                    <li class="btn-crumb">
+                        <a href="{{ home }}" typeof="v:Breadcrumb">
+                            <span class="text-el">Главная</span>
+                            <span class="divider">/</span>
+                        </a>
+                    </li>
+                    {% if (news.categories.count > 0) %}
+                        {% for cat in news.categories.list %}
+                        <li class="btn-crumb">
+                            <a href="{{ cat.url }}" typeof="v:Breadcrumb">
+                                <span class="text-el">{{ cat.name }}</span>
+                                <span class="divider">/</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    {% endif %}
+
+                    <li class="btn-crumb">
+                        <button typeof="v:Breadcrumb" disabled="disabled">
+                        <span class="text-el">{{ news.title }}</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="frame-inside page-text">
+        <div class="container">
+            <div class="text-right">
+            <h1>{{ news.title }}</h1>
+                <div class="text">
+                    <p>{{ news.short }}{{ news.full }}</p>
+                    {% if (news.flags.hasPagination) %}
+                        <div class="pagination">
+                            <ul>
+                                {{ news.pagination }}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 [/TWIG]
