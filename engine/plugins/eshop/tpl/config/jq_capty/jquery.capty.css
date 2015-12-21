@@ -7,6 +7,7 @@ div.capty-caption {
 	padding-left: 10px;
 	padding-top: 1px;
 	text-shadow: 1px 1px 0 #222;
+    margin: 0px !important;
 }
 
 div.capty-caption a {
@@ -14,4 +15,20 @@ div.capty-caption a {
 	font: bold 11px verdana;
 	text-decoration: none;
 	text-shadow: none;
+    margin: 0px !important;
 }
+
+div.capty-tile {
+    margin: 0px !important;
+}
+
+div.capty-image {
+    margin: 0px !important;
+    z-index: 99999;
+}
+
+div.capty-desc {
+    margin: 0px !important;
+    z-index: 99999;
+}
+

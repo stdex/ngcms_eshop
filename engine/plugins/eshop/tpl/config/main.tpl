@@ -17,11 +17,15 @@
 <input type="button" onmousedown="javascript:window.location.href='{{plugin_url}}&action=list_order'" value="Заказы" class="navbutton" />
 <input type="button" onmousedown="javascript:window.location.href='{{plugin_url}}&action=options'" value="Настройки" class="navbutton" />
 <input type="button" onmousedown="javascript:window.location.href='{{plugin_url}}&action=list_currencies'" value="Валюты" class="navbutton" />
+<!--
 <input type="button" onmousedown="javascript:window.location.href='{{plugin_url}}&action=list_delivery'" value="Доставка" class="navbutton" />
 <input type="button" onmousedown="javascript:window.location.href='{{plugin_url}}&action=list_payment'" value="Оплата" class="navbutton" />
 <input type="button" onmousedown="javascript:window.location.href='{{plugin_url}}&action=list_promocode'" value="Купоны" class="navbutton" />
+-->
 <input type="button" onmousedown="javascript:window.location.href='{{plugin_url}}&action=list_comment'" value="Комментарии" class="navbutton" />
+<!--
 <input type="button" onmousedown="javascript:window.location.href='{{plugin_url}}&action=automation'" value="Автоматизация" class="navbutton" />
+-->
 <input type="button" onmousedown="javascript:window.location.href='{{plugin_url}}&action=urls'" value="ЧПУ" class="navbutton" />
 </td>
 </tr>

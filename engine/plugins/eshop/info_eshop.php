@@ -58,7 +58,6 @@ global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang, $mysql, $twig, $userROW
     //$template['vars']['plugin_eshop_currency_rate'] = $current_currency;
     
     $SYSTEM_FLAGS["current_currency"] = $current_currency;
-    
 }
 
 function plugin_eshop_compare() {

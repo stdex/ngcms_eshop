@@ -24,8 +24,8 @@ function generate_catz_cache($load = false)
             $cur['active'] = $rows['active'];
             
             $cat_link = checkLinkAvailable('eshop', '')?
-            generateLink('eshop', '', array('cat' => $rows['id'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $rows['id']));
+                        generateLink('eshop', '', array('alt' => $rows['url'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $rows['url']));
             
             $cur['cat_link'] = $cat_link;
                           

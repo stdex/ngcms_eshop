@@ -40,7 +40,7 @@ global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang;
     } else {
         $page = $_REQUEST['page'];
     }
-
+    
     $pageNo = isset($page)?str_replace('%count%',intval($page), '/ Страница %count%'):'';
 
     switch ($CurrentHandler['handlerName'])
@@ -55,31 +55,47 @@ global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang;
             $titles = str_replace(
                 array ('%name_site%', '%group%', '%others%'),
                 array ($SYSTEM_FLAGS['info']['title']['header'],  $SYSTEM_FLAGS['info']['title']['group'], $SYSTEM_FLAGS['info']['title']['others']),
-                $lang['eshop']['titles_show']);
+                $lang['eshop']['titles_common']);
             break;
         case 'search':
             $titles = str_replace(
                 array ('%name_site%', '%group%', '%others%'),
                 array ($SYSTEM_FLAGS['info']['title']['header'], $SYSTEM_FLAGS['info']['title']['group'], $SYSTEM_FLAGS['info']['title']['others']),
-                $lang['eshop']['titles_search']);
+                $lang['eshop']['titles_common']);
             break;
         case 'stocks':
             $titles = str_replace(
                 array ('%name_site%', '%group%', '%others%'),
                 array ($SYSTEM_FLAGS['info']['title']['header'], $SYSTEM_FLAGS['info']['title']['group'], $SYSTEM_FLAGS['info']['title']['others']),
-                $lang['eshop']['titles_stocks']);
+                $lang['eshop']['titles_common']);
             break;
+        case 'ebasket_list':
+            $titles = str_replace(
+                array ('%name_site%', '%group%', '%others%'),
+                array ($SYSTEM_FLAGS['info']['title']['header'], $SYSTEM_FLAGS['info']['title']['group'], $SYSTEM_FLAGS['info']['title']['others']),
+                $lang['eshop']['titles_common']);
+            break;
+        case 'order':
+            $titles = str_replace(
+                array ('%name_site%', '%group%', '%others%'),
+                array ($SYSTEM_FLAGS['info']['title']['header'], $SYSTEM_FLAGS['info']['title']['group'], $SYSTEM_FLAGS['info']['title']['others']),
+                $lang['eshop']['titles_common']);
+            break;
+        
     }
-    
+
     $template['vars']['titles'] = trim($titles);
 }
 
 function eshop($params)
 {
-global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, $CurrentHandler;
+global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, $CurrentHandler, $tt;
 
     $sort = array();
-    $cat = isset($params['cat'])?$params['cat']:$_REQUEST['cat'];
+    $cat = preg_match('#^[A-Za-z0-9\.\_\-]+$#s', $params['alt'])?input_filter_com(convert($params['alt'])):'';
+    //$cat = isset($params['alt'])?$params['alt']:$_REQUEST['alt'];
+    
+    $cat = str_replace("/", "", $cat);
 
     $conditions = array();
     
@@ -92,16 +108,16 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
         $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
         $cats = getCats($res);
         $catz_filter = array();
-        $catz_filter = getChildIdsArray($cats, $fCategory, 0);
-        $catz_filter[] = $fCategory;
+        recursiveCategory($cats, $fCategory);
+        $catz_filter = $tt;
+        if(empty($catz_filter)) {
+            return redirect_eshop(home);
+        }
         $catz_filter_comma_separated = implode(",", $catz_filter);
-
         array_push($conditions, "pc.category_id IN (".$catz_filter_comma_separated.") ");
-        $sort['cat'] = $fCategory;
+        $sort['alt'] = $fCategory;
     }
-    
-    //$sorting = $cat_id;
-    
+
     $order = filter_var( $_REQUEST['order'], FILTER_SANITIZE_STRING );
     if(isset($order) && !empty($order))
     {
@@ -160,7 +176,9 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
         $info = '';
     }
 
+
     $SYSTEM_FLAGS['info']['title']['group'] = $lang['eshop']['name_plugin'];
+
     $tpath = locatePluginTemplates(array('eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'), pluginGetVariable('eshop','localskin'));
     $xt = $twig->loadTemplate($tpath['eshop'].'eshop.tpl');
 
@@ -168,17 +186,18 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
 
     foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_categories ORDER BY position ASC') as $cat_row)
     {
-            if($_REQUEST['cat'] == $cat_row['id'] or $params['cat'] == $cat_row['id'])
+            if($fCategory == $cat_row['url'])
             {
 
-                $sql_cat_cnt = "SELECT COUNT(*) as CNT FROM ".prefix."_eshop_products_categories where category_id = ".db_squote($cat_row['id'])." ";
+                $cat_cnt = $mysql->record("SELECT COUNT(*) as CNT FROM ".prefix."_eshop_products_categories WHERE category_id IN (".$catz_filter_comma_separated.") ");
+                
+                //$sql_cat_cnt = "SELECT COUNT(*) as CNT FROM ".prefix."_eshop_products_categories where category_id = ".db_squote($cat_row['id'])." ";
 
-                $cat_cnt = $mysql->result($sql_cat_cnt);
-
+                //$cat_cnt = $mysql->result($sql_cat_cnt);
                 
                 $catlink = checkLinkAvailable('eshop', '')?
-                    generateLink('eshop', '', array('cat' => $cat_row['id'])):
-                    generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $cat_row['id']));
+                    generateLink('eshop', '', array('alt' => $cat_row['url'])):
+                    generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $cat_row['url']));
                 
                 $cat_array = array (
                     'id' => $cat_row['id'],
@@ -197,22 +216,18 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
                     
                     'link' => $catlink,
                     
-                    'cnt' => $cat_cnt,
+                    'cnt' => $cat_cnt['CNT'],
                     
                  );
-                
-                $SYSTEM_FLAGS['meta']['description']	= ($cat_row['meta_description'])?$cat_row['meta_description']:'';
-                $SYSTEM_FLAGS['meta']['keywords']		= ($cat_row['meta_keywords'])?$cat_row['meta_keywords']:'';
-                $SYSTEM_FLAGS['info']['title']['others'] = str_replace( array( '{name}' ), array($cat_row['meta_title']), $lang['eshop']['sorting']);
-                $SYSTEM_FLAGS['info']['title']['separator'] =  $lang['eshop']['separator'];
-            }
-            else {
-                $SYSTEM_FLAGS['info']['title']['separator'] =  $lang['eshop']['separator'];
-                $SYSTEM_FLAGS['meta']['description']	= '';
-                $SYSTEM_FLAGS['meta']['keywords']		= '';
+
             }
     }
-    
+   
+    $SYSTEM_FLAGS['meta']['description']	= ($cat_array['meta_description'])?$cat_array['meta_description']:'';
+    $SYSTEM_FLAGS['meta']['keywords']		= ($cat_array['meta_keywords'])?$cat_array['meta_keywords']:'';
+    $SYSTEM_FLAGS['info']['title']['others'] = $cat_array['meta_title'];
+    $SYSTEM_FLAGS['info']['title']['separator'] =  $lang['eshop']['separator']; 
+
     $cmp_array = array();
     foreach ($mysql->select("select * from ".prefix."_eshop_compare where cookie = ".db_squote($_COOKIE['ngTrackID'])." ") as $cmp_row)
     {
@@ -227,7 +242,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
 
     $fSort = " GROUP BY p.id ".$fOrder;
     $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-    $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+    $sqlQ = "SELECT p.id AS id, p.url AS url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url AS curl, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
     
     $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
 
@@ -255,13 +270,15 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
     
     foreach ($mysql->select($sqlQ.' LIMIT '.$limitStart.', '.$limitCount) as $row)
     {
+        
         $fulllink = checkLinkAvailable('eshop', 'show')?
-            generateLink('eshop', 'show', array('id' => $row['id'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['id']));
+            generateLink('eshop', 'show', array('alt' => $row['url'])):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
         $catlink = checkLinkAvailable('eshop', '')?
-            generateLink('eshop', '', array('cat' => $row['cid'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $row['cid']));
-            
+            generateLink('eshop', '', array('alt' => $row['calt'])):
+            generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $row['curl']));
+
+        
         $cmp_flag = in_array($row['id'], $cmp_array);
 
         $entries[] = array (
@@ -343,6 +360,8 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
         );
 
             $template['vars']['mainblock'] .= $xt->render($tVars);
+            
+            
 }
 
 function search_eshop($params)
@@ -425,7 +444,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
 
         $fSort = " GROUP BY p.id ORDER BY p.id DESC";
         $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-        $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+        $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
         
         $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
 
@@ -460,11 +479,11 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
         foreach ($mysql->select($sqlQ.' LIMIT '.$limitStart.', '.$limitCount) as $row)
         {
             $fulllink = checkLinkAvailable('eshop', 'show')?
-                generateLink('eshop', 'show', array('id' => $row['id'])):
-                generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['id']));
+                        generateLink('eshop', 'show', array('alt' => $row['url'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
             $catlink = checkLinkAvailable('eshop', '')?
-                generateLink('eshop', '', array('cat' => $row['cid'])):
-                generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $row['cid']));
+                        generateLink('eshop', '', array('alt' => $row['curl'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $row['curl']));
 
             $cmp_flag = in_array($row['id'], $cmp_array);
 
@@ -547,7 +566,6 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
         );
 
         $template['vars']['mainblock'] .= $xt->render($tVars);
-
 }
 
 function stocks_eshop($params)
@@ -611,7 +629,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
 
     $fSort = " GROUP BY p.id ORDER BY p.id DESC";
     $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-    $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+    $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
     
     $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
 
@@ -642,11 +660,11 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
     foreach ($mysql->select($sqlQ.' LIMIT '.$limitStart.', '.$limitCount) as $row)
     {
         $fulllink = checkLinkAvailable('eshop', 'show')?
-            generateLink('eshop', 'show', array('id' => $row['id'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['id']));
+                        generateLink('eshop', 'show', array('alt' => $row['url'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
         $catlink = checkLinkAvailable('eshop', '')?
-            generateLink('eshop', '', array('cat' => $row['cid'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $row['cid']));
+                        generateLink('eshop', '', array('alt' => $row['curl'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $row['curl']));
 
         $cmp_flag = in_array($row['id'], $cmp_array);
 
@@ -785,16 +803,16 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
 
         $fSort = " GROUP BY p.id ORDER BY p.id DESC";
         $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-        $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+        $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
         
         foreach ($mysql->select($sqlQ) as $row)
         {
             $fulllink = checkLinkAvailable('eshop', 'show')?
-                generateLink('eshop', 'show', array('id' => $row['id'])):
-                generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['id']));
+                        generateLink('eshop', 'show', array('alt' => $row['url'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
             $catlink = checkLinkAvailable('eshop', '')?
-                generateLink('eshop', '', array('cat' => $row['cid'])):
-                generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $row['cid']));
+                        generateLink('eshop', '', array('alt' => $row['curl'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $row['curl']));
 
             $cmp_flag = in_array($row['id'], $cmp_array);
             
@@ -885,147 +903,6 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
     }
     
     redirect_eshop($_SERVER['HTTP_REFERER']);
-    
-/*
-    $url = pluginGetVariable('eshop', 'url');
-    switch($CurrentHandler['handlerParams']['value']['pluginName'])
-    {
-        case 'core':
-            if(isset($url) && !empty($url))
-            {
-                return redirect_eshop(generateLink('eshop', 'stocks'));
-            }
-            break;
-        case 'eshop':
-            if(empty($url))
-            {
-                return redirect_eshop(generateLink('core', 'plugin', array('plugin' => 'eshop')));
-            }
-            break;
-    }
-
-    $SYSTEM_FLAGS['info']['title']['group'] = $lang['eshop']['name_plugin'];
-    $SYSTEM_FLAGS['info']['title']['others'] = $lang['eshop']['name_compare'];
-    $SYSTEM_FLAGS['template.main.name'] = pluginGetVariable('eshop', 'main_template')?pluginGetVariable('eshop', 'main_template'):'main';
-    $SYSTEM_FLAGS['meta']['description']	= (pluginGetVariable('eshop', 'description'))?pluginGetVariable('eshop', 'description'):$SYSTEM_FLAGS['meta']['description'];
-    $SYSTEM_FLAGS['meta']['keywords']		= (pluginGetVariable('eshop', 'keywords'))?pluginGetVariable('eshop', 'keywords'):$SYSTEM_FLAGS['meta']['keywords'];
-
-    $tpath = locatePluginTemplates(array('compare_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'), pluginGetVariable('eshop','localskin'));
-    $xt = $twig->loadTemplate($tpath['compare_eshop'].'compare_eshop.tpl');
-
-    $cmp_array = array();
-    foreach ($mysql->select("select * from ".prefix."_eshop_compare where cookie = ".db_squote($_COOKIE['ngTrackID'])." ") as $cmp_row)
-    {
-        $cmp_array[] = $cmp_row['linked_fld'];
-    }
-    
-    $conditions = array();
-    
-    if(isset($cmp_array) && !empty($cmp_array)) {
-        $compare = implode(",", $cmp_array);
-        array_push($conditions, "p.id IN (".$compare.") ");
-        array_push($conditions, "p.active = 1 ");
-    
-        $features_list = array();
-        foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $frow)
-        {
-            $features_list[] = 
-                array(
-                    'id' => $frow['id'],
-                    'name' => $frow['name'],
-                    'position' => $frow['position'],
-                    'in_filter' => $frow['in_filter']
-                    );
-        }
-
-        $fSort = " GROUP BY p.id ORDER BY p.id DESC";
-        $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-        $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
-        
-        foreach ($mysql->select($sqlQ) as $row)
-        {
-            $fulllink = checkLinkAvailable('eshop', 'show')?
-                generateLink('eshop', 'show', array('id' => $row['id'])):
-                generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['id']));
-            $catlink = checkLinkAvailable('eshop', '')?
-                generateLink('eshop', '', array('cat' => $row['cid'])):
-                generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $row['cid']));
-
-            $cmp_flag = in_array($row['id'], $cmp_array);
-            
-            $qid = $row['id'];
-            
-            $options_array = array();
-            foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_options LEFT JOIN ".prefix."_eshop_features ON ".prefix."_eshop_features.id=".prefix."_eshop_options.feature_id WHERE ".prefix."_eshop_options.product_id = '$qid' ORDER BY position, id") as $orow)
-            {
-                $options_array[$orow['id']] = $orow['value'];
-            }
-            
-            $features_array = array();
-            foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $frow)
-            {
-                $features_array[] = 
-                    array(
-                        'id' => $frow['id'],
-                        'name' => $frow['name'],
-                        'position' => $frow['position'],
-                        'in_filter' => $frow['in_filter'],
-                        'value' => $options_array[$frow['id']]
-                        );
-            }
-
-            $entries[] = array (
-                'id' => $row['id'],
-                'code' => $row['code'],
-                'name' => $row['name'],
-                
-                'annotation' => $row['annotation'],
-                'body' => $row['body'],
-                
-                'active' => $row['active'],
-                'featured' => $row['featured'],
-                
-                'price'                => $row['price'],
-                'compare_price'        => $row['compare_price'],
-                'stock'                => $row['stock'],
-                
-                'meta_title' => $row['meta_title'],
-                'meta_keywords' => $row['meta_keywords'],
-                'meta_description' => $row['meta_description'],
-                
-                'fulllink' => $fulllink,
-
-                'date' => (empty($row['date']))?'':$row['date'],
-                'editdate' => (empty($row['editdate']))?'':$row['editdate'],
-                
-                'views'		=>	$row['views'],
-                
-                'cat_name' => $row['category'],
-                'cid' => $row['cid'],
-                'catlink' => $catlink,
-                
-                'compare' => $cmp_flag,
-                'features' => $features_array,
-                
-                'home' => home,
-                'image_filepath'    =>  $row['image_filepath'],
-                'tpl_url' => home.'/templates/'.$config['theme'],
-            );
-
-        }
-        
-    }
-
-    $tVars = array(
-        'info' =>	isset($info)?$info:'',
-        'entries' => isset($entries)?$entries:'',
-        'features_list' => isset($features_list)?$features_list:'',
-        'tpl_url' => home.'/templates/'.$config['theme'],
-        'tpl_home' => admin_url,
-    );
-
-    $template['vars']['mainblock'] .= $xt->render($tVars);
-    */
 }
 
 
@@ -1034,7 +911,7 @@ function show_eshop($params)
 {
 global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $CurrentHandler, $lang;
     $id = isset($params['id'])?abs(intval($params['id'])):abs(intval($_REQUEST['id']));
-//	$name = preg_match('/^[a-zA-Z0-9_\xC0-\xD6\xD8-\xF6]+$/', $params['name'])?input_filter_com(convert($params['name'])):'';
+    $alt = preg_match('#^[A-Za-z0-9\.\_\-]+$#s', $params['alt'])?input_filter_com(convert($params['alt'])):'';
 
     $url = pluginGetVariable('eshop', 'url');
     switch($CurrentHandler['handlerParams']['value']['pluginName'])
@@ -1042,32 +919,33 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
         case 'core':
             if(isset($url) && !empty($url))
             {
-                return redirect_eshop(generateLink('eshop', 'show', array('id' => $id)));
+                return redirect_eshop(generateLink('eshop', 'show', array('alt' => $alt)));
             }
             break;
         case 'eshop':
             if(empty($url))
             {
-                return redirect_eshop(generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $id)));
+                return redirect_eshop(generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $alt)));
             }
             break;
     }
 
     $conditions = array();
-    if(isset($id) && !empty($id))
+    if(isset($alt) && !empty($alt))
     {
-        array_push($conditions, "p.id = ".$id." ");
+        array_push($conditions, "p.url = ".db_squote($alt)." ");
     }
     else {
         redirect_eshop(link_eshop());
     }
+
 
     $tpath = locatePluginTemplates(array('show_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'), pluginGetVariable('eshop','localskin'));
     $xt = $twig->loadTemplate($tpath['show_eshop'].'show_eshop.tpl');
 
     $fSort = " GROUP BY p.id ORDER BY p.id DESC LIMIT 1";
     $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-    $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+    $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
 
     $row = $mysql->record($sqlQ);
 
@@ -1124,12 +1002,12 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
                     );
         }
         
-        foreach ($mysql->select('SELECT p.id AS id, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock FROM '.prefix.'_eshop_related_products rp LEFT JOIN '.prefix.'_eshop_products p ON p.id=rp.related_id LEFT JOIN '.prefix.'_eshop_images i ON i.product_id = p.id LEFT JOIN '.prefix.'_eshop_variants v ON p.id = v.product_id WHERE rp.product_id = '.$row['id'].' GROUP BY p.id ORDER BY rp.position') as $rrow)
+        foreach ($mysql->select('SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock FROM '.prefix.'_eshop_related_products rp LEFT JOIN '.prefix.'_eshop_products p ON p.id=rp.related_id LEFT JOIN '.prefix.'_eshop_images i ON i.product_id = p.id LEFT JOIN '.prefix.'_eshop_variants v ON p.id = v.product_id WHERE rp.product_id = '.$row['id'].' GROUP BY p.id ORDER BY rp.position') as $rrow)
         {
             
             $fulllink = checkLinkAvailable('eshop', 'show')?
-                generateLink('eshop', 'show', array('id' => $rrow['id'])):
-                generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $rrow['id']));
+                        generateLink('eshop', 'show', array('alt' => $rrow['url'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $rrow['url']));
             
             $rrow['fulllink'] = $fulllink;
             
@@ -1180,12 +1058,12 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
         );
 
         $fulllink = checkLinkAvailable('eshop', 'show')?
-            generateLink('eshop', 'show', array('id' => $row['id'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['id']));
+                        generateLink('eshop', 'show', array('alt' => $row['url'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
 
         $catlink = checkLinkAvailable('eshop', '')?
-            generateLink('eshop', '', array('cat' => $row['cid'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $row['cid']));
+                        generateLink('eshop', '', array('alt' => $row['curl'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $row['curl']));
 
         $tVars = array (
             'id' => $row['id'],
@@ -1291,14 +1169,14 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
     $tpath = locatePluginTemplates(array('xml_export_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'));
     $xt = $twig->loadTemplate($tpath['xml_export_eshop'].'xml_export_eshop.tpl');
 
-    $limitCount = "10000";
+    //$limitCount = "10000";
 
     $fSort = " GROUP BY p.id ORDER BY p.id DESC ";
     $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
     $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
     
      
-    foreach ($mysql->select($sqlQ.' LIMIT '.$limitCount) as $row)
+    foreach ($mysql->select($sqlQ) as $row)
     {
         
         $entriesImg = array();
@@ -1326,11 +1204,11 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
         }
         
         $fulllink = checkLinkAvailable('eshop', 'show')?
-            generateLink('eshop', 'show', array('id' => $row['id'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['id']));
+                        generateLink('eshop', 'show', array('alt' => $row['url'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
         $catlink = checkLinkAvailable('eshop', '')?
-            generateLink('eshop', '', array('cat' => $row['cid'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $row['cid']));
+                        generateLink('eshop', '', array('alt' => $row['curl'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $row['curl']));
 
         $entries[] = array (
             'id' => $row['id'],
@@ -1386,7 +1264,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
 //
 // Показать содержимое корзины
 function plugin_ebasket_list(){
-    global $mysql, $twig, $userROW, $template, $ip;
+    global $mysql, $twig, $userROW, $template, $ip, $SYSTEM_FLAGS, $lang;
 
     // Определяем условия выборки
     $filter = array();
@@ -1567,11 +1445,17 @@ function plugin_ebasket_list(){
     $xt = $twig->loadTemplate($tpath['ebasket/list'].'ebasket/'.'list.tpl');
 
     $template['vars']['mainblock'] = $xt->render($tVars);
+    
+    $SYSTEM_FLAGS['info']['title']['others'] = "";
+    $SYSTEM_FLAGS['info']['title']['group'] = $lang['eshop']['name_basket'];
+    $SYSTEM_FLAGS['meta']['description']	= "";
+    $SYSTEM_FLAGS['meta']['keywords']		= "";
+
 }
 
 
 function order_eshop(){
-    global $mysql, $twig, $userROW, $template, $ip;
+    global $mysql, $twig, $userROW, $template, $ip, $SYSTEM_FLAGS, $lang;
 
     // Определяем условия выборки
     $filter = array();
@@ -1670,6 +1554,11 @@ function order_eshop(){
     $xt = $twig->loadTemplate($tpath['order_eshop'].'order_eshop.tpl');
 
     $template['vars']['mainblock'] = $xt->render($tVars);
+    
+    $SYSTEM_FLAGS['info']['title']['others'] = "";
+    $SYSTEM_FLAGS['info']['title']['group'] = $lang['eshop']['name_order'];
+    $SYSTEM_FLAGS['meta']['description']	= "";
+    $SYSTEM_FLAGS['meta']['keywords']		= "";
 }
 
 
@@ -1705,7 +1594,11 @@ function getCats($res){
         $cur = &$levels[$rows['id']];
         $cur['parent_id'] = $rows['parent_id'];
         $cur['name'] = $rows['name'];
-
+        $cur['url'] = $rows['url'];
+        $cur['image'] = $rows['image'];
+        $cur['description'] = $rows['description'];
+        $cur['active'] = $rows['active'];
+            
         if($rows['parent_id'] == 0){
             $tree[$rows['id']] = &$cur;
         }
@@ -1740,9 +1633,9 @@ function getChildIdsArray($arr, $flg){
     $flg;
 
     foreach($arr as $k=>$v){
-
-        if($k==$flg) {
+        if($v['url']==$flg) {
             $out = array_merge($out, array_keys($v['children']));
+            $current_id = $k;
             /*
             foreach($v['children'] as $k1=>$v1){
                 if(array_key_exists("children",$v1)) {
@@ -1751,11 +1644,30 @@ function getChildIdsArray($arr, $flg){
             }
             */
         }
-        
-        
+
     }
     
+    $out[] = $current_id;
+    
     return $out;
+}
+
+function recursiveCategory($arr, $flg){
+    global $tt;
+    foreach($arr as $k=>$v){
+ 
+        if($v['url']==$flg) { 
+            $tt[] = $k;
+            if(!empty($v['children'])){     
+                $tt = array_merge($tt, array_keys($v['children']));
+            }
+        }
+    
+        if(!empty($v['children'])){     
+            recursiveCategory($v['children'], $flg);
+        }
+    }
+    //return $outt;
 }
 
 

@@ -91,7 +91,7 @@ global $tpl, $mysql, $lang, $twig;
 
     $fSort = " GROUP BY p.id ORDER BY p.id DESC";
     $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-    $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+    $sqlQ = "SELECT p.id AS id, p.url AS url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
     
     $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
     
@@ -108,8 +108,8 @@ global $tpl, $mysql, $lang, $twig;
     foreach ($mysql->select($sqlQ.' LIMIT '.$start_from.', '.$news_per_page) as $row)
     {
         $view_link = checkLinkAvailable('eshop', 'show')?
-            generateLink('eshop', 'show', array('id' => $row['id'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['id']));
+            generateLink('eshop', 'show', array('alt' => $row['url'])):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
         
         $tEntry[] = array (
             'id'                   => $row['id'],
@@ -184,8 +184,14 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         $SQL['url'] = input_filter_com(convert($_REQUEST['url']));
         if(empty($SQL['url']))
         {
-            $SQL['url'] = $parse->translit($SQL['name'],1, 1);
+            $SQL['url'] = strtolower($parse->translit($SQL['name'],1, 1));
         }
+        
+        if ($SQL["url"]) {
+            if ( is_array($mysql->record("select id from ".prefix."_eshop_products where url = ".db_squote($SQL["url"])." limit 1")) ) {
+                $error_text[] = 'Такой altname уже существует.';
+            }
+        } 
 
         $SQL['meta_title'] = input_filter_com(convert($_REQUEST['meta_title']));
         if(empty($SQL['meta_title']))
@@ -207,8 +213,14 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         
         $features = $_REQUEST['data']['features'];
         $images = $_REQUEST['data']['images'];
-        $linked_products = $_REQUEST['linked-products'];
         
+        if($_REQUEST['linked-products'] != "") {
+            $linked_products = explode(",", $_REQUEST['linked-products']);
+        }
+        else {
+            $linked_products = NULL;
+        }
+ 
         $price = $_REQUEST['price'];
         $compare_price = $_REQUEST['compare_price'];
         $stock = $_REQUEST['stock'];
@@ -412,8 +424,14 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         $SQL['url'] = input_filter_com(convert($_REQUEST['url']));
         if(empty($SQL['url']))
         {
-            $SQL['url'] = $parse->translit($SQL['name'],1, 1);
+            $SQL['url'] = strtolower($parse->translit($SQL['name'],1, 1));
         }
+
+        if ($SQL["url"]) {
+            if ( is_array($mysql->record("select id from ".prefix."_eshop_products where url = ".db_squote($SQL["url"])." and id <> ".$row['id']." limit 1")) ) {
+                $error_text[] = 'Такой altname уже существует.';
+            }
+        } 
 
         $SQL['meta_title'] = input_filter_com(convert($_REQUEST['meta_title']));
         $SQL['meta_keywords'] = input_filter_com(convert($_REQUEST['meta_keywords']));
@@ -430,15 +448,19 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         
         $features = $_REQUEST['data']['features'];
         $images = $_REQUEST['data']['images'];
-        $linked_products = $_REQUEST['linked-products'];
-        
+        if($_REQUEST['linked-products'] != "") {
+            $linked_products = explode(",", $_REQUEST['linked-products']);
+        }
+        else {
+            $linked_products = NULL;
+        }
+
         $price = $_REQUEST['price'];
         $compare_price = $_REQUEST['compare_price'];
         $stock = $_REQUEST['stock'];
 
         if(empty($error_text))
         {
-            
             $vnames = array();
             foreach ($SQL as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
             $mysql->query('UPDATE '.prefix.'_eshop_products SET '.implode(', ',$vnames).' WHERE id = \''.intval($qid).'\'  ');
@@ -478,6 +500,9 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                 foreach ($linked_products as $p_key => $p_value) {
                     $mysql->query("INSERT INTO ".prefix."_eshop_related_products (`product_id`, `related_id`, `position`) VALUES ('$qid','$p_value','0')");
                 }
+            }
+            else {
+                $mysql->query("DELETE FROM ".prefix."_eshop_related_products WHERE product_id='$qid'");
             }
             
             $category_id = intval($_REQUEST['parent']);
@@ -833,16 +858,18 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         }
         
         $description = input_filter_com(convert($_REQUEST['description']));
-        if(empty($description))
-        {
-            $error_text[] = 'Описание категории не задано';
-        }
 
         $url = input_filter_com(convert($_REQUEST['url']));
         if(empty($url))
         {
-            $url = $parse->translit($cat_name,1, 1);
+            $url = strtolower($parse->translit($cat_name,1, 1));
         }
+        
+        if ($url) {
+            if ( is_array($mysql->record("select id from ".prefix."_eshop_categories where url = ".db_squote($url)." limit 1")) ) {
+                $error_text[] = 'Такой altname уже существует.';
+            }
+        } 
 
         $meta_title = input_filter_com(convert($_REQUEST['meta_title']));
         if(empty($meta_title))
@@ -899,7 +926,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         $error_input ='';
     }
         
-    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
+    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id");
     $cats = getCats($res);
 
     $tEntry = array (
@@ -968,8 +995,15 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         $url = input_filter_com(convert($_REQUEST['url']));
         if(empty($url))
         {
-            $url = $parse->translit($cat_name,1, 1);
+            $url = strtolower($parse->translit($cat_name,1, 1));
         }
+
+        if ($url) {
+            if ( is_array($mysql->record("select id from ".prefix."_eshop_categories where url = ".db_squote($url)." and id <> ".$id." limit 1")) ) {
+                $error_text[] = 'Такой altname уже существует.';
+            }
+        }
+ 
 
         $meta_title = input_filter_com(convert($_REQUEST['meta_title']));
         if(empty($meta_title))
@@ -1014,6 +1048,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                 url = '.db_squote($url).',
                 meta_title = '.db_squote($meta_title).',
                 meta_keywords = '.db_squote($meta_keywords).',
+                meta_description = '.db_squote($meta_description).',
                 parent_id = '.db_squote($parent_id).',
                 position = '.db_squote($position).',
                 '.$image_sql.'
@@ -1121,8 +1156,10 @@ global $tpl, $mysql, $twig;
     
     foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id") as $row)
     {
+
         $catz_array[$row['id']] = 
             array('name' => $row['name'],
+                'alt' => $row['url'],
                 'parent' => $row['parent_id'],
                 'CategoryID' => $row['id'],
                 'CategoryName' => $row['name'],
@@ -1171,12 +1208,13 @@ function generate_menu($parent, $catz_array)
         if ($value['parent'] == $parent) 
         {
             $view_link = checkLinkAvailable('eshop', '')?
-            generateLink('eshop', '', array('cat' => $value['CategoryID'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $value['CategoryID']));
+            generateLink('eshop', '', array('alt' => $value['alt'])):
+            generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $value['alt']));
 
             
             $gvars[] = array (
                 'id' => $value['CategoryID'],
+                'alt' => $value['alt'],
                 'cat_name' => $value['CategoryName'],
                 'edit_link' => "?mod=extra-config&plugin=eshop&action=edit_cat&id=".$value['CategoryID'],
                 'del_link' => "?mod=extra-config&plugin=eshop&action=del_cat&id=".$value['CategoryID'],
@@ -1754,7 +1792,7 @@ global $tpl, $mysql, $twig;
 
     $fSort = "ORDER BY c.postdate ASC";
     $sqlQPart = "from ".prefix."_eshop_products_comments c LEFT JOIN ".prefix."_users u ON c.author_id = u.id LEFT JOIN ".prefix."_eshop_products p ON c.product_id = p.id ".(count($conditions)?"where ".implode(" AND ", $conditions):'').' '.$fSort;
-    $sqlQ = "select c.id as cid, u.id as uid, u.name as uname, c.name as name, p.id as product_id, p.name as title, c.mail as mail, c.postdate as postdate, c.author as author, c.author_id as author_id, u.avatar as avatar, c.reg as reg, c.text as text ".$sqlQPart;
+    $sqlQ = "select c.id as cid, u.id as uid, u.name as uname, c.name as name, p.id as product_id, p.url as url, p.name as title, c.mail as mail, c.postdate as postdate, c.author as author, c.author_id as author_id, u.avatar as avatar, c.reg as reg, c.text as text ".$sqlQPart;
     
     $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
     
@@ -1785,8 +1823,8 @@ global $tpl, $mysql, $twig;
         }
         
         $view_link = checkLinkAvailable('eshop', 'show')?
-            generateLink('eshop', 'show', array('id' => $row['product_id'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('id' => $row['product_id']));
+                        generateLink('eshop', 'show', array('alt' => $row['url'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
         
         $tEntries[] = array (
                 'id' => $row['cid'],
@@ -1801,7 +1839,7 @@ global $tpl, $mysql, $twig;
                 'commenttext' => $text,
                 'title' => $row['title'],
                 'view_link' => $view_link,
-                'product_edit_link' => "?mod=extra-config&plugin=eshop&action=edit_product&id=".$row['id']."",
+                'product_edit_link' => "?mod=extra-config&plugin=eshop&action=edit_product&id=".$row['product_id']."",
                 'reg' => $row['reg'],
                 );
                 
@@ -2106,7 +2144,8 @@ function urls()
             
             $ULIB->registerCommand('eshop', '',
                 array ('vars' =>
-                        array(  'cat' => array('matchRegex' => '\d+', 'descr' => array('russian' => 'ID категории')),
+                        array(  'alt' => array('matchRegex' => '.+?', 'descr' => array('russian' => 'Altname категории')),
+                                'cat' => array('matchRegex' => '\d+', 'descr' => array('russian' => 'ID категории')),
                                 'page' => array('matchRegex' => '\d{1,4}', 'descr' => array('russian' => 'Постраничная навигация'))
                         ),
                         'descr' => array ('russian' => 'Главная страница'),
@@ -2115,7 +2154,8 @@ function urls()
             
             $ULIB->registerCommand('eshop', 'show',
                 array ('vars' =>
-                        array(  'id' => array('matchRegex' => '\d+', 'descr' => array('russian' => 'ID продукта')),
+                        array('alt' => array('matchRegex' => '.+?', 'descr' => array('russian' => 'Altname продукта')),
+                              'id' => array('matchRegex' => '\d+', 'descr' => array('russian' => 'ID продукта')),
                         ),
                         'descr' => array ('russian' => 'Ссылка на продукт'),
                 )
@@ -2181,11 +2221,11 @@ function urls()
                 'flagDisabled' => false,
                 'rstyle' => 
                 array (
-                  'rcmd' => '/eshop/[cat/{cat}/][page/{page}/]',
-                  'regex' => '#^/eshop/(?:cat/(\\d+)/){0,1}(?:page/(\\d{1,4})/){0,1}$#',
+                  'rcmd' => '/[{alt}/][page/{page}/]',
+                  'regex' => '#^/(.+?){0,1}(?:page/(\\d{1,4})/){0,1}$#',
                   'regexMap' => 
                   array (
-                    1 => 'cat',
+                    1 => 'alt',
                     2 => 'page',
                   ),
                   'reqCheck' => 
@@ -2199,40 +2239,34 @@ function urls()
                     0 => 
                     array (
                       0 => 0,
-                      1 => '/eshop/',
+                      1 => '/',
                       2 => 0,
                     ),
                     1 => 
                     array (
-                      0 => 0,
-                      1 => 'cat/',
+                      0 => 1,
+                      1 => 'alt',
                       2 => 1,
                     ),
                     2 => 
-                    array (
-                      0 => 1,
-                      1 => 'cat',
-                      2 => 1,
-                    ),
-                    3 => 
                     array (
                       0 => 0,
                       1 => '/',
                       2 => 1,
                     ),
-                    4 => 
+                    3 => 
                     array (
                       0 => 0,
                       1 => 'page/',
                       2 => 3,
                     ),
-                    5 => 
+                    4 => 
                     array (
                       0 => 1,
                       1 => 'page',
                       2 => 3,
                     ),
-                    6 => 
+                    5 => 
                     array (
                       0 => 0,
                       1 => '/',
@@ -2252,11 +2286,11 @@ function urls()
                 'flagDisabled' => false,
                 'rstyle' => 
                 array (
-                  'rcmd' => '/eshop/{id}/',
-                  'regex' => '#^/eshop/(\\d+)/$#',
+                  'rcmd' => '/{alt}.html',
+                  'regex' => '#^/(.+?){0,1}.html$#',
                   'regexMap' => 
                   array (
-                    1 => 'id',
+                    1 => 'alt',
                   ),
                   'reqCheck' => 
                   array (
@@ -2269,19 +2303,19 @@ function urls()
                     0 => 
                     array (
                       0 => 0,
-                      1 => '/eshop/',
+                      1 => '/',
                       2 => 0,
                     ),
                     1 => 
                     array (
                       0 => 1,
-                      1 => 'id',
+                      1 => 'alt',
                       2 => 0,
                     ),
                     2 => 
                     array (
                       0 => 0,
-                      1 => '/',
+                      1 => '.html',
                       2 => 0,
                     ),
                   ),
