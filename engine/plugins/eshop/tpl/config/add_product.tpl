@@ -243,16 +243,18 @@
         </select></td>
     </tr>
 
-    <tr>
-        <td width="50%" class="contentEntry1">Дополнительные поля<br /><small></small></td>
-        <td width="50%" class="contentEntry2"></td>
-    </tr>
-    {% for feature in entries.features %}
+    {% if (entries.features) %}
         <tr>
-            <td width="50%" class="contentEntry1">{{feature.name}}<br /><small></small></td>
-            <td width="50%" class="contentEntry2"><input type="text" size="80" name="data[features][{{feature.id}}]" value="{{feature.value}}" ></td>
+            <td width="50%" class="contentEntry1">Дополнительные поля<br /><small></small></td>
+            <td width="50%" class="contentEntry2"></td>
         </tr>
-    {% endfor %}
+        {% for feature in entries.features %}
+            <tr>
+                <td width="50%" class="contentEntry1">{{feature.name}}<br /><small></small></td>
+                <td width="50%" class="contentEntry2"><input type="text" size="80" name="data[features][{{feature.id}}]" value="{{feature.value}}" ></td>
+            </tr>
+        {% endfor %}
+    {% endif %}
 
 </table>
 <table border="0" width="100%" cellspacing="0" cellpadding="0">

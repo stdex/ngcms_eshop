@@ -223,8 +223,8 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
             }
     }
    
-    $SYSTEM_FLAGS['meta']['description']	= ($cat_array['meta_description'])?$cat_array['meta_description']:'';
-    $SYSTEM_FLAGS['meta']['keywords']		= ($cat_array['meta_keywords'])?$cat_array['meta_keywords']:'';
+    $SYSTEM_FLAGS['meta']['description']    = ($cat_array['meta_description'])?$cat_array['meta_description']:'';
+    $SYSTEM_FLAGS['meta']['keywords']       = ($cat_array['meta_keywords'])?$cat_array['meta_keywords']:'';
     $SYSTEM_FLAGS['info']['title']['others'] = $cat_array['meta_title'];
     $SYSTEM_FLAGS['info']['title']['separator'] =  $lang['eshop']['separator']; 
 
@@ -236,9 +236,9 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
     
     $limitCount = pluginGetVariable('eshop', 'count');
 
-    $pageNo		= intval($params['page'])?intval($params['page']):intval($_REQUEST['page']);
-    if ($pageNo < 1)	$pageNo = 1;
-    if (!$limitStart)	$limitStart = ($pageNo - 1)* $limitCount;
+    $pageNo     = intval($params['page'])?intval($params['page']):intval($_REQUEST['page']);
+    if ($pageNo < 1)    $pageNo = 1;
+    if (!$limitStart)   $limitStart = ($pageNo - 1)* $limitCount;
 
     $fSort = " GROUP BY p.id ".$fOrder;
     $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
@@ -305,7 +305,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
             'date' => (empty($row['date']))?'':$row['date'],
             'editdate' => (empty($row['editdate']))?'':$row['editdate'],
             
-            'views'		=>	$row['views'],
+            'views'     =>  $row['views'],
             
             'cat_name' => $row['category'],
             'cid' => $row['cid'],
@@ -388,8 +388,8 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
     $SYSTEM_FLAGS['info']['title']['group'] = $lang['eshop']['name_plugin'];
     $SYSTEM_FLAGS['info']['title']['others'] = $lang['eshop']['name_search'];
     $SYSTEM_FLAGS['template.main.name'] = pluginGetVariable('eshop', 'main_template')?pluginGetVariable('eshop', 'main_template'):'main';
-    $SYSTEM_FLAGS['meta']['description']	= (pluginGetVariable('eshop', 'description'))?pluginGetVariable('eshop', 'description'):$SYSTEM_FLAGS['meta']['description'];
-    $SYSTEM_FLAGS['meta']['keywords']		= (pluginGetVariable('eshop', 'keywords'))?pluginGetVariable('eshop', 'keywords'):$SYSTEM_FLAGS['meta']['keywords'];
+    $SYSTEM_FLAGS['meta']['description']    = (pluginGetVariable('eshop', 'description'))?pluginGetVariable('eshop', 'description'):$SYSTEM_FLAGS['meta']['description'];
+    $SYSTEM_FLAGS['meta']['keywords']       = (pluginGetVariable('eshop', 'keywords'))?pluginGetVariable('eshop', 'keywords'):$SYSTEM_FLAGS['meta']['keywords'];
 
     $tpath = locatePluginTemplates(array('search_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'), pluginGetVariable('eshop','localskin'));
     $xt = $twig->loadTemplate($tpath['search_eshop'].'search_eshop.tpl');
@@ -438,9 +438,9 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
         
         $limitCount = pluginGetVariable('eshop', 'count_search');
 
-        $pageNo		= intval($params['page'])?intval($params['page']):intval($_REQUEST['page']);
-        if ($pageNo < 1)	$pageNo = 1;
-        if (!$limitStart)	$limitStart = ($pageNo - 1)* $limitCount;
+        $pageNo     = intval($params['page'])?intval($params['page']):intval($_REQUEST['page']);
+        if ($pageNo < 1)    $pageNo = 1;
+        if (!$limitStart)   $limitStart = ($pageNo - 1)* $limitCount;
 
         $fSort = " GROUP BY p.id ORDER BY p.id DESC";
         $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
@@ -511,7 +511,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
                 'date' => (empty($row['date']))?'':$row['date'],
                 'editdate' => (empty($row['editdate']))?'':$row['editdate'],
                 
-                'views'		=>	$row['views'],
+                'views'     =>  $row['views'],
                 
                 'cat_name' => $row['category'],
                 'cid' => $row['cid'],
@@ -531,7 +531,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
 
         $tVars = array(
             'search_request' => $get_url,
-            'info' =>	isset($info)?$info:'',
+            'info' =>   isset($info)?$info:'',
             'entries' => isset($entries)?$entries:'',
             'pages' => array(
             'true' => (isset($pages) && $pages)?1:0,
@@ -592,8 +592,8 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
     $SYSTEM_FLAGS['info']['title']['group'] = $lang['eshop']['name_plugin'];
     $SYSTEM_FLAGS['info']['title']['others'] = $lang['eshop']['name_stocks'];
     $SYSTEM_FLAGS['template.main.name'] = pluginGetVariable('eshop', 'main_template')?pluginGetVariable('eshop', 'main_template'):'main';
-    $SYSTEM_FLAGS['meta']['description']	= (pluginGetVariable('eshop', 'description'))?pluginGetVariable('eshop', 'description'):$SYSTEM_FLAGS['meta']['description'];
-    $SYSTEM_FLAGS['meta']['keywords']		= (pluginGetVariable('eshop', 'keywords'))?pluginGetVariable('eshop', 'keywords'):$SYSTEM_FLAGS['meta']['keywords'];
+    $SYSTEM_FLAGS['meta']['description']    = (pluginGetVariable('eshop', 'description'))?pluginGetVariable('eshop', 'description'):$SYSTEM_FLAGS['meta']['description'];
+    $SYSTEM_FLAGS['meta']['keywords']       = (pluginGetVariable('eshop', 'keywords'))?pluginGetVariable('eshop', 'keywords'):$SYSTEM_FLAGS['meta']['keywords'];
 
     $tpath = locatePluginTemplates(array('stocks_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'), pluginGetVariable('eshop','localskin'));
     $xt = $twig->loadTemplate($tpath['stocks_eshop'].'stocks_eshop.tpl');
@@ -623,9 +623,9 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
     
     $limitCount = pluginGetVariable('eshop', 'count_stocks');
 
-    $pageNo		= intval($params['page'])?intval($params['page']):intval($_REQUEST['page']);
-    if ($pageNo < 1)	$pageNo = 1;
-    if (!$limitStart)	$limitStart = ($pageNo - 1)* $limitCount;
+    $pageNo     = intval($params['page'])?intval($params['page']):intval($_REQUEST['page']);
+    if ($pageNo < 1)    $pageNo = 1;
+    if (!$limitStart)   $limitStart = ($pageNo - 1)* $limitCount;
 
     $fSort = " GROUP BY p.id ORDER BY p.id DESC";
     $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
@@ -692,7 +692,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
             'date' => (empty($row['date']))?'':$row['date'],
             'editdate' => (empty($row['editdate']))?'':$row['editdate'],
             
-            'views'		=>	$row['views'],
+            'views'     =>  $row['views'],
             
             'cat_name' => $row['category'],
             'cid' => $row['cid'],
@@ -708,7 +708,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
     }
 
     $tVars = array(
-        'info' =>	isset($info)?$info:'',
+        'info' =>   isset($info)?$info:'',
         'entries' => isset($entries)?$entries:'',
         'pages' => array(
         'true' => (isset($pages) && $pages)?1:0,
@@ -770,8 +770,8 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
     $SYSTEM_FLAGS['info']['title']['group'] = $lang['eshop']['name_plugin'];
     $SYSTEM_FLAGS['info']['title']['others'] = $lang['eshop']['name_compare'];
     $SYSTEM_FLAGS['template.main.name'] = pluginGetVariable('eshop', 'main_template')?pluginGetVariable('eshop', 'main_template'):'main';
-    $SYSTEM_FLAGS['meta']['description']	= (pluginGetVariable('eshop', 'description'))?pluginGetVariable('eshop', 'description'):$SYSTEM_FLAGS['meta']['description'];
-    $SYSTEM_FLAGS['meta']['keywords']		= (pluginGetVariable('eshop', 'keywords'))?pluginGetVariable('eshop', 'keywords'):$SYSTEM_FLAGS['meta']['keywords'];
+    $SYSTEM_FLAGS['meta']['description']    = (pluginGetVariable('eshop', 'description'))?pluginGetVariable('eshop', 'description'):$SYSTEM_FLAGS['meta']['description'];
+    $SYSTEM_FLAGS['meta']['keywords']       = (pluginGetVariable('eshop', 'keywords'))?pluginGetVariable('eshop', 'keywords'):$SYSTEM_FLAGS['meta']['keywords'];
 
     $tpath = locatePluginTemplates(array('compare_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'), pluginGetVariable('eshop','localskin'));
     $xt = $twig->loadTemplate($tpath['compare_eshop'].'compare_eshop.tpl');
@@ -861,7 +861,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
                 'date' => (empty($row['date']))?'':$row['date'],
                 'editdate' => (empty($row['editdate']))?'':$row['editdate'],
                 
-                'views'		=>	$row['views'],
+                'views'     =>  $row['views'],
                 
                 'cat_name' => $row['category'],
                 'cid' => $row['cid'],
@@ -880,7 +880,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
     }
 
     $tVars = array(
-        'info' =>	isset($info)?$info:'',
+        'info' =>   isset($info)?$info:'',
         'entries' => isset($entries)?$entries:'',
         'features_list' => isset($features_list)?$features_list:'',
         'tpl_url' => home.'/templates/'.$config['theme'],
@@ -939,6 +939,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
         redirect_eshop(link_eshop());
     }
 
+    array_push($conditions, "p.active = 1 ");
 
     $tpath = locatePluginTemplates(array('show_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'), pluginGetVariable('eshop','localskin'));
     $xt = $twig->loadTemplate($tpath['show_eshop'].'show_eshop.tpl');
@@ -1025,8 +1026,8 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
 
         $SYSTEM_FLAGS['info']['title']['others'] = $row['meta_title'];
         $SYSTEM_FLAGS['info']['title']['group'] = $lang['eshop']['name_plugin'];
-        $SYSTEM_FLAGS['meta']['description']	= ($row['meta_description'])?$row['meta_description']:'';
-        $SYSTEM_FLAGS['meta']['keywords']		= ($row['meta_keywords'])?$row['meta_keywords']:'';
+        $SYSTEM_FLAGS['meta']['description']    = ($row['meta_description'])?$row['meta_description']:'';
+        $SYSTEM_FLAGS['meta']['keywords']       = ($row['meta_keywords'])?$row['meta_keywords']:'';
 
         $cmode = intval(pluginGetVariable('eshop', 'views_count'));
         if ($cmode > 1) {
@@ -1090,7 +1091,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
             'date' => (empty($row['date']))?'':$row['date'],
             'editdate' => (empty($row['editdate']))?'':$row['editdate'],
             
-            'views'		=>	$row['views']+1,
+            'views'     =>  $row['views']+1,
             
             'cat_name' => $row['category'],
             'cid' => $row['cid'],
@@ -1127,8 +1128,8 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
     /**/
     @header('Content-type: text/xml; charset=windows-1251');
     $SYSTEM_FLAGS['http.headers'] = array(
-        'content-type'		=> 'application/xml; charset=charset=windows-1251',
-        'cache-control'		=> 'private',
+        'content-type'      => 'application/xml; charset=charset=windows-1251',
+        'cache-control'     => 'private',
     );
     
 
@@ -1234,7 +1235,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
             'date' => (empty($row['date']))?'':$row['date'],
             'editdate' => (empty($row['editdate']))?'':$row['editdate'],
             
-            'views'		=>	$row['views'],
+            'views'     =>  $row['views'],
             
             'cat_name' => $row['category'],
             'cid' => $row['cid'],
@@ -1378,9 +1379,9 @@ function plugin_ebasket_list(){
                 $notify_xt = $twig->loadTemplate($notify_tpath['ebasket/lfeedback'].'ebasket/'.'lfeedback.tpl');
 
                 $pVars = array(
-                    'recs'		=> count($recs),
-                    'entries'	=> $recs,
-                    'total'		=> sprintf('%9.2f', $total),
+                    'recs'      => count($recs),
+                    'entries'   => $recs,
+                    'total'     => sprintf('%9.2f', $total),
                     'vnames'   => $vnames,
                 );
             
@@ -1433,10 +1434,10 @@ function plugin_ebasket_list(){
 
 
     $tVars = array(
-        'formEntry'	=> $tFormEntry,
-        'recs'		=> count($recs),
-        'entries'	=> $recs,
-        'total'		=> sprintf('%9.2f', $total),
+        'formEntry' => $tFormEntry,
+        'recs'      => count($recs),
+        'entries'   => $recs,
+        'total'     => sprintf('%9.2f', $total),
         'basket_link' => $basket_link,
     );
 
@@ -1448,8 +1449,8 @@ function plugin_ebasket_list(){
     
     $SYSTEM_FLAGS['info']['title']['others'] = "";
     $SYSTEM_FLAGS['info']['title']['group'] = $lang['eshop']['name_basket'];
-    $SYSTEM_FLAGS['meta']['description']	= "";
-    $SYSTEM_FLAGS['meta']['keywords']		= "";
+    $SYSTEM_FLAGS['meta']['description']    = "";
+    $SYSTEM_FLAGS['meta']['keywords']       = "";
 
 }
 
@@ -1542,10 +1543,10 @@ function order_eshop(){
             generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'ebasket_list'), array());
 
     $tVars = array(
-        'formEntry'	=> $tFormEntry,
-        'recs'		=> count($basket),
-        'entries'	=> $basket,
-        'total'		=> sprintf('%9.2f', $total),
+        'formEntry' => $tFormEntry,
+        'recs'      => count($basket),
+        'entries'   => $basket,
+        'total'     => sprintf('%9.2f', $total),
         'basket_link' => $basket_link,
     );
 
@@ -1557,8 +1558,8 @@ function order_eshop(){
     
     $SYSTEM_FLAGS['info']['title']['others'] = "";
     $SYSTEM_FLAGS['info']['title']['group'] = $lang['eshop']['name_order'];
-    $SYSTEM_FLAGS['meta']['description']	= "";
-    $SYSTEM_FLAGS['meta']['keywords']		= "";
+    $SYSTEM_FLAGS['meta']['description']    = "";
+    $SYSTEM_FLAGS['meta']['keywords']       = "";
 }
 
 

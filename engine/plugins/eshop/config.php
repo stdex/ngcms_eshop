@@ -53,7 +53,7 @@ global $tpl, $mysql, $lang, $twig;
     
     $tVars = array();
     
-    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
+    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id");
     $cats = getCats($res);
     
     // Load admin page based cookies
@@ -143,10 +143,10 @@ global $tpl, $mysql, $lang, $twig;
         'php_self'      =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop', 
         'filter_cats' => getTree($cats, $fCategory, 0),
         'pagesss' => generateAdminPagelist( array('current' => $pageNo, 'count' => $countPages, 'url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop'.($news_per_page?'&rpp='.$news_per_page:'').($fName?'&fname='.$fName:'').($fStatus?'&fstatus='.$fStatus:'').($fCategory?'&fcategory='.$fCategory:'').'&page=%page%')),
-        'rpp'			=>	$news_per_page,
-        'fname'			=>	secure_html($fName),
-        'fstatus'			=>	secure_html($fStatus),
-        'fcategory'			=>	secure_html($fCategory),
+        'rpp'           =>  $news_per_page,
+        'fname'         =>  secure_html($fName),
+        'fstatus'           =>  secure_html($fStatus),
+        'fcategory'         =>  secure_html($fCategory),
         'entries' => isset($tEntry)?$tEntry:'' 
     );
     
@@ -297,7 +297,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         $tEntry[$k] = $v;
     }
         
-    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
+    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id");
     $cats = getCats($res);
     
     foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $frow)
@@ -332,7 +332,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         'skins_url'     =>  skins_url,
         'admin_url'     =>  admin_url,
         'home'          =>  home,
-        'current_title' => 'Категории: Добавление продукта',
+        'current_title' => 'Продукция: Добавление продукта',
     );
     
     print $xg->render($tVars);
@@ -346,7 +346,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     $qid = intval($_REQUEST['id']);
     $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_products LEFT JOIN '.prefix.'_eshop_products_categories ON '.prefix.'_eshop_products.id='.prefix.'_eshop_products_categories.product_id WHERE id = '.db_squote($qid).' LIMIT 1');
 
-    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
+    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id");
     $cats = getCats($res);
 
     $options_array = array();
@@ -431,7 +431,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
             if ( is_array($mysql->record("select id from ".prefix."_eshop_products where url = ".db_squote($SQL["url"])." and id <> ".$row['id']." limit 1")) ) {
                 $error_text[] = 'Такой altname уже существует.';
             }
-        } 
+        }
 
         $SQL['meta_title'] = input_filter_com(convert($_REQUEST['meta_title']));
         $SQL['meta_keywords'] = input_filter_com(convert($_REQUEST['meta_keywords']));
@@ -540,7 +540,6 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     foreach ($row as $k => $v) { 
         $tEntry[$k] = $v;
     }
-
     
     if (isset($_REQUEST['delimg']) && isset($_REQUEST['filepath']))
     {
@@ -561,6 +560,12 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     
     $tEntry['error'] = $error_input;
     $tEntry['mode'] = "edit";
+    
+    $view_link = checkLinkAvailable('eshop', 'show')?
+            generateLink('eshop', 'show', array('alt' => $row['url'])):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
+    $prd_link = home.$view_link;
+            
 
     $xt = $twig->loadTemplate($tpath['config/add_product'].'config/'.'add_product.tpl');
     
@@ -577,7 +582,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         'skins_url'     =>  skins_url,
         'admin_url'     =>  admin_url,
         'home'          =>  home,
-        'current_title' => 'Категории: Редактирование продукта',
+        'current_title' => 'Продукция: Редактирование продукта (Опубликован &#8594; <small><a href="'.$prd_link.'" target="_blank">'.$prd_link.'</a></small>)',
     );
     
     print $xg->render($tVars);
@@ -1635,10 +1640,10 @@ global $tpl, $mysql, $twig;
     
     $tVars = array(
         'pagesss' => generateAdminPagelist( array('current' => $pageNo, 'count' => $countPages, 'url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop&action=list_order'.($news_per_page?'&rpp='.$news_per_page:'').($fName?'&fname='.$fName:'').($fPhone?'&fphone='.$fPhone:'').($fAdress?'&fadress='.$fAdress:'').'&page=%page%')),
-        'rpp'			=>	$news_per_page,
-        'fname'			=>	secure_html($fName),
-        'fphone'			=>	secure_html($fPhone),
-        'fadress'			=>	secure_html($fAdress),
+        'rpp'           =>  $news_per_page,
+        'fname'         =>  secure_html($fName),
+        'fphone'            =>  secure_html($fPhone),
+        'fadress'           =>  secure_html($fAdress),
         'entries' => isset($tEntry)?$tEntry:'',
     );
     
@@ -1813,11 +1818,11 @@ global $tpl, $mysql, $twig;
     foreach ($mysql->select($sqlQ.' LIMIT '.$start_from.', '.$news_per_page) as $row)
     {
         // Add [hide] tag processing
-        $text	= $row['text'];
+        $text   = $row['text'];
 
-        if ($config['use_bbcodes'])			{ $text = $parse -> bbcodes($text); }
-        if ($config['use_htmlformatter'])	{ $text = $parse -> htmlformatter($text); }
-        if ($config['use_smilies'])			{ $text = $parse -> smilies($text); }
+        if ($config['use_bbcodes'])         { $text = $parse -> bbcodes($text); }
+        if ($config['use_htmlformatter'])   { $text = $parse -> htmlformatter($text); }
+        if ($config['use_smilies'])         { $text = $parse -> smilies($text); }
 
             if ($config['use_avatars']) {
             if ($row['avatar']) {
@@ -1835,7 +1840,7 @@ global $tpl, $mysql, $twig;
         
         $tEntries[] = array (
                 'id' => $row['cid'],
-                'mail' =>	$row['mail'],
+                'mail' =>   $row['mail'],
                 'author' => $row['name'],
                 'date' => $row['postdate'],
                 'profile_link' => checkLinkAvailable('uprofile', 'show')?
@@ -1983,7 +1988,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
         'skins_url'     =>  skins_url,
         'admin_url'     =>  admin_url,
         'home'          =>  home,
-        'current_title' => 'Категории: Добавление валюты',
+        'current_title' => 'Валюты: Добавление валюты',
     );
     
     print $xg->render($tVars);
