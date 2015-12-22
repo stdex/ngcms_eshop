@@ -408,13 +408,13 @@ function plugin_eshop_install($action) {
                 'width' => '2000',
                 'height' => '2000',
                 'width_thumb' => '350',
-                'ext_image' => '*.jpg;*.jpeg;*.gif;*.png',
+                'ext_image' => 'jpg, jpeg, gif, png',
                 
                 'catz_max_image_size' => '5',
                 'catz_width' => '2000',
                 'catz_height' => '2000',
                 'catz_width_thumb' => '350',
-                'catz_ext_image' => '*.jpg;*.jpeg;*.gif;*.png',
+                'catz_ext_image' => 'jpg, jpeg, gif, png',
                 
                 'email_notify_orders' => '',
                 'email_notify_comments' => '',

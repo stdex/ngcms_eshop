@@ -153,36 +153,37 @@ function plugin_ebasket_notify() {
     $template['vars']['eshop_ebasket_notify'] = $xt->render($tVars);
 }
 
-
-class uOrderFilter extends p_uprofileFilter {
-    function editProfileForm($userID, $SQLrow, &$tvars) 
-    {
-        global $mysql, $twig, $userROW, $template;
-  
-        $conditions = array();
-
-        if ($userID) {
-            array_push($conditions, "author_id = ".db_squote($userID));
-        }
-
-        $fSort = " ORDER BY id DESC";
-        $sqlQPart = "FROM ".prefix."_eshop_orders ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-        $sqlQ = "SELECT * ".$sqlQPart;
-
-        foreach ($mysql->select($sqlQ) as $row)
+if (class_exists('p_uprofileFilter')) {
+    class uOrderFilter extends p_uprofileFilter {
+        function editProfileForm($userID, $SQLrow, &$tvars) 
         {
+            global $mysql, $twig, $userROW, $template;
+      
+            $conditions = array();
 
-            $order_link = checkLinkAvailable('eshop', 'order')?
-            generateLink('eshop', 'order', array(), array('id' => $row['id'], 'uniqid' => $row['uniqid'])):
-            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'order'), array(), array('id' => $row['id'],'uniqid' => $row['uniqid']));
+            if ($userID) {
+                array_push($conditions, "author_id = ".db_squote($userID));
+            }
+
+            $fSort = " ORDER BY id DESC";
+            $sqlQPart = "FROM ".prefix."_eshop_orders ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+            $sqlQ = "SELECT * ".$sqlQPart;
+
+            foreach ($mysql->select($sqlQ) as $row)
+            {
+
+                $order_link = checkLinkAvailable('eshop', 'order')?
+                generateLink('eshop', 'order', array(), array('id' => $row['id'], 'uniqid' => $row['uniqid'])):
+                generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'order'), array(), array('id' => $row['id'],'uniqid' => $row['uniqid']));
+                
+                $row['order_link'] = $order_link;
+                $tEntry[] = $row;
+                
+            }
             
-            $row['order_link'] = $order_link;
-            $tEntry[] = $row;
-            
+            $tvars['eshop']['orders'] = $tEntry;
         }
-        
-        $tvars['eshop']['orders'] = $tEntry;
     }
-}
 
-register_filter('plugin.uprofile','orders', new uOrderFilter);
+    register_filter('plugin.uprofile','orders', new uOrderFilter);
+}

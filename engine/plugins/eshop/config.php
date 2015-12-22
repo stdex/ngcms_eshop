@@ -760,6 +760,13 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
             $i++;
             $img_name = $parts["filename"] . "-" . $i . "." . $parts["extension"];
         }
+        
+        $extensions = array_map('trim', explode(',', pluginGetVariable('eshop', 'catz_ext_image')));
+        $ext = pathinfo($myFile['name'], PATHINFO_EXTENSION);
+        
+        if(!in_array($ext, $extensions)) {
+            return "";
+        }
 
         // preserve file from temporary directory
         $success = move_uploaded_file($myFile["tmp_name"], $upload_dir . $img_name);

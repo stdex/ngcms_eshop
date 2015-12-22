@@ -90,11 +90,23 @@ $db_update = array(
 );
 
 if ($_REQUEST['action'] == 'commit') {
-	if (fixdb_plugin_install($plugin, $db_update, 'deinstall')) {
-		plugin_mark_deinstalled($plugin);
-	}
+    if (fixdb_plugin_install($plugin, $db_update, 'deinstall')) {
+        $img_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/';
+        deleteDir($img_dir);
+        plugin_mark_deinstalled($plugin);
+    }
 } else {
-	generate_install_page($plugin, 'Удаление плагина', 'deinstall');
+    generate_install_page($plugin, 'Удаление плагина', 'deinstall');
+}
+
+
+function deleteDir($path) {
+    if (empty($path)) { 
+        return false;
+    }
+    return is_file($path) ?
+            @unlink($path) :
+            array_map(__FUNCTION__, glob($path.'/*')) == @rmdir($path);
 }
 
 ?>

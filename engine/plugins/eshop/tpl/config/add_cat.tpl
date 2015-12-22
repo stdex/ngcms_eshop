@@ -1,8 +1,3 @@
-<script src="{{ admin_url }}/plugins/eshop/upload/js/jquery-1.7.2.min.js" type="text/javascript"></script>
-<link rel="stylesheet" type="text/css" href="{{ admin_url }}/plugins/eshop/upload/uploadifive/uploadifive.css">
-<link rel="stylesheet" href="{{ admin_url }}/plugins/eshop/upload/capty/jquery.capty.css" type="text/css" />
-<script src="{{ admin_url }}/plugins/eshop/upload/uploadifive/jquery.uploadifive.min.js" type="text/javascript"></script>
-<script type="text/javascript" src="{{ admin_url }}/plugins/eshop/upload/capty/jquery.capty.min.js"></script>
 {{entries.error}}
 <form method="post" action="" enctype="multipart/form-data">
 <table border="0" width="100%" cellspacing="0" cellpadding="0">

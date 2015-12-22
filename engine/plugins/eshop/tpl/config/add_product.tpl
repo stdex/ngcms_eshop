@@ -69,27 +69,27 @@
         var i = 0;
         $('#file_upload').uploadifive({
             'auto'             : false,
-            'formData'         : {
-                                   'id' : $("#txtdes").val()
-                                 },
+            'formData'         : {},
             'queueID'          : 'queue',
-            'uploadScript'     : '/engine/plugins/eshop/upload/libs/upload_product_images.php?id={{entries.id}}',
+            'uploadScript'     : '/engine/plugins/eshop/upload/libs/upload_product_images.php',
             'onUpload' : function(filesToUpload) {
                      i = 0;
                 },
             'onUploadComplete' : function(file, data) {
-                    var form = document.forms['product_form'];
-                    var el = document.createElement("input");
-                    el.type = "hidden";
-                    el.name = "data[images]["+i+"]";
-                    el.value = file.name;
-                    form.appendChild(el);
-                    i++;
+                    console.log(file);
+                    console.log(data);
+                    if(data == "1") {
+                        var form = document.forms['product_form'];
+                        var el = document.createElement("input");
+                        el.type = "hidden";
+                        el.name = "data[images]["+i+"]";
+                        el.value = file.name;
+                        form.appendChild(el);
+                        i++;
+                    }
                 },
             'onQueueComplete' : function(uploads) {
                 document.getElementById('product_form').submit();
-                //$("#txtdes").val();
-                //location.reload();
             }
         });
 

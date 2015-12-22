@@ -4,61 +4,66 @@ $rootpath = $_SERVER['DOCUMENT_ROOT'];
 
 try {
 
-$arrayreempla=array("/","");
-$targetPath = $rootpath . '/uploads/eshop/products/temp' . '/';
-$targetThumbPath = $rootpath . '/uploads/eshop/products/temp' . '/thumb/';
+    $arrayreempla=array("/","");
+    $targetPath = $rootpath . '/uploads/eshop/products/temp' . '/';
+    $targetThumbPath = $rootpath . '/uploads/eshop/products/temp' . '/thumb/';
 
-$archivo= str_replace($arrayreempla," ", $_FILES['Filedata']['name']);
+    $archivo= str_replace($arrayreempla," ", $_FILES['Filedata']['name']);
 
-$tempFile = $_FILES['Filedata']['tmp_name'];
-$imagen= $archivo;
-//$id = $_REQUEST['des'];
-$id = intval($_REQUEST['id']);
-$targetFile = str_replace("//", "/", $targetPath) . $imagen;
-$targetThumb = str_replace("//", "/", $targetThumbPath) . $imagen;
-$fileParts = pathinfo ( $_FILES ['Filedata'] ['name'] );
-$extension = $fileParts ['extension'];
+    $tempFile = $_FILES['Filedata']['tmp_name'];
+    $imagen= $archivo;
+    //$id = $_REQUEST['des'];
+    $id = intval($_REQUEST['id']);
+    $targetFile = str_replace("//", "/", $targetPath) . $imagen;
+    $targetThumb = str_replace("//", "/", $targetThumbPath) . $imagen;
+    $fileParts = pathinfo ( $_FILES ['Filedata'] ['name'] );
+    $extension = $fileParts ['extension'];
+    
+    $extensions = array_map('trim', explode(',', pluginGetVariable('eshop', 'ext_image')));
 
-//$resultadoi = $mysql->query("INSERT INTO ".prefix."_zboard_images (`filepath`, `zid`)VALUES('$imagen','$id')") or die (mysql_error());
+    if(!in_array($extension, $extensions)) {
+        return "0";
+    }
 
-//if ($resultadoi) {
-echo "1";
+    //$resultadoi = $mysql->query("INSERT INTO ".prefix."_zboard_images (`filepath`, `zid`)VALUES('$imagen','$id')") or die (mysql_error());
 
-// CREATE THUMBNAIL
-if ($extension == "jpg" || $extension == "jpeg") {
-    $src = imagecreatefromjpeg ( $tempFile );
-} else if ($extension == "png") {
-    $src = imagecreatefrompng ( $tempFile );
-} else {
-    $src = imagecreatefromgif ( $tempFile );
-}
+    //if ($resultadoi) {
+    echo "1";
 
-list ( $width, $height ) = getimagesize ( $tempFile );
+    // CREATE THUMBNAIL
+    if ($extension == "jpg" || $extension == "jpeg") {
+        $src = imagecreatefromjpeg ( $tempFile );
+    } else if ($extension == "png") {
+        $src = imagecreatefrompng ( $tempFile );
+    } else {
+        $src = imagecreatefromgif ( $tempFile );
+    }
 
-$newwidth = pluginGetVariable('eshop', 'width_thumb');
-$newheight = ($height / $width) * $newwidth;
-$tmp = imagecreatetruecolor ( $newwidth, $newheight );
+    list ( $width, $height ) = getimagesize ( $tempFile );
 
-imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
+    $newwidth = pluginGetVariable('eshop', 'width_thumb');
+    $newheight = ($height / $width) * $newwidth;
+    $tmp = imagecreatetruecolor ( $newwidth, $newheight );
 
-$thumbname = $targetThumb;
+    imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
 
-if (file_exists ( $thumbname )) {
-    unlink ( $thumbname );
-}
+    $thumbname = $targetThumb;
 
-imagejpeg ( $tmp, $thumbname, 100 );
+    if (file_exists ( $thumbname )) {
+        unlink ( $thumbname );
+    }
 
-imagedestroy ( $src );
-imagedestroy ( $tmp );
+    imagejpeg ( $tmp, $thumbname, 100 );
 
-move_uploaded_file($tempFile, $targetFile);
-        
-//} else {
-//echo "0";
-//}
+    imagedestroy ( $src );
+    imagedestroy ( $tmp );
+
+    move_uploaded_file($tempFile, $targetFile);
+            
+    //} else {
+    //echo "0";
+    //}
 } catch (Exception $ex) {
-
-echo "0";
+    return "0";
 }
 
