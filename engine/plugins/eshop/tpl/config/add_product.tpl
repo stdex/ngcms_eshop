@@ -1,8 +1,13 @@
 <script src="{{ admin_url }}/plugins/eshop/tpl/config/jq/jquery-1.7.2.min.js" type="text/javascript"></script>
+
 <link rel="stylesheet" type="text/css" href="{{ admin_url }}/plugins/eshop/upload/uploadifive/uploadifive.css">
-<link rel="stylesheet" href="{{ admin_url }}/plugins/eshop/tpl/config/jq_capty/jquery.capty.css" type="text/css" />
 <script src="{{ admin_url }}/plugins/eshop/upload/uploadifive/jquery.uploadifive.min.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="{{ admin_url }}/plugins/eshop/tpl/config/jq_capty/jquery.capty.css" type="text/css" />
 <script type="text/javascript" src="{{ admin_url }}/plugins/eshop/tpl/config/jq_capty/jquery.capty.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="{{ admin_url }}/plugins/eshop/tpl/config/jq_jesse/jquery-jesse.css">
+<script type="text/javascript" src="{{ admin_url }}/plugins/eshop/tpl/config/jq_jesse/jquery-jesse.js"></script>
 
 <script type="text/javascript" src="{{ admin_url }}/plugins/eshop/tpl/config/jq_tokeninput/js/jquery.tokeninput.js"></script>
 <link rel="stylesheet" href="{{ admin_url }}/plugins/eshop/tpl/config/jq_tokeninput/css/token-input.css" type="text/css" />
@@ -176,11 +181,42 @@
     .draggable{border-bottom:4px solid black;font-family: 'bebas_neueregular', sans-serif;color: #ffffff;;line-height:18px; text-align: center; font-size: 16px;width: 100%; display: block; height: 20px;position: absolute; top:0; left:0; background: #639bf6
 }
     </style>
-
+-->
     
     <script type="text/javascript">
     $(function(){
-        $('#list').jesse();
+        $('#list').jesse({
+            onStop: function(position, prevPosition, item) {
+                if(position != prevPosition) {
+                    //console.log(item.find('img').attr('data-id'));
+                    //console.log(position);
+                    //console.log(prevPosition);
+                    
+                    var img_id = item.find('img').attr('data-id');
+                    
+                    $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_change_img_pos', rndval: new Date().getTime(), params : json_encode({'img_id':img_id, 'position':position, 'prevPosition':prevPosition}) }, function(data) {
+                        // Try to decode incoming data
+                        try {
+                            resTX = data;
+                        } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
+                        if (!resTX['status']) {
+                            alert('Ошибка при cмене позиции изображения');
+                        } else {
+                             //
+                        }
+                    }).error(function() { 
+                        alert('HTTP error during request', 'ERROR'); 
+                    });
+                    
+                    //console.log(item);
+                }
+            }
+        });
+        
+        $('.del_img').mouseup(function(e) {
+            return false;
+        });
+        
     });
     </script>
     <style>
@@ -189,13 +225,14 @@
 
     <ul class="jq-jesse" id="list">
         {% for img in entries.entriesImg %}
-        <li class="jq-jesse__item"><a href='{{home}}/uploads/eshop/products/{{img.filepath}}' target='_blank'><img class="fix" name="#content-target-{{img.id}}" src='{{home}}/uploads/eshop/products/thumb/{{img.filepath}}' width='100' height='100'></a>
+        <li class="jq-jesse__item"><a href='{{home}}/uploads/eshop/products/{{img.filepath}}' target='_blank'><img class="fix" name="#content-target-{{img.id}}"  data-id="{{img.id}}" src='{{home}}/uploads/eshop/products/thumb/{{img.filepath}}' width='100' height='100'></a>
         <div id="content-target-{{img.id}}">
-           <a href="{{img.del_link}}">[x]</a>&nbsp;&nbsp;&nbsp;
+           <a href="{{img.del_link}}" class="del_img" data-id="{{img.id}}">[x]</a>&nbsp;&nbsp;&nbsp;
         </div></li>
         {% endfor %}
     </ul>
-    -->
+
+<!--    
     <table>
     <tr>
     {% for img in entries.entriesImg %}
@@ -208,6 +245,8 @@
     {% endfor %}
     </tr>
     </table>
+-->
+    
     </td>
     </tr>
 

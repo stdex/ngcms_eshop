@@ -38,7 +38,7 @@ function plugin_block_eshop($number, $mode, $cat, $overrideTemplateName, $cacheE
             array_push($conditions, "p.featured = 1");
             $orderby = " ORDER BY p.editdate DESC ";
             break;
-        case 'rnd':	
+        case 'rnd': 
             $cacheDisabled = true;
             $orderby = " ORDER BY RAND() DESC ";
             break;
@@ -49,7 +49,7 @@ function plugin_block_eshop($number, $mode, $cat, $overrideTemplateName, $cacheE
     }
 
     $fSort = " GROUP BY p.id ".$orderby." LIMIT ".$number;
-    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN (SELECT * FROM ".prefix."_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
     $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.stocked AS stocked, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
 
     $tEntries = array();
@@ -149,14 +149,14 @@ function plugin_m_eshop_catz_tree() {
 //
 // Twig блоки для вывода продукции на главную
 // Параметры:
-// * number			- число записей для вывода
-// * mode			- режим вывода
-// * template		- шаблон
-// * cacheExpire	- время кеша (в секундах)
+// * number         - число записей для вывода
+// * mode           - режим вывода
+// * template       - шаблон
+// * cacheExpire    - время кеша (в секундах)
 function plugin_block_eshop_showTwig($params) {
     global $CurrentHandler, $config;
 
-    return	plugin_block_eshop($params['number'], $params['mode'], $params['cat'], $params['template'], isset($params['cacheExpire'])?$params['cacheExpire']:0);
+    return  plugin_block_eshop($params['number'], $params['mode'], $params['cat'], $params['template'], isset($params['cacheExpire'])?$params['cacheExpire']:0);
 }
 
 //

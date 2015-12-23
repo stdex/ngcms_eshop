@@ -283,7 +283,7 @@ function plugin_eshop_install($action) {
         'table'     => 'eshop_order_basket',
         'action'    => 'cmodify',
         'engine'    => 'MyISAM',
-        'key'       => 'primary key(id)',
+        'key'       => 'primary key(id), KEY `order_id` (`order_id`), KEY `linked_id` (`linked_id`)',
         'fields'    => array(
             array('action'  => 'cmodify', 'name' => 'id', 'type' => 'int(11)', 'params' => 'NOT NULL AUTO_INCREMENT'),
             array('action'  => 'cmodify', 'name' => 'order_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
@@ -335,7 +335,7 @@ function plugin_eshop_install($action) {
         'table'     => 'eshop_images',
         'action'    => 'cmodify',
         'engine'    => 'MyISAM',
-        'key'       => 'primary key(id), KEY `product_id` (`product_id`)',
+        'key'       => 'primary key(id), KEY `product_id` (`product_id`), KEY `position` (`position`)',
         'fields'    => array(
             array('action'  => 'cmodify', 'name' => 'id', 'type' => 'int(11)', 'params' => 'NOT NULL AUTO_INCREMENT'),
             array('action'  => 'cmodify', 'name' => 'filepath', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),

@@ -90,7 +90,7 @@ global $tpl, $mysql, $lang, $twig;
     }
 
     $fSort = " GROUP BY p.id ORDER BY p.id DESC";
-    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN (SELECT * FROM ".prefix."_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
     $sqlQ = "SELECT p.id AS id, p.url AS url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
     
     $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
@@ -546,9 +546,19 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         $imgID = intval($_REQUEST['delimg']);
         $imgPath = input_filter_com(convert($_REQUEST['filepath']));
         $mysql->query("delete from ".prefix."_eshop_images where id = ".$imgID."");
+        delete_product_image($imgPath);
+
+        $r_pos = 0;
+        foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_images WHERE product_id = '.$row['id'].' ORDER BY position, id ') as $img_row)
+        {
+            $mysql->query("update ".prefix."_eshop_images set position = ".db_squote($r_pos)." where (id = ".db_squote($img_row['id']).") ");
+            $r_pos += 1;
+        }
+
+        
         //echo root . '/uploads/zboard/' . $imgPath;
-        unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/products/' . $imgPath);
-        unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/products/thumb/' . $imgPath);
+        //unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/products/' . $imgPath);
+        //unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/products/thumb/' . $imgPath);
         redirect_eshop('?mod=extra-config&plugin=eshop&action=edit_product&id='.$qid.'');
     }
 

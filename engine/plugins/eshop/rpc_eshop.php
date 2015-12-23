@@ -6,6 +6,8 @@ if(!defined('NGCMS'))
 }
 
 rpcRegisterFunction('eshop_linked_products', 'linked_prd');
+rpcRegisterFunction('eshop_change_img_pos', 'change_img_pos');
+
 rpcRegisterFunction('eshop_compare', 'compare_prd');
 rpcRegisterFunction('eshop_viewed', 'viewed_prd');
 
@@ -52,6 +54,66 @@ function linked_prd($params){
     return $tEntry;
 }
 
+function change_img_pos($params){
+    global $userROW, $mysql;
+
+    $results = array();
+    $params = arrayCharsetConvert(1, $params);
+
+    $img_id = intval($params['img_id']);
+    $position = intval($params['position']);
+    $prevPosition = intval($params['prevPosition']);
+
+    if($userROW['status'] < 3) {
+        $img_row = $mysql->record("select * from ".prefix."_eshop_images where id = ".db_squote($img_id)."");
+        if(isset($img_row)) {
+            $mysql->query("update ".prefix."_eshop_images set position = ".db_squote($img_row['position'])." where (product_id = ".db_squote($img_row['product_id']).") and (position = ".db_squote($position).") ");
+            //$prev_img_row = $mysql->record("select * from ".prefix."_eshop_images where (product_id = ".db_squote($img_row['product_id']).") and (position = ".db_squote($prevPosition).")");
+            $mysql->query("update ".prefix."_eshop_images set position = ".db_squote($position)." where (id = ".db_squote($img_row['id']).") ");
+            return array('status' => 1, 'errorCode' => 0, 'data' => 'Images swaped success', 'update' => '');
+        }
+    }
+
+    return array('status' => 0, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
+
+
+/*
+    //$req = iconv( "windows-1251", "utf-8", urldecode($_REQUEST["q"]) );
+    $req = urldecode(filter_var( $_REQUEST["q"], FILTER_SANITIZE_STRING ));
+    $mode = filter_var( $_REQUEST["mode"], FILTER_SANITIZE_STRING );
+    $id = filter_var( $_REQUEST["id"], FILTER_SANITIZE_STRING );
+
+    $conditions = array();
+    if ($req) {
+        array_push($conditions, "p.name LIKE '%".$req."%' ");
+    }
+    
+    if ($mode == "edit") {
+        array_push($conditions, "p.id != '".$id."' ");
+    }
+
+    $fSort = " GROUP BY p.id ORDER BY p.id DESC";
+    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+    $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.name AS category, i.filepath AS image_filepath ".$sqlQPart;
+
+    foreach ($mysql->select(iconv( "utf-8", "windows-1251", $sqlQ )) as $row)
+    {
+
+        $tEntry[] = array (
+            'id'                   => $row['id'],
+            'name'                 => iconv("windows-1251", "utf-8", $row['name'] ),
+            'image_filepath'       => $row['image_filepath'],
+            'code'                 => iconv("windows-1251", "utf-8", $row['code'] ),
+            'category'             => iconv("windows-1251", "utf-8", $row['category'] ),
+        );
+    }
+
+    return $tEntry;
+*/
+
+}
+
+
 function compare_prd($params){
     global $tpl, $template, $twig, $SYSTEM_FLAGS, $config, $userROW, $mysql, $twigLoader;
 
@@ -77,8 +139,8 @@ function compare_prd($params){
 
             // ======== Prepare update of totals informer ========
             $filter = array();
-            if (is_array($userROW)) {												$filter []= '(user_id = '.db_squote($userROW['id']).')';		}
-            if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {	$filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';	}
+            if (is_array($userROW)) {                                               $filter []= '(user_id = '.db_squote($userROW['id']).')';        }
+            if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {    $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';  }
 
             $tCount = 0;
             
@@ -107,8 +169,8 @@ function compare_prd($params){
 
             // ======== Prepare update of totals informer ========
             $filter = array();
-            if (is_array($userROW)) {												$filter []= '(user_id = '.db_squote($userROW['id']).')';		}
-            if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {	$filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';	}
+            if (is_array($userROW)) {                                               $filter []= '(user_id = '.db_squote($userROW['id']).')';        }
+            if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {    $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';  }
 
             $tCount = 0;
             
@@ -128,7 +190,7 @@ function compare_prd($params){
             break;
     }
     
-    return array('status' => 1, 'errorCode' => 0, 'data'	 => 'OK, '.var_export($params, true));
+    return array('status' => 1, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
 }
 
 function viewed_prd($params){
@@ -149,7 +211,7 @@ function viewed_prd($params){
                 array_push($conditions, "p.id IN (".$page_stack.") ");
 
                 $fSort = " GROUP BY p.id ORDER BY p.id DESC";
-                $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+                $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN (SELECT * FROM ".prefix."_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
                 $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
                 
                 foreach ($mysql->select($sqlQ) as $row)
@@ -185,7 +247,7 @@ function viewed_prd($params){
                         'date' => (empty($row['date']))?'':$row['date'],
                         'editdate' => (empty($row['editdate']))?'':$row['editdate'],
                         
-                        'views'		=>	$row['views'],
+                        'views'     =>  $row['views'],
                         
                         'cat_name' => $row['category'],
                         'cid' => $row['cid'],
@@ -204,7 +266,7 @@ function viewed_prd($params){
             }
             
             $tVars = array(
-                'info' =>	isset($info)?$info:'',
+                'info' =>   isset($info)?$info:'',
                 'entries' => isset($entries)?$entries:'',
                 'tpl_url' => home.'/templates/'.$config['theme'],
                 'tpl_home' => admin_url,
@@ -218,7 +280,7 @@ function viewed_prd($params){
             break;
     }
     
-    return array('status' => 1, 'errorCode' => 0, 'data'	 => 'OK, '.var_export($params, true));
+    return array('status' => 1, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
 }
 
 function likes_result($params){
@@ -240,8 +302,8 @@ function likes_result($params){
                 }
                 
                 $filter = array();
-                if (is_array($userROW)) {												$filter []= '(user_id = '.db_squote($userROW['id']).')';		}
-                if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {	$filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';	}
+                if (is_array($userROW)) {                                               $filter []= '(user_id = '.db_squote($userROW['id']).')';        }
+                if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {    $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';  }
 
                 $tCount = 0;
                 
@@ -285,7 +347,7 @@ function likes_result($params){
             break;
         }
     
-    return array('status' => 1, 'errorCode' => 0, 'data'	 => 'OK, '.var_export($params, true));
+    return array('status' => 1, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
 }
 
 function comments_add($params) {
@@ -295,29 +357,29 @@ function comments_add($params) {
     $results = array();
 
     if (isset($userROW)) {
-        $SQL['name']			= $userROW['name'];
-        $SQL['author']			= $userROW['name'];
-        $SQL['author_id']		= $userROW['id'];
-        $SQL['mail']			= $userROW['mail'];
-        $is_member				= 1;
-        $memberRec				= $userROW;
+        $SQL['name']            = $userROW['name'];
+        $SQL['author']          = $userROW['name'];
+        $SQL['author_id']       = $userROW['id'];
+        $SQL['mail']            = $userROW['mail'];
+        $is_member              = 1;
+        $memberRec              = $userROW;
     }
     else {
-        $SQL['name']			= secure_html(convert(trim($params['comment_author'])));
-        $SQL['author']			= secure_html(convert(trim($params['comment_author'])));
-        $SQL['author_id']		= 0;
-        $SQL['mail']			= secure_html(convert(trim($params['comment_email'])));
-        $is_member				= 0;
-        $memberRec				= "";
+        $SQL['name']            = secure_html(convert(trim($params['comment_author'])));
+        $SQL['author']          = secure_html(convert(trim($params['comment_author'])));
+        $SQL['author_id']       = 0;
+        $SQL['mail']            = secure_html(convert(trim($params['comment_email'])));
+        $is_member              = 0;
+        $memberRec              = "";
     }
-    $SQL['text']	=	secure_html(convert(trim($params['comment_text'])));
+    $SQL['text']    =   secure_html(convert(trim($params['comment_text'])));
     $SQL['product_id'] =  $params['product_id'];
     $SQL['postdate'] = time() + ($config['date_adjust'] * 60);
 
-    $SQL['text']	= str_replace("\r\n", "<br />", $SQL['text']);
-    $SQL['ip']		= $ip;
-    $SQL['reg']		= ($is_member) ? '1' : '0';
-    $SQL['status']		= '1';
+    $SQL['text']    = str_replace("\r\n", "<br />", $SQL['text']);
+    $SQL['ip']      = $ip;
+    $SQL['reg']     = ($is_member) ? '1' : '0';
+    $SQL['status']      = '1';
 
     if(empty($SQL['name']))
     {
@@ -348,7 +410,7 @@ function comments_add($params) {
 
 
         $results = array(
-            'eshop_comments'	=> 100,
+            'eshop_comments'    => 100,
             'eshop_comments_text' => iconv('Windows-1251', 'UTF-8', 'Комментарий успешно добавлен!'),
             'eshop_comments_show' => iconv('Windows-1251', 'UTF-8', comments_show_handler($params))
         );
@@ -374,7 +436,7 @@ function comments_show($params){
     $results = array();
 
     $results = array(
-            'eshop_comments'	=> 100,
+            'eshop_comments'    => 100,
             'eshop_comments_text' => iconv('Windows-1251', 'UTF-8', 'Комментарии'),
             'eshop_comments_show' => iconv('Windows-1251', 'UTF-8', comments_show_handler($params))
     );
@@ -410,11 +472,11 @@ function comments_show_handler($params){
     $output = '';
     foreach ($mysql->select($sqlQ) as $row) {
         // Add [hide] tag processing
-        $text	= $row['text'];
+        $text   = $row['text'];
 
-        if ($config['use_bbcodes'])			{ $text = $parse -> bbcodes($text); }
-        if ($config['use_htmlformatter'])	{ $text = $parse -> htmlformatter($text); }
-        if ($config['use_smilies'])			{ $text = $parse -> smilies($text); }
+        if ($config['use_bbcodes'])         { $text = $parse -> bbcodes($text); }
+        if ($config['use_htmlformatter'])   { $text = $parse -> htmlformatter($text); }
+        if ($config['use_smilies'])         { $text = $parse -> smilies($text); }
 
             if ($config['use_avatars']) {
             if ($row['avatar']) {
@@ -429,7 +491,7 @@ function comments_show_handler($params){
         
         $Entries[] = array (
                 'id' => $row['cid'],
-                'mail' =>	$row['mail'],
+                'mail' =>   $row['mail'],
                 'author' => $row['name'],
                 'date' => $row['postdate'],
                 'profile_link' => checkLinkAvailable('uprofile', 'show')?
@@ -466,8 +528,8 @@ function ebasket_add_item($linked_ds, $linked_id, $title, $price, $count, $xfld 
 
     // ======== Prepare update of totals informer ========
     $filter = array();
-    if (is_array($userROW)) {												$filter []= '(user_id = '.db_squote($userROW['id']).')';		}
-    if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {	$filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';	}
+    if (is_array($userROW)) {                                               $filter []= '(user_id = '.db_squote($userROW['id']).')';        }
+    if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {    $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';  }
 
     $tCount = 0;
     $tPrice = 0;
@@ -478,9 +540,9 @@ function ebasket_add_item($linked_ds, $linked_id, $title, $price, $count, $xfld 
     }
 
     $tVars = array(
-        'count' 		=> $tCount,
-        'price' 		=> $tPrice,
-        'ajaxUpdate'	=> 1,
+        'count'         => $tCount,
+        'price'         => $tPrice,
+        'ajaxUpdate'    => 1,
     );
 
     $tpath = locatePluginTemplates(array('ebasket/total'), 'eshop', pluginGetVariable('eshop', 'localsource'));
@@ -540,9 +602,9 @@ function ebasket_add_fast_order($linked_ds, $linked_id, $title, $price, $count, 
     $notify_xt = $twig->loadTemplate($notify_tpath['ebasket/lfeedback'].'ebasket/'.'lfeedback.tpl');
 
     $pVars = array(
-        'recs'		=> count($recs),
-        'entries'	=> $recs,
-        'total'		=> sprintf('%9.2f', $total),
+        'recs'      => count($recs),
+        'entries'   => $recs,
+        'total'     => sprintf('%9.2f', $total),
         'vnames'   => $vnames,
     );
 
@@ -608,7 +670,7 @@ function ebasket_rpc_manage($params){
                     }
                 
                     $fSort = " GROUP BY p.id ORDER BY p.id DESC";
-                    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+                    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN (SELECT * FROM ".prefix."_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
                     $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
                 
                     // Retrieve news record
@@ -688,7 +750,7 @@ function ebasket_rpc_manage($params){
             }
 
             $fSort = " GROUP BY p.id ORDER BY p.id DESC";
-            $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+            $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN (SELECT * FROM ".prefix."_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
             $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
 
             // Retrieve news record
@@ -711,6 +773,6 @@ function ebasket_rpc_manage($params){
 
             break;
     }
-    return array('status' => 1, 'errorCode' => 0, 'data'	 => 'OK, '.var_export($params, true));
+    return array('status' => 1, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
 
 }
