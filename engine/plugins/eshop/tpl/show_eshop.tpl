@@ -416,10 +416,10 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
  <!-- Start. Tabs block-->
  <ul class="tabs tabs-data tabs-product">
     <li class="active"><button data-href="#first">Характеристики</button></li>
-      <li class=""><button data-href="#second" data-source="http://fluid.imagecmsdemo.net/shop/product_api/renderFullDescription" data-data="{&quot;product_id&quot;: 5623}" data-selector=".inside-padd > .text">описание</button></li>
+      <li class=""><button data-href="#second">описание</button></li>
       <!--Output of the block comments-->
     <li class="">
-    <button type="button" data-href="#comment" onclick="Comments.renderPosts($('#comment .inside-padd'),{'visibleMainForm': '1'})">
+    <button type="button" data-href="#comment">
       <span class="icon_comment-tab"></span>
       <span class="text-el">
         <span id="cc">отзывы</span>
@@ -459,60 +459,6 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
   <div class="inside-padd forComments p_r"><style> .comments:after,.comments .func-button-comment:after{visibility:hidden;display:block;font-size:0;content:".";clear:both;height:0}.func-button-comment{font-size:0}.comments{max-width:915px}.comments .main-form-comments .frame-form-field{margin-left:0}.comments .author-comment{font-size:12px;font-weight:bold}.comments .frame-list-comments > .sub-1{margin:0}.page-text .comments .frame-list-comments > .sub-1{max-height:none}.comments .frame-comment p{margin-bottom:0px}.comments .frame-list-comments.sub-2{float:none;width:auto}#comment .comments .frame-list-comments.sub-2{margin-left:115px;padding-bottom:10px}.page-text .comments .frame-list-comments.sub-2{max-height:none!important;height:auto!important}.page-text .btn-all-comments{display:none !important}.comments .btn-all-comments{margin-left:0;margin-top:5px}.comments .btn > *,.comments input.btn{padding:0 !important}.comments .frame-list-comments .btn.active{box-shadow:none}.comments .icon_comment{background-image:none;width:0;height:0;margin-right:0!important;overflow:hidden}.comments .frame-list-comments li{border-top:0;padding:0}.comments .frame-list-comments > .sub-1 > li{margin-top:13px;margin-bottom:0;border-top:1px solid transparent;padding-top:21px}.comments .frame-list-comments > .sub-1 > li:before{display:none}.comments .frame-list-comments > .sub-1 > li:first-child{margin-top:0;border-top:0px;padding-top:0}.comments .frame-list-comments.sub-2 + .s-all-comments{margin-left:33px}.comments .frame-list-comments.sub-2 > li{margin-top:20px;position:relative}.comments .frame-list-comments.sub-2 > li:first-child{margin-top:12px}.comments .frame-list-comments.sub-2 > li:before{content:"";border-width:9px;border-style:solid;top:-9px;left:20px;position:absolute;border-color:transparent}.comments .global-frame-comment-sub2{padding:15px 20px 15px}.comments .funcs-buttons-comment + .frame-list-comments{padding-top:1px}.comments .like > button span span,.comments .dis-like > button span span{font-weight:normal}.comments .like,.comments .dis-like{height:12px;line-height:12px}.comments .author-data-comment-sub1{float:left;width:100px}.comments .s-all-comments{margin-top:7px}.comments .date-comment{display:block;font-size:11px;padding-top:1px}.author-data-comment-sub2 .date-comment{display:inline-block}.comments .btn-form input{padding:0 25px !important}.comments .frame-drop-comment{padding-bottom:0;display:none;width:auto}.frame-comment-sub1{margin:0 170px 0 115px}.comments .frame-list-comments .frame-drop-comment{padding:15px 0 0;border-top:1px solid transparent;margin-top:20px}.comments .frame-list-comments{padding-bottom:20px}.comments .title-comment{margin-bottom:6px;font-size:18px;font-weight:bold}.comments label{display:block}.comments label,.comments .frame-label{margin-bottom:8px;display:block}.comments label .title,.comments .frame-label .title{display:block;margin-bottom:5px}.comments .main-form-comments .title{float:none;width:auto}.comments .frame-form-field{position:relative;display:block}.comments textarea{height:110px;padding-top:5px}.comments .btn{display:inline-block;cursor:pointer;text-decoration:none;position:relative}.comments .btn > *,.comments input.btn{padding:5px 15px 5px}.comments .btn.active{cursor:default}.comments .like{border-right:1px solid transparent;padding-right:7px;margin-right:7px}.like .d_l_1,.dis-like .d_l_1{font-size:11px;border-bottom:none}.comments .frame-form-field{}.comments .mark-pr{margin-bottom:4px}.comments .mark-pr .title{font-weight:bold}.comments .mark-pr > .star-small{position:relative;top:2px}.author-data-comment-sub2{margin-bottom:5px}.comments .frame-mark{float:right;width:150px}.comments .comments-main-form{overflow:visible !important;padding-top:17px}.comments .comments-main-form.noComments{float:none}.comments .comments-main-form .star{vertical-align:middle;top:-2px;margin-right:0}.comments .comments-main-form .star-big{margin-top:0}.forComments{position:relative}#comment .preloader{top:15px} </style><div class="comments" id="comments">
             <div class="frame-list-comments">
         <ul class="sub-1 product-comment showHidePart">
-                        <li>
-                <input type="hidden" name="comment_item_id" value="96">
-                <div class="o_h global-frame-comment-sub1">
-                    <div class="author-data-comment author-data-comment-sub1">
-                        <span class="f-s_0 frame-autor-comment"><span class="icon_comment"></span><span class="author-comment">misha</span></span>
-                        <span class="date-comment">
-                            <span class="day">12 </span>
-                            <span class="month">Мая </span>
-                            <span class="year">2014 </span>
-                        </span>
-                    </div>
-                    <div class="frame-mark">
-                                                <div class="mark-pr">
-                            <div class="star-small d_i-b">
-                                <div class="productRate star-small">
-                                    <div style="width: 100%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                                                <div class="func-button-comment">
-                            <span class="btn like">
-                                <button type="button" class="usefullyes" data-comid="96">
-                                    <span class="icon_like"></span>
-                                    <span class="text-el d_l_1">Полезно <span class="yesholder96">(2)</span></span>
-                                </button>
-                            </span>
-                            <span class="btn dis-like">
-                                <button type="button" class="usefullno" data-comid="96">
-                                    <span class="icon_dislike"></span>
-                                    <span class="text-el d_l_1">Не полезно <span class="noholder96">(5)</span></span>
-                                </button>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="frame-comment-sub1">
-                        <div class="frame-comment">
-                            <p>крутой тел</p>
-                                                                                </div>
-
-                                                <div class="btn">
-                            <button type="button" data-rel="cloneAddPaste" data-parid="96">
-                                <span class="icon_comment"></span>
-                                <span class="text-el d_l_1 f-s_11">Ответить</span>
-                            </button>
-                        </div>
-                                            </div>
-                </div>
-                <div data-place="96"></div>
-                                                <div class="btn-all-comments">
-                    <button type="button"><span class="text-el" data-hide="<span class=&quot;d_l_1&quot;>Скрыть</span> &#8593;" data-show="<span class=&quot;d_l_1&quot;>Смотреть все ответы</span> &#8595;"></span></button>
-                </div>
-            </li>
-                        
-
         </ul>
         <!--
         <button class="t-d_n f-s_0 s-all-d ref d_n_" data-trigger="[data-href='#comment']" data-scroll="true">
@@ -524,55 +470,9 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
 
 {{ comments_form }}
 
-<div class="frame-drop-comment" data-rel="whoCloneAddPaste">
-        <div class="form-comment layout-highlight frame-comments">
-            <div class="title-comment">
-                <div class="title">Ваш ответ</div>
-            </div>
-            <div class="inside-padd">
-                <form>
-                    <label class="err-label">
-                        <span class="frame-form-field">
-                            <div class="frame-label error" name="error_text"></div>
-                        </span>
-                    </label>
-
-                                        <div class="frame-label">
-                        <div class="frame-form-field o_h">
-                            <label style="width: 39%;float:left;margin-right: 4%;">
-                                <span class="frame-form-field">
-                                    <input type="text" name="comment_author" value="" placeholder="Ваше имя">
-                                </span>
-                            </label>
-                            <label style="width: 39%;float:left;">
-                                <span class="frame-form-field">
-                                    <input type="text" name="comment_email" value="" placeholder="Электронная почта">
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-                    
-
-
-                    <label>
-                        <span class="frame-form-field">
-                            <textarea class="comment_text" name="comment_text" placeholder="Текст отзыва"></textarea>
-                        </span>
-                    </label>
-                    <!-- End star reiting -->
-                                        <div class="frame-label">
-                        <span class="frame-form-field">
-                            <input type="hidden" id="parent" name="comment_parent" value="">
-                            <span class="btn-form">
-                                <input type="submit" value="Комментировать" onclick="Comments.post(this, {'visibleMainForm': '1'})">
-                            </span>
-                        </span>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 </div>
+
+<!--
 <div class="d_n" id="useModeration">
     <div class="usemoderation">
         <div class="msg">
@@ -582,6 +482,7 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
         </div>
     </div>
 </div>
+-->
 </div>
 </div>
 <!--Block Accessories Start-->
@@ -663,7 +564,7 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
 
 <!-- Start. JS vars-->
 <script type="text/javascript">
-var hrefCategoryProduct = "http://fluid.imagecmsdemo.net/shop/category/telefoniia-pleery-gps/telefony/mobilnye-telefony";
+var hrefCategoryProduct = "";
 </script>
 <script type="text/javascript">
 var productPhotoDrop = true;
@@ -713,7 +614,7 @@ $(document).ready(function() {
             // Try to decode incoming data
             try {
                 resTX = data;
-            //	alert(resTX['data']['feedback_text']);
+            //  alert(resTX['data']['feedback_text']);
             } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
             if (!resTX['status']) {
                 //alert('Error ['+resTX['errorCode']+']: '+resTX['errorText']);
@@ -740,7 +641,7 @@ $(document).ready(function() {
             // Try to decode incoming data
             try {
                 resTX = data;
-            //	alert(resTX['data']['feedback_text']);
+            //  alert(resTX['data']['feedback_text']);
             } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
             if (!resTX['status']) {
                 //alert('Error ['+resTX['errorCode']+']: '+resTX['errorText']);

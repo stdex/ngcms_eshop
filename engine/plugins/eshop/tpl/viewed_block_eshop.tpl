@@ -11,7 +11,7 @@
       <div class="carousel-js-css items-carousel jcarousel-container jcarousel-container-horizontal iscarousel" style="position: relative; display: block;">
         <div class="content-carousel container">
           <div class="jcarousel-clip jcarousel-clip-horizontal" style="position: relative;">
-            <ul class="items items-catalog items-h-carousel items-product jcarousel-list jcarousel-list-horizontal" style="overflow: hidden; position: relative; top: 0px; margin: 0px; padding: 0px; left: 0px; width: 2568px;">
+            <ul class="items items-catalog items-h-carousel items-product jcarousel-list jcarousel-list-horizontal" style="overflow: hidden; position: relative; top: 0px; margin: 0px; padding: 0px; left: 0px;" id="viewed_list">
                 {% for entry in entries %}
                               <li class="globalFrameProduct to-cart jcarousel-item jcarousel-item-horizontal jcarousel-item-{{loop.index}} jcarousel-item-{{loop.index}}-horizontal" data-pos="top" jcarouselindex="{{loop.index}}" style="float: left; list-style: none; width: 411px;">
                                 <!-- Start. Photo & Name product -->

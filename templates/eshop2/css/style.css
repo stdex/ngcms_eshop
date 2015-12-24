@@ -758,8 +758,8 @@ li[class*="x"] > .title-category-l1{width: 100%;text-align: center;display: bloc
 .items-product .price-new{margin-bottom: 5px;}
 .items-product .frame-photo-title .title{line-height: 1.4; display: block;}
 .table-order .price-new .price{font-size: 16px;font-weight: bold;}
-.price-new .price{font-size: 17px;}
-.price-add .price{font-size: 17px;}
+.price-new .price{font-size: 16px;}
+.price-add .price{font-size: 16px;}
 .item-product .price-new .price, #photo .price-new .price{font-size: 27px;font-weight: bold;}
 .items-default .price-new .price{font-size: 18px;font-weight: normal;}
 .complects-carousel .items-complect .price-new .price{font-size: 12px;}

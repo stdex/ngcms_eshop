@@ -20,42 +20,46 @@ global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang, $mysql, $twig, $userROW
     //$template['vars']['plugin_eshop_description_delivery'] = pluginGetVariable('eshop', 'description_delivery');
     //$template['vars']['plugin_eshop_description_order'] = pluginGetVariable('eshop', 'description_order');
     //$template['vars']['plugin_eshop_description_phones'] = pluginGetVariable('eshop', 'description_phones');
+    //$template['vars']['plugin_eshop_currency'] = $currency_tEntry;
+    //$template['vars']['plugin_eshop_currency_rate'] = $current_currency;
+    
     $SYSTEM_FLAGS["eshop_description_delivery"] = pluginGetVariable('eshop', 'description_delivery');
     $SYSTEM_FLAGS["eshop_description_order"] = pluginGetVariable('eshop', 'description_order');
     $SYSTEM_FLAGS["eshop_description_phones"] = pluginGetVariable('eshop', 'description_phones');
 
-    if (!isset($_COOKIE['ngCurrencyID'])) {
-        $ngCurrencyID = "1";
-        @setcookie('ngCurrencyID', $ngCurrencyID, time()+86400*365, '/', $ngCookieDomain, 0, 1);
-    } else {
-        $ngCurrencyID = $_COOKIE['ngCurrencyID'];
-    }
-    
     $currency_link = checkLinkAvailable('eshop', 'currency')?
             generateLink('eshop', 'currency', array()):
             generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'currency'), array());
 
     $tEntry = array();
-    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_currencies ORDER BY position, id") as $row)
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_currencies WHERE enabled = 1 ORDER BY position, id") as $row)
     {
         $row['currency_link'] = $currency_link."?id=".$row['id'];
         $currency_tEntry[] = $row;
-        
-        if($ngCurrencyID == $row['id']) {
-            $current_currency = $row;
-        }
-        
     }
     
     $SYSTEM_FLAGS["eshop_currency"] = $currency_tEntry;
-    //$template['vars']['plugin_eshop_currency'] = $currency_tEntry;
-                
-    if(!isset($current_currency)) {
-        $current_currency['id'] = 1;
-        $current_currency['rate_from'] = 1;
-    }
+    
+    $current_currency = array();
 
-    //$template['vars']['plugin_eshop_currency_rate'] = $current_currency;
+    if (!isset($_COOKIE['ngCurrencyID'])) {
+        $ngCurrencyID = $currency_tEntry[0]['id'];
+        $current_currency = $currency_tEntry[0];
+        @setcookie('ngCurrencyID', $ngCurrencyID, time()+86400*365, '/', $ngCookieDomain, 0, 1);
+    } else {
+        $ngCurrencyID = $_COOKIE['ngCurrencyID'];
+        foreach ($currency_tEntry as $cc)
+        {
+            if($cc['id'] == $ngCurrencyID) {
+                $current_currency = $cc;
+            }
+        }
+        
+        if(empty($current_currency)) {
+            $current_currency = $currency_tEntry[0];
+        }
+        
+    }
     
     $SYSTEM_FLAGS["current_currency"] = $current_currency;
 }

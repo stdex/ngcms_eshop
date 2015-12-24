@@ -1951,8 +1951,12 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
         
         $SQL['rate_to'] = 1;
         $SQL['cents'] = 1;
-        $SQL['position'] = 2;
-        $SQL['enabled'] = 1;
+        $SQL['position'] = input_filter_com(convert($_REQUEST['position']));
+        if($SQL['position'] == "")
+        {
+            $SQL['position'] = 0;
+        }
+        $SQL['enabled'] = input_filter_com(convert($_REQUEST['enabled']));
         
         if(empty($error_text))
         {
@@ -2041,8 +2045,12 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
         
         $SQL['rate_to'] = 1;
         $SQL['cents'] = 1;
-        $SQL['position'] = 2;
-        $SQL['enabled'] = 1;
+        $SQL['position'] = input_filter_com(convert($_REQUEST['position']));
+        if($SQL['position'] == "")
+        {
+            $SQL['position'] = 0;
+        }
+        $SQL['enabled'] = input_filter_com(convert($_REQUEST['enabled']));
         
         if(empty($error_text))
         {
@@ -2125,6 +2133,7 @@ global $tpl, $mysql, $twig;
     {
     
         $row['edit_link'] = "?mod=extra-config&plugin=eshop&action=edit_currency&id=".$row['id']."";
+        $row['del_link'] = "?mod=extra-config&plugin=eshop&action=del_currency&id=".$row['id']."";
         $tEntry[] = $row;
 
     }

@@ -3,9 +3,11 @@
 <tr  class="contHead" align="left">
 <td width="5%">ID</td>
 <td width="20%">Название валюты</td>
-<td width="30%">Знак</td>
+<td width="20%">Знак</td>
 <td width="15%">Код ISO</td>
 <td width="15%">Конверсия</td>
+<td width="5%">Позиция</td>
+<td width="5%">Статус</td>
 <td width="15%">Действие</td>
 </tr>
 {% for entry in entries %}
@@ -15,7 +17,9 @@
 <td width="30%" class="contentEntry1">{{ entry.sign }}</td>
 <td width="15%" class="contentEntry1">{{ entry.code }}</td>
 <td width="15%" class="contentEntry1">{{ entry.rate_from }} {{ entry.sign }} = {{ entry.rate_to }} $</td>
-<td width="15%" class="contentEntry1"><a href="{{ entry.del_link }}"  /><img src="/engine/skins/default/images/delete.gif"></a></td>
+<td width="2%" class="contentEntry1" style="text-align:center;vertical-align:middle">{{ entry.position }}</td>
+<td width="2%" class="contentEntry1" style="text-align:center;vertical-align:middle"><img src="{{home}}/engine/skins/default/images/{% if (entry.enabled == 1) %}yes.png{% else %}no.png{% endif %}" alt=""></td>
+<td width="15%" class="contentEntry1" style="text-align:center;vertical-align:middle"><a href="{{ entry.del_link }}"  /><img src="/engine/skins/default/images/delete.gif"></a></td>
 </tr>
 {% else %}
 <tr align="left">
