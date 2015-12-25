@@ -12,6 +12,8 @@
 <script type="text/javascript" src="{{ admin_url }}/plugins/eshop/tpl/config/jq_tokeninput/js/jquery.tokeninput.js"></script>
 <link rel="stylesheet" href="{{ admin_url }}/plugins/eshop/tpl/config/jq_tokeninput/css/token-input.css" type="text/css" />
 
+<script type="text/javascript" src="{{ admin_url }}/plugins/eshop/tpl/js/eshop.js"></script>
+
 {{entries.error}}
 <form method="post" action="" id="product_form" enctype="multipart/form-data">
 <input type="hidden" name="handler" value="1" />
@@ -122,93 +124,16 @@
     <td width="50%" class="contentEntry1">Прикрепленные изображения<br /><small></small></td>
     <td width="50%" class="contentEntry2">
 
-   
-<!--
-<div class="photo-grid-container">
-{% for img in entries.entriesImg %}
-<div class="photo-grid-item">
-    <img src='{{home}}/uploads/eshop/products/thumb/{{img.filepath}}' width='100' height='100'>
-</div>
-{% endfor %}
-</div> 
-
-<script>
-    $(function(){
-    // Initialize jQuery Sortable Photos.
-    $('.photo-grid-container').sortablePhotos({
-      selector: '> .photo-grid-item',
-      sortable: 0,
-      padding: 2,
-      beforeArrange: function (event, data) {
-      },
-      afterDrop: function (event, data) {
-      }
-    }); 
-    })
-</script>  
-   
-        
-
-<div class="row dad-draggable">
-    {% for img in entries.entriesImg %}
-        <div>
-            <div class="item">
-                <span class="draggable">&bull; &bull; &bull;</span>
-                    <a href='{{home}}/uploads/eshop/products/{{img.filepath}}' target='_blank'><img class="fix" name="#content-target-{{img.id}}" src='{{home}}/uploads/eshop/products/thumb/{{img.filepath}}' width='100' height='100'></a>
-                    <div id="content-target-{{img.id}}">
-                       <a href="{{img.del_link}}">[x]</a>&nbsp;&nbsp;&nbsp;
-                    </div>
-            </div>
-        </div>
-    {% endfor %}
-        
-</div>
-
-<script>
-    $(function(){
-
-        $(".dad-draggable").dad({draggable:'.draggable'});
-
-    })
-</script>  
-
-    <style>
-
-    .item{display: block; height: 100px; line-height: 100px; text-align: center; font-size: 30px; font-weight: bold; background: #639BF6; color: white; font-family: "Arial", sans-serif;}
-    .item{margin:15px;display: block; background: #639BF6;position:relative}
-    .comments{background: black; margin: 50px 0 0 0; padding: 30px;}
-    
-    .draggable{border-bottom:4px solid black;font-family: 'bebas_neueregular', sans-serif;color: #ffffff;;line-height:18px; text-align: center; font-size: 16px;width: 100%; display: block; height: 20px;position: absolute; top:0; left:0; background: #639bf6
-}
-    </style>
--->
-    
     <script type="text/javascript">
     $(function(){
         $('#list').jesse({
             onStop: function(position, prevPosition, item) {
                 if(position != prevPosition) {
-                    //console.log(item.find('img').attr('data-id'));
-                    //console.log(position);
-                    //console.log(prevPosition);
-                    
+
                     var img_id = item.find('img').attr('data-id');
-                    
-                    $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_change_img_pos', rndval: new Date().getTime(), params : json_encode({'img_id':img_id, 'position':position, 'prevPosition':prevPosition}) }, function(data) {
-                        // Try to decode incoming data
-                        try {
-                            resTX = data;
-                        } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
-                        if (!resTX['status']) {
-                            alert('Ошибка при cмене позиции изображения');
-                        } else {
-                             //
-                        }
-                    }).error(function() { 
-                        alert('HTTP error during request', 'ERROR'); 
+                    rpcEshopRequest('eshop_change_img_pos', {'img_id':img_id, 'position':position, 'prevPosition':prevPosition}, function (resTX) {
                     });
                     
-                    //console.log(item);
                 }
             }
         });
@@ -232,20 +157,6 @@
         {% endfor %}
     </ul>
 
-<!--    
-    <table>
-    <tr>
-    {% for img in entries.entriesImg %}
-    <td>
-        <a href='{{home}}/uploads/eshop/products/{{img.filepath}}' target='_blank'><img class="fix" name="#content-target-{{img.id}}" src='{{home}}/uploads/eshop/products/thumb/{{img.filepath}}' width='150' height='120'></a>
-        <div id="content-target-{{img.id}}">
-           <a href="{{img.del_link}}">[x]</a>&nbsp;&nbsp;&nbsp;
-        </div>
-    </td>
-    {% endfor %}
-    </tr>
-    </table>
--->
     
     </td>
     </tr>

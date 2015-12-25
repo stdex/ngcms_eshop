@@ -12,6 +12,7 @@ add_act('index', 'plugin_ebasket_total');
 add_act('index', 'plugin_ebasket_notify');
 
 register_htmlvar('js', admin_url.'/plugins/eshop/tpl/js/breeze.min.js');
+register_htmlvar('js', admin_url.'/plugins/eshop/tpl/js/eshop.js');
 
 function eshop_infovars_show()
 {

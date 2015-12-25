@@ -660,18 +660,11 @@
                     if(page_stack != null) {
                         page_stack_str = page_stack.join(",");
 
-                        $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_viewed', rndval: new Date().getTime(), params : json_encode({'action': 'show', 'page_stack':page_stack_str }) }, function(data) {
-                            try {
-                                resTX = data;
-                            } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
-                            
+                        rpcEshopRequest('eshop_viewed', {'action': 'show', 'page_stack':page_stack_str }, function (resTX) {
                             $('#ViewedProducts').html(resTX['update']);
                             $('#viewed_list').height(100);
                             $('#viewed_list').width(20000);
-                            $('.jcarousel-clip').css( "position", "relative" );                            
-                            
-                        }).error(function() { 
-                            alert('HTTP error during request', 'ERROR'); 
+                            $('.jcarousel-clip').css( "position", "relative" ); 
                         });
                         
                     }
@@ -1059,8 +1052,6 @@
           </div>
                     
           {{ eshop_ebasket_notify }}
-          
-          {{ debugValue(system_flags.current_currency) }}
 
         <div id="jq-dropdown-1" class="jq-dropdown jq-dropdown-tip">
             <ul class="jq-dropdown-menu">
@@ -1070,13 +1061,15 @@
             </ul>
         </div>
 
+        {% if (global.flags.isLogged) %}
         <div id="jq-dropdown-2" class="jq-dropdown jq-dropdown-tip">
             <ul class="jq-dropdown-menu">
+                {% if (global.user.status == 1) %}<li><a href="{{admin_url}}">Админка</a></li>{% endif %}
                 <li><a href="{{home}}/profile.html">Основные данные</a></li>
                 <li><a href="{{home}}/logout/">Выход</a></li>
-                
             </ul>
         </div>
+        {% endif %}
 
 <style>
 .pull-right {
@@ -1179,23 +1172,14 @@ $(document).ready(function() {
         if( count == undefined) {
             count = 1;
         }
-        
-        $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_ebasket_manage', rndval: new Date().getTime(), params : json_encode({'action': 'add', 'ds':1,'id':id,'count':count }) }, function(data) {
-            try {
-                resTX = data;
-            } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
-            if (!resTX['status']) {
-                alert('Error ('+resTX['errorCode']+'): '+resTX['errorText']);
-            } else {
-                document.getElementById('tinyBask').innerHTML = resTX['update'];
-            }
-        }).error(function() { 
-            alert('HTTP error during request', 'ERROR'); 
+
+        rpcEshopRequest('eshop_ebasket_manage', {'action': 'add', 'ds':1,'id':id,'count':count }, function (resTX) {
+            document.getElementById('tinyBask').innerHTML = resTX['update'];
+            $(".forCenter").css("display", "block");
+            $(".overlayDrop").css("display", "block");
+            e.preventDefault();
         });
 
-        $(".forCenter").css("display", "block");
-        $(".overlayDrop").css("display", "block");
-        e.preventDefault();
     });
     
     $(".btnCompare").click(function(e){
@@ -1204,39 +1188,21 @@ $(document).ready(function() {
         
         if( bl.hasClass("active") ) {
 
-            $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_compare', rndval: new Date().getTime(), params : json_encode({'action': 'remove', 'id':id }) }, function(data) {
-                try {
-                    resTX = data;
-                } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
-                if (!resTX['status']) {
-                    alert('Ошибка при удалении продукта из сравнения');
-                } else {
-                    bl.removeClass("active");
-                    bl.find(".niceCheck").removeClass("active");
-                    bl.find("input:checkbox").prop('checked', false);
-                    $('.compare-button').html(resTX['update']);
-                }
-            }).error(function() { 
-                alert('HTTP error during request', 'ERROR'); 
+            rpcEshopRequest('eshop_compare', {'action': 'remove', 'id':id }, function (resTX) {
+                bl.removeClass("active");
+                bl.find(".niceCheck").removeClass("active");
+                bl.find("input:checkbox").prop('checked', false);
+                $('.compare-button').html(resTX['update']);
             });
             
         }
         else {
-            
-            $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_compare', rndval: new Date().getTime(), params : json_encode({'action': 'add', 'id':id }) }, function(data) {
-                try {
-                    resTX = data;
-                } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
-                if (!resTX['status']) {
-                    alert('Ошибка при добавлении продукта в сравнение');
-                } else {
-                    bl.addClass("active");
-                    bl.find(".niceCheck").addClass("active");
-                    bl.find("input:checkbox").prop('checked', true);
-                    $('.compare-button').html(resTX['update']);
-                }
-            }).error(function() { 
-                alert('HTTP error during request', 'ERROR'); 
+
+            rpcEshopRequest('eshop_compare', {'action': 'add', 'id':id }, function (resTX) {
+                bl.addClass("active");
+                bl.find(".niceCheck").addClass("active");
+                bl.find("input:checkbox").prop('checked', true);
+                $('.compare-button').html(resTX['update']);
             });
 
         }
@@ -1246,17 +1212,8 @@ $(document).ready(function() {
     $(".deleteFromCompare").click(function(e){
         var id = $(this).attr('data-id');
 
-        $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_compare', rndval: new Date().getTime(), params : json_encode({'action': 'remove', 'id':id }) }, function(data) {
-                        try {
-                            resTX = data;
-                        } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
-                        if (!resTX['status']) {
-                            alert('Ошибка при удалении продукта из сравнения');
-                        } else {
-                            location.reload();
-                        }
-                    }).error(function() { 
-                        alert('HTTP error during request', 'ERROR'); 
+        rpcEshopRequest('eshop_compare', {'action': 'remove', 'id':id }, function (resTX) {
+            location.reload();
         });
 
     });
@@ -1265,21 +1222,8 @@ $(document).ready(function() {
         
         var id = $(this).attr('data-id');
 
-        $.post('{{home}}/engine/rpc.php', { json : 1, methodName : 'eshop_likes_result', rndval: new Date().getTime(), params : json_encode({'action': 'do_like', 'id' : id }) }, function(data) {
-
-                // Try to decode incoming data
-                try {
-                    resTX = data;
-                //  alert(resTX['data']['feedback_text']);
-                } catch (err) { alert('Error parsing JSON output. Result: '+linkTX.response); }
-                if (!resTX['status']) {
-                    alert('Error ['+resTX['errorCode']+']: '+resTX['errorText']);
-                } else {
-                    $(".ratebox2").html(resTX['update']);
-                }
-                
-            }).error(function() { 
-                alert('HTTP error during request', 'ERROR'); 
+        rpcEshopRequest('eshop_likes_result', {'action': 'do_like', 'id' : id }, function (resTX) {
+            $(".ratebox2").html(resTX['update']);
         });
 
     });

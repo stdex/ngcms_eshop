@@ -76,41 +76,6 @@ function change_img_pos($params){
 
     return array('status' => 0, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
 
-
-/*
-    //$req = iconv( "windows-1251", "utf-8", urldecode($_REQUEST["q"]) );
-    $req = urldecode(filter_var( $_REQUEST["q"], FILTER_SANITIZE_STRING ));
-    $mode = filter_var( $_REQUEST["mode"], FILTER_SANITIZE_STRING );
-    $id = filter_var( $_REQUEST["id"], FILTER_SANITIZE_STRING );
-
-    $conditions = array();
-    if ($req) {
-        array_push($conditions, "p.name LIKE '%".$req."%' ");
-    }
-    
-    if ($mode == "edit") {
-        array_push($conditions, "p.id != '".$id."' ");
-    }
-
-    $fSort = " GROUP BY p.id ORDER BY p.id DESC";
-    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN ".prefix."_eshop_images i ON i.product_id = p.id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-    $sqlQ = "SELECT p.id AS id, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.name AS category, i.filepath AS image_filepath ".$sqlQPart;
-
-    foreach ($mysql->select(iconv( "utf-8", "windows-1251", $sqlQ )) as $row)
-    {
-
-        $tEntry[] = array (
-            'id'                   => $row['id'],
-            'name'                 => iconv("windows-1251", "utf-8", $row['name'] ),
-            'image_filepath'       => $row['image_filepath'],
-            'code'                 => iconv("windows-1251", "utf-8", $row['code'] ),
-            'category'             => iconv("windows-1251", "utf-8", $row['category'] ),
-        );
-    }
-
-    return $tEntry;
-*/
-
 }
 
 
@@ -164,13 +129,13 @@ function compare_prd($params){
             if (is_array($userROW)) {
                 $mysql->query("update ".prefix."_eshop_compare set user_id = ".db_squote($userROW['id'])." where (user_id = 0) and (cookie = ".db_squote($_COOKIE['ngTrackID']).")");
             }
-
-            $mysql->query("delete from ".prefix."_eshop_compare where cookie = ".db_squote($_COOKIE['ngTrackID'])." and linked_fld = ".db_squote($id)." ");
-
+            
             // ======== Prepare update of totals informer ========
             $filter = array();
             if (is_array($userROW)) {                                               $filter []= '(user_id = '.db_squote($userROW['id']).')';        }
             if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {    $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';  }
+
+            $mysql->query("delete from ".prefix."_eshop_compare where (".join(" or ", $filter).") and linked_fld = ".db_squote($id)." ");
 
             $tCount = 0;
             

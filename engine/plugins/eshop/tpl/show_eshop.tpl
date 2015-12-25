@@ -610,20 +610,8 @@ $(document).ready(function() {
         var phone = $("#fastorder-frame").find("input[name='phone']").val();
         var address = $("#fastorder-frame").find("input[name='address']").val();
 
-        $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_ebasket_manage', rndval: new Date().getTime(), params : json_encode({'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '2', 'name': name, 'phone': phone, 'address': address}) }, function(data) {
-            // Try to decode incoming data
-            try {
-                resTX = data;
-            //  alert(resTX['data']['feedback_text']);
-            } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
-            if (!resTX['status']) {
-                //alert('Error ['+resTX['errorCode']+']: '+resTX['errorText']);
-                alert('Ошибка при заполнении формы');
-            } else {
-                 $("div#fastorder-frame").html("<label><div align='center'>Заказ добавлен. В ближайшее время вам перезвонит наш манеджер.</div></label>");
-            }
-        }).error(function() { 
-            alert('HTTP error during request', 'ERROR'); 
+        rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '2', 'name': name, 'phone': phone, 'address': address}, function (resTX) {
+            $("div#fastorder-frame").html("<label><div align='center'>Заказ добавлен. В ближайшее время вам перезвонит наш манеджер.</div></label>");
         });
 
     });
@@ -637,20 +625,8 @@ $(document).ready(function() {
         var phone = $("#fastprice-frame").find("input[name='phone']").val();
         var address = $("#fastprice-frame").find("input[name='address']").val();
 
-        $.post('/engine/rpc.php', { json : 1, methodName : 'eshop_ebasket_manage', rndval: new Date().getTime(), params : json_encode({'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '3', 'name': name, 'phone': phone, 'address': address}) }, function(data) {
-            // Try to decode incoming data
-            try {
-                resTX = data;
-            //  alert(resTX['data']['feedback_text']);
-            } catch (err) { alert('Error parsing JSON output. Result: '+resTX.response); }
-            if (!resTX['status']) {
-                //alert('Error ['+resTX['errorCode']+']: '+resTX['errorText']);
-                alert('Ошибка при заполнении формы');
-            } else {
-                 $("div#fastprice-frame").html("<label><div align='center'>Спасибо. В ближайшее время вам перезвонит наш манеджер.</div></label>");
-            }
-        }).error(function() { 
-            alert('HTTP error during request', 'ERROR'); 
+        rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '3', 'name': name, 'phone': phone, 'address': address}, function (resTX) {
+            $("div#fastprice-frame").html("<label><div align='center'>Спасибо. В ближайшее время вам перезвонит наш манеджер.</div></label>");
         });
 
     });

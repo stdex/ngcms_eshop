@@ -228,8 +228,13 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
     $SYSTEM_FLAGS['info']['title']['others'] = $cat_array['meta_title'];
     $SYSTEM_FLAGS['info']['title']['separator'] =  $lang['eshop']['separator']; 
 
+    $filter = array();
+    if (is_array($userROW)) {                                               $filter []= '(user_id = '.db_squote($userROW['id']).')';        }
+    if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {    $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';  }
+
+
     $cmp_array = array();
-    foreach ($mysql->select("select * from ".prefix."_eshop_compare where cookie = ".db_squote($_COOKIE['ngTrackID'])." ") as $cmp_row)
+    foreach ($mysql->select("select * from ".prefix."_eshop_compare where ".join(" or ", $filter)." ") as $cmp_row)
     {
         $cmp_array[] = $cmp_row['linked_fld'];
     }
@@ -776,8 +781,12 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
     $tpath = locatePluginTemplates(array('compare_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'), pluginGetVariable('eshop','localskin'));
     $xt = $twig->loadTemplate($tpath['compare_eshop'].'compare_eshop.tpl');
 
+    $filter = array();
+    if (is_array($userROW)) {                                               $filter []= '(user_id = '.db_squote($userROW['id']).')';        }
+    if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {    $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';  }
+
     $cmp_array = array();
-    foreach ($mysql->select("select * from ".prefix."_eshop_compare where cookie = ".db_squote($_COOKIE['ngTrackID'])." ") as $cmp_row)
+    foreach ($mysql->select("select * from ".prefix."_eshop_compare where ".join(" or ", $filter)." ") as $cmp_row)
     {
         $cmp_array[] = $cmp_row['linked_fld'];
     }
@@ -1038,8 +1047,13 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
         }
         
         $cmp_id = $qid;
+
+        $filter = array();
+        if (is_array($userROW)) {                                               $filter []= '(user_id = '.db_squote($userROW['id']).')';        }
+        if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {    $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';  }
+        if (isset($cmp_id) && ($cmp_id != '')) {    $filter []= '(linked_fld = '.db_squote($cmp_id).')';  }
         
-        $cmp_row = $mysql->record("select * from ".prefix."_eshop_compare where cookie = ".db_squote($_COOKIE['ngTrackID'])." and linked_fld = ".db_squote($cmp_id)." ");
+        $cmp_row = $mysql->record("select * from ".prefix."_eshop_compare where ".join(" or ", $filter)." ");
         
         $likes_tpath = locatePluginTemplates(array('likes_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'), pluginGetVariable('eshop','localskin'));
         $likes_xt = $twig->loadTemplate($likes_tpath['likes_eshop'].'likes_eshop.tpl');

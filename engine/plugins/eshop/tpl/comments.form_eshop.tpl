@@ -77,48 +77,24 @@ $(document).ready(function(){
 
     $("#add_comment").click(function() {
 
-        $.post('{{home}}/engine/rpc.php', { json : 1, methodName : 'eshop_comments_add', rndval: new Date().getTime(), params : json_encode({ 'comment_author' : $('#comment_author').val(), 'comment_email' : $('#comment_email').val(), 'comment_text' : $('#comment_text').val(), 'product_id' : {{id}} }) }, function(data) {
-            // Try to decode incoming data
-            try {
-                resTX = data;
-            //	alert(resTX['data']['feedback_text']);
-            } catch (err) { alert('Error parsing JSON output. Result: '+linkTX.response); }
-            if (!resTX['status']) {
-                alert('Error ['+resTX['errorCode']+']: '+resTX['errorText']);
+        rpcEshopRequest('eshop_comments_add', { 'comment_author' : $('#comment_author').val(), 'comment_email' : $('#comment_email').val(), 'comment_text' : $('#comment_text').val(), 'product_id' : {{id}} }, function (resTX) {
+            if ((resTX['data']['eshop_comments']>0)&&(resTX['data']['eshop_comments'] < 100)) {
+                $(".error_text").html("<div class='msg js-msg'><div class='error error'><span class='icon_info'></span><div class='text-el'><p>"+resTX['data']['eshop_comments_text']+"</p></div></div></div>");
+                $(".product-comment").html(""+resTX['data']['eshop_comments_show']+"");
             } else {
-                if ((resTX['data']['eshop_comments']>0)&&(resTX['data']['eshop_comments'] < 100)) {
-                    $(".error_text").html("<div class='msg js-msg'><div class='error error'><span class='icon_info'></span><div class='text-el'><p>"+resTX['data']['eshop_comments_text']+"</p></div></div></div>");
-                    $(".product-comment").html(""+resTX['data']['eshop_comments_show']+"");
-                } else {
-                    $(".error_text").html("");
-                    $(".product-comment").html(""+resTX['data']['eshop_comments_show']+"");
-                }
+                $(".error_text").html("");
+                $("#comment_text").val("");
+                $(".product-comment").html(""+resTX['data']['eshop_comments_show']+"");
             }
-        }).error(function() { 
-            alert('HTTP error during request', 'ERROR'); 
         });
 
     });
-    
-    
-$.post('{{home}}/engine/rpc.php', { json : 1, methodName : 'eshop_comments_show', rndval: new Date().getTime(), params : json_encode({ 'product_id' : {{id}} }) }, function(data) {
-// Try to decode incoming data
-try {
-    resTX = data;
-//	alert(resTX['data']['feedback_text']);
-} catch (err) { alert('Error parsing JSON output. Result: '+linkTX.response); }
-if (!resTX['status']) {
-    alert('Error ['+resTX['errorCode']+']: '+resTX['errorText']);
-} else {
-    $(".error_text").html("");
-    $(".product-comment").html(""+resTX['data']['eshop_comments_show']+"");
-}
-}).error(function() { 
-    alert('HTTP error during request', 'ERROR'); 
-});
 
-    
-  
+    rpcEshopRequest('eshop_comments_show', {'product_id' : {{id}}}, function (resTX) {
+        $(".error_text").html("");
+        $(".product-comment").html(""+resTX['data']['eshop_comments_show']+"");
+    });
+
 });
 
 </script>
