@@ -402,6 +402,7 @@ function plugin_eshop_install($action) {
                 'count_stocks' => '8',
                 
                 'views_count' => '1',
+                'bidirect_linked_products' => '0',
                 
                 'url' => '0',
                 

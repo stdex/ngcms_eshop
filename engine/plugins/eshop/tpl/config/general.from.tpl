@@ -20,6 +20,10 @@
 <td class="contentEntry1" valign=top>”чЄт просмотра объ€влений?<br /></td>
 <td class="contentEntry2" valign=top><select name="views_count" >{{entries.views_count}}</select></td>
 </tr>
+<tr>
+<td class="contentEntry1" valign=top>ƒвухсторонние св€занные товары?<br /></td>
+<td class="contentEntry2" valign=top><select name="bidirect_linked_products" >{{entries.bidirect_linked_products}}</select></td>
+</tr>
 </table>
 </fieldset>
 </td>

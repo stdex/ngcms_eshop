@@ -13,7 +13,7 @@ function generate_catz_cache($load = false)
         $cur = array();
 
         foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id") as $rows)
-        {
+        {          
             
             $cur = &$levels[$rows['id']];
             $cur['parent_id'] = $rows['parent_id'];

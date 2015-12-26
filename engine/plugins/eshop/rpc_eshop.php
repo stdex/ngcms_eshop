@@ -373,6 +373,33 @@ function comments_add($params) {
         // Update comment counter
         $mysql->query("update ".prefix."_eshop_products set comments = comments + 1 where id = ".db_squote($SQL['product_id'])." ");
 
+        $notify_tpath = locatePluginTemplates(array('mail/lfeedback_comment'), 'eshop', pluginGetVariable('eshop', 'localsource'));
+        $notify_xt = $twig->loadTemplate($notify_tpath['mail/lfeedback_comment'].'mail/'.'lfeedback_comment.tpl');
+
+        $prd = $mysql->record("SELECT * FROM ".prefix."_eshop_products WHERE id=".db_squote($SQL['product_id'])." ");
+
+        $fulllink = checkLinkAvailable('eshop', 'show')?
+                        generateLink('eshop', 'show', array('alt' => $prd['url'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $prd['url']));
+        $prd['fulllink'] = $fulllink;
+
+        $pVars = array(
+            'vproduct' => $prd,
+            'vnames'   => $SQL,
+        );
+    
+        $mailBody = $notify_xt->render($pVars);
+        $mailSubject = "Новый комментарий с сайта";
+        $mailTo = pluginGetVariable('eshop', 'email_notify_comments');
+        $mail_from = pluginGetVariable('eshop', 'email_notify_back');
+        
+        if($mail_from == "") {
+            $mail_from = false;
+        }
+            
+        if($mailTo != "") {
+            sendEmailMessage($mailTo, $mailSubject, $mailBody, $filename = false, $mail_from, $ctype = 'text/html');
+        }
 
         $results = array(
             'eshop_comments'    => 100,
@@ -482,14 +509,16 @@ function comments_show_handler($params){
 }
 
 function ebasket_add_item($linked_ds, $linked_id, $title, $price, $count, $xfld = array()) {
-    global $mysql, $userROW, $twig, $template;
+    global $mysql, $userROW, $twig, $template, $config;
 
     // Check if now we're logged in and earlier we started filling ebasket before logging in
     if (is_array($userROW)) {
         $mysql->query("update ".prefix."_eshop_ebasket set user_id = ".db_squote($userROW['id'])." where (user_id = 0) and (cookie = ".db_squote($_COOKIE['ngTrackID']).")");
     }
+    
+    $current_time = time() + ($config['date_adjust'] * 60);
 
-    $mysql->query("insert into ".prefix."_eshop_ebasket (user_id, cookie, linked_ds, linked_id, title, linked_fld, price, count) values (".(is_array($userROW)?db_squote($userROW['id']):0).", ".db_squote($_COOKIE['ngTrackID']).", ".db_squote($linked_ds).", ".db_squote($linked_id).", ".db_squote($title).", ".db_squote(serialize($xfld)).", ".db_squote($price).", ".db_squote($count).") on duplicate key update price=".db_squote($price).", count = count+".db_squote($count));
+    $mysql->query("insert into ".prefix."_eshop_ebasket (user_id, cookie, dt, linked_ds, linked_id, title, linked_fld, price, count) values (".(is_array($userROW)?db_squote($userROW['id']):0).", ".db_squote($_COOKIE['ngTrackID']).", ".db_squote($current_time).", ".db_squote($linked_ds).", ".db_squote($linked_id).", ".db_squote($title).", ".db_squote(serialize($xfld)).", ".db_squote($price).", ".db_squote($count).") on duplicate key update price=".db_squote($price).", count = count+".db_squote($count));
 
     // ======== Prepare update of totals informer ========
     $filter = array();
@@ -563,21 +592,28 @@ function ebasket_add_fast_order($linked_ds, $linked_id, $title, $price, $count, 
                 $basket []= $rec;
     }
     
-    $notify_tpath = locatePluginTemplates(array('ebasket/lfeedback'), 'eshop', pluginGetVariable('eshop', 'localsource'));
-    $notify_xt = $twig->loadTemplate($notify_tpath['ebasket/lfeedback'].'ebasket/'.'lfeedback.tpl');
+    $notify_tpath = locatePluginTemplates(array('mail/lfeedback'), 'eshop', pluginGetVariable('eshop', 'localsource'));
+    $notify_xt = $twig->loadTemplate($notify_tpath['mail/lfeedback'].'mail/'.'lfeedback.tpl');
 
     $pVars = array(
-        'recs'      => count($recs),
-        'entries'   => $recs,
+        'recs'      => count($basket),
+        'entries'   => $basket,
         'total'     => sprintf('%9.2f', $total),
-        'vnames'   => $vnames,
+        'vnames'   => $SQL,
     );
 
     $mailBody = $notify_xt->render($pVars);
     $mailSubject = "Новый заказ с сайта";
     $mailTo = pluginGetVariable('eshop', 'email_notify_orders');
+    $mail_from = pluginGetVariable('eshop', 'email_notify_back');
 
-    sendEmailMessage($mailTo, $mailSubject, $mailBody, $filename = false, $mail_from = false, $ctype = 'text/html');
+    if($mail_from == "") {
+        $mail_from = false;
+    }
+
+    if($mailTo != "") {
+        sendEmailMessage($mailTo, $mailSubject, $mailBody, $filename = false, $mail_from, $ctype = 'text/html');
+    }
 
     return array('status' => 1, 'errorCode' => 0, 'data' => 'Item added into ebasket', 'update' => '');
 }

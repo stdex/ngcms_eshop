@@ -1370,9 +1370,7 @@ function plugin_ebasket_list(){
                 if (count($filter)) {
                     $mysql->query("delete from ".prefix."_eshop_ebasket where ".join(" or ", $filter));
                 }
-                
-                // mail notify
-                
+
                 // Определяем условия выборки
                 $filter = array();
                 if ($qid) {
@@ -1389,21 +1387,28 @@ function plugin_ebasket_list(){
                             $basket []= $rec;
                 }
                 
-                $notify_tpath = locatePluginTemplates(array('ebasket/lfeedback'), 'eshop', pluginGetVariable('eshop', 'localsource'));
-                $notify_xt = $twig->loadTemplate($notify_tpath['ebasket/lfeedback'].'ebasket/'.'lfeedback.tpl');
+                $notify_tpath = locatePluginTemplates(array('mail/lfeedback'), 'eshop', pluginGetVariable('eshop', 'localsource'));
+                $notify_xt = $twig->loadTemplate($notify_tpath['mail/lfeedback'].'mail/'.'lfeedback.tpl');
 
                 $pVars = array(
                     'recs'      => count($recs),
                     'entries'   => $recs,
                     'total'     => sprintf('%9.2f', $total),
-                    'vnames'   => $vnames,
+                    'vnames'   => $SQL,
                 );
             
                 $mailBody = $notify_xt->render($pVars);
                 $mailSubject = "Новый заказ с сайта";
                 $mailTo = pluginGetVariable('eshop', 'email_notify_orders');
-            
-                sendEmailMessage($mailTo, $mailSubject, $mailBody, $filename = false, $mail_from = false, $ctype = 'text/html');
+                $mail_from = pluginGetVariable('eshop', 'email_notify_back');
+
+                if($mail_from == "") {
+                    $mail_from = false;
+                }
+
+                if($mailTo != "") {
+                    sendEmailMessage($mailTo, $mailSubject, $mailBody, $filename = false, $mail_from, $ctype = 'text/html');
+                }
                 
                 $notify_text[] = 'Заказ добавлен.';
 

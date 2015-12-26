@@ -264,10 +264,18 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                 $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
             }
             
+            $bidirect_linked_products = pluginGetVariable('eshop', 'bidirect_linked_products');
+            
             if($linked_products != NULL) {
                 $mysql->query("DELETE FROM ".prefix."_eshop_related_products WHERE product_id='$qid'");
                 foreach ($linked_products as $p_key => $p_value) {
                     $mysql->query("INSERT INTO ".prefix."_eshop_related_products (`product_id`, `related_id`, `position`) VALUES ('$qid','$p_value','0')");
+                    if($bidirect_linked_products == "1") {
+                        $lprd = $mysql->record("SELECT * FROM ".prefix."_eshop_related_products WHERE product_id = ".db_squote($p_value)." AND related_id = ".db_squote($qid)." ");
+                        if(empty($lprd)) {
+                            $mysql->query("INSERT INTO ".prefix."_eshop_related_products (`product_id`, `related_id`, `position`) VALUES ('$p_value','$qid','0')");
+                        }
+                    }
                 }
             }
             
@@ -494,11 +502,19 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                         $mysql->query("DELETE FROM ".prefix."_eshop_options WHERE feature_id='$f_key' AND product_id='$qid'");
                 }
             }
+
+            $bidirect_linked_products = pluginGetVariable('eshop', 'bidirect_linked_products');
             
             if($linked_products != NULL) {
                 $mysql->query("DELETE FROM ".prefix."_eshop_related_products WHERE product_id='$qid'");
                 foreach ($linked_products as $p_key => $p_value) {
                     $mysql->query("INSERT INTO ".prefix."_eshop_related_products (`product_id`, `related_id`, `position`) VALUES ('$qid','$p_value','0')");
+                    if($bidirect_linked_products == "1") {
+                        $lprd = $mysql->record("SELECT * FROM ".prefix."_eshop_related_products WHERE product_id = ".db_squote($p_value)." AND related_id = ".db_squote($qid)." ");
+                        if(empty($lprd)) {
+                            $mysql->query("INSERT INTO ".prefix."_eshop_related_products (`product_id`, `related_id`, `position`) VALUES ('$p_value','$qid','0')");
+                        }
+                    }
                 }
             }
             else {
@@ -1911,7 +1927,12 @@ global $mysql;
 
     if(isset($del))
     {
-        $mysql->query("delete from ".prefix."_eshop_products_comments where id in ({$id})");
+        foreach ($selected_comment as $com_id) {
+            $com_row = $mysql->record("SELECT * FROM ".prefix."_eshop_products_comments WHERE id=".db_squote($com_id)." ");
+            $mysql->query("delete from ".prefix."_eshop_products_comments where id = ".db_squote($com_id)." ");
+            $mysql->query("update ".prefix."_eshop_products set comments = comments - 1 where id = ".db_squote($com_row['product_id'])." ");
+        }
+        
         msg(array("type" => "info", "info" => "Записи с ID${id} удалены!"));
     }
 }
@@ -2628,7 +2649,6 @@ function urls()
               )
             );
 
-            
             $UHANDLER->saveConfig();
         } else {
             $ULIB = new urlLibrary();
@@ -2703,6 +2723,7 @@ global $tpl, $mysql, $cron, $twig;
         pluginSetVariable('eshop', 'count_stocks',  secure_html($_REQUEST['count_stocks']));
         
         pluginSetVariable('eshop', 'views_count', $_REQUEST['views_count']);
+        pluginSetVariable('eshop', 'bidirect_linked_products', $_REQUEST['bidirect_linked_products']);
         
         pluginSetVariable('eshop', 'max_image_size', intval($_REQUEST['max_image_size']));
         pluginSetVariable('eshop', 'width_thumb', intval($_REQUEST['width_thumb']));
@@ -2758,6 +2779,9 @@ global $tpl, $mysql, $cron, $twig;
     $views_count = pluginGetVariable('eshop', 'views_count');
     $views_count = '<option value="0" '.($views_count==0?'selected':'').'>Нет</option><option value="1" '.($views_count==1?'selected':'').'>Да</option><option value="2" '.($views_count==2?'selected':'').'>Отложенное</option>';
     
+    $bidirect_linked_products = pluginGetVariable('eshop', 'bidirect_linked_products');
+    $bidirect_linked_products = '<option value="0" '.($bidirect_linked_products==0?'selected':'').'>Нет</option><option value="1" '.($bidirect_linked_products==1?'selected':'').'>Да</option>';
+    
     $max_image_size = pluginGetVariable('eshop', 'max_image_size');
     $width_thumb = pluginGetVariable('eshop', 'width_thumb');
     $width = pluginGetVariable('eshop', 'width');
@@ -2784,6 +2808,7 @@ global $tpl, $mysql, $cron, $twig;
         'count_stocks' => $count_stocks,
         
         'views_count' => $views_count,
+        'bidirect_linked_products' => $bidirect_linked_products,
         
         'max_image_size' => $max_image_size,
         'width_thumb' => $width_thumb,
