@@ -284,7 +284,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                 $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `compare_price`, `stock`) VALUES ('$qid', '$price', '$compare_price', '$stock')");
             }
             
-            #generate_catz_cache(true);
+            generate_catz_cache(true);
             
             redirect_eshop('?mod=extra-config&plugin=eshop&action=list_product');
         }
@@ -536,7 +536,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                 $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `compare_price`, `stock`) VALUES ('$qid', '$price', '$compare_price', '$stock')");
             }
             
-            #generate_catz_cache(true);
+            generate_catz_cache(true);
             
             redirect_eshop('?mod=extra-config&plugin=eshop&action=list_product');
         }
@@ -625,7 +625,7 @@ global $mysql;
     
     if( empty($id) )
     {
-        return msg(array("type" => "error", "text" => "Вы выбран ID!"));
+        return msg(array("type" => "error", "text" => "Не выбран ID!"));
     }
     
     switch($subaction) {
@@ -699,7 +699,9 @@ global $mysql;
         
         //redirect_eshop('?mod=extra-config&plugin=eshop');
         msg(array("type" => "info", "info" => "Записи с ID ${id} обновлены!"));
-    }     
+    }
+    
+    generate_catz_cache(true);     
 
 }
 
@@ -1173,6 +1175,7 @@ function del_cat($params)
         delete_cat_image($row['image']);
         $mysql->query("DELETE FROM ".prefix."_eshop_categories WHERE id = {$id}");
         msg(array("type" => "info", "info" => "Категория удалена"));
+        generate_catz_cache(true);
     }
     else {
         msg(array("type" => "info", "info" => "Категория не может быть удалена, т.к. в ней есть продукция"));
@@ -1401,8 +1404,6 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
                ');
             }
 
-            #generate_catz_cache(true);
-            
             redirect_eshop('?mod=extra-config&plugin=eshop&action=list_feature');
         }
 
@@ -1500,9 +1501,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
                 )
                ');
             }
-            
-            #generate_catz_cache(true);
-            
+
             redirect_eshop('?mod=extra-config&plugin=eshop&action=list_feature');
         }
 

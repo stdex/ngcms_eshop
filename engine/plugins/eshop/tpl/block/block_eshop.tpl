@@ -46,14 +46,16 @@
             {{ system_flags.current_currency.sign }}
           </span>
         </span>
+        {% if not (entry.compare_price == '0.00') %}
         <span class="price-add">
           <span>
             <span class="price addCurrPrice">
-              {% if (entry.compare_price) %}{{ (entry.compare_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}
+              <s>{{ (entry.compare_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</s>
             </span>
-            {{ system_flags.current_currency.sign }}
+            <s>{{ system_flags.current_currency.sign }}</s>
           </span>
         </span>
+        {% endif %}
       </span>
       <!-- End. Product price-->
     </div>

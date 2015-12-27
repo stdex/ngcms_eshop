@@ -1411,6 +1411,12 @@ function plugin_ebasket_list(){
                 }
                 
                 $notify_text[] = 'Заказ добавлен.';
+                
+                $order_link = checkLinkAvailable('eshop', 'order')?
+                generateLink('eshop', 'order', array(), array('id' => $qid, 'uniqid' => $SQL['uniqid'])):
+                generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'order'), array(), array('id' => $qid,'uniqid' => $SQL['uniqid']));
+                
+                return redirect_eshop($order_link);
 
             }
             
