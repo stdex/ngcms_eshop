@@ -189,7 +189,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
             if($fCategory == $cat_row['url'])
             {
 
-                $cat_cnt = $mysql->record("SELECT COUNT(*) as CNT FROM ".prefix."_eshop_products_categories WHERE category_id IN (".$catz_filter_comma_separated.") ");
+                $cat_cnt = $mysql->record("SELECT COUNT(*) as CNT FROM ".prefix."_eshop_products_categories pc LEFT JOIN ".prefix."_eshop_products p ON p.id = pc.product_id WHERE pc.category_id IN (".$catz_filter_comma_separated.") AND p.active = 1 ");
                 
                 //$sql_cat_cnt = "SELECT COUNT(*) as CNT FROM ".prefix."_eshop_products_categories where category_id = ".db_squote($cat_row['id'])." ";
 
@@ -1012,7 +1012,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
                     );
         }
         
-        foreach ($mysql->select('SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock FROM '.prefix.'_eshop_related_products rp LEFT JOIN '.prefix.'_eshop_products p ON p.id=rp.related_id LEFT JOIN (SELECT * FROM '.prefix.'_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN '.prefix.'_eshop_variants v ON p.id = v.product_id WHERE rp.product_id = '.$row['id'].' GROUP BY p.id ORDER BY rp.position') as $rrow)
+        foreach ($mysql->select('SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock FROM '.prefix.'_eshop_related_products rp LEFT JOIN '.prefix.'_eshop_products p ON p.id=rp.related_id LEFT JOIN (SELECT * FROM '.prefix.'_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN '.prefix.'_eshop_variants v ON p.id = v.product_id WHERE rp.product_id = '.$row['id'].' AND p.active = 1 GROUP BY p.id ORDER BY rp.position') as $rrow)
         {
             
             $fulllink = checkLinkAvailable('eshop', 'show')?

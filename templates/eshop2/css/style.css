@@ -758,10 +758,10 @@ li[class*="x"] > .title-category-l1{width: 100%;text-align: center;display: bloc
 .items-product .price-new{margin-bottom: 5px;}
 .items-product .frame-photo-title .title{line-height: 1.4; display: block; width: 220px; font-size: 12px;}
 .table-order .price-new .price{font-size: 16px;font-weight: bold;}
-.price-new .price{font-size: 15px;}
-.price-add .price{font-size: 15px;}
+.price-new .price{font-size: 14px;}
+.price-add .price{font-size: 14px;}
 .item-product .price-new .price, #photo .price-new .price{font-size: 27px;font-weight: bold;}
-.items-default .price-new .price{font-size: 15px;font-weight: normal;}
+.items-default .price-new .price{font-size: 14px;font-weight: normal;}
 .complects-carousel .items-complect .price-new .price{font-size: 12px;}
 .complects-carousel .items-complect .price-add .price{font-size: 12px;}
 .complects-carousel .frame-gen-price-buy-complect .price-new .price{font-size: 27px;}

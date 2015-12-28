@@ -91,10 +91,14 @@
                 </div>
         </div>
     </div></div></div></div>
+
+{% if (global.flags.isLogged == 0) %}
 <div class="drop-footer">
     <div class="help-block">Если вы еще не зарегистрированы:</div>
     <a href="{{home}}/register/">Перейти к регистрации</a>
 </div>
+{% endif %}
+
 </div></div>
 
 <div class="overlayDrop_fastOrder" data-rel=".drop-enter" style="position: absolute; width: 100%; left: 0px; top: 0px; opacity: 0.6; height: 3556px; z-index: 1103; background-color: rgb(0, 0, 0); display: none;"></div>
@@ -152,10 +156,12 @@
                 </div>
         </div>
     </div></div></div></div>
+{% if (global.flags.isLogged == 0) %}
 <div class="drop-footer">
     <div class="help-block">Если вы еще не зарегистрированы:</div>
     <a href="{{home}}/register/">Перейти к регистрации</a>
 </div>
+{% endif %}
 </div></div>
 
 <div class="overlayDrop_fastPrice" data-rel=".drop-enter" style="position: absolute; width: 100%; left: 0px; top: 0px; opacity: 0.6; height: 3556px; z-index: 1103; background-color: rgb(0, 0, 0); display: none;"></div>
