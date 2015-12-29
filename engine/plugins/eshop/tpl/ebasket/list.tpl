@@ -52,7 +52,7 @@
                                                                                     </span>
                                     </span>
                                     <span class="frame-form-field">
-                                        <input type="text" value="{{ formEntry.name }}" name="userInfo[fullName]">
+                                        <input type="text" value="{% if (formEntry.error) %}{{ formEntry.name }}{% else %}{{ global.user.xfields_name }}{% endif %}" name="userInfo[fullName]">
                                     </span>
                                 </label>
                                 <label>
@@ -62,7 +62,7 @@
                                                                                     </span>
                                     </span>
                                     <span class="frame-form-field">
-                                        <input type="text" value="{{ formEntry.email }}" name="userInfo[email]">
+                                        <input type="text" value="{% if (formEntry.error) %}{{ formEntry.email }}{% else %}{{ global.user.xfields_mail }}{% endif %}" name="userInfo[email]">
                                     </span>
                                 </label>
                                 <label>
@@ -72,7 +72,7 @@
                                                                           </span>
                                </span>
                                <span class="frame-form-field">
-                                <input type="text" name="userInfo[phone]" id="cart-phone" value="{{ formEntry.phone }}" class="">
+                                <input type="text" name="userInfo[phone]" id="cart-phone" value="{% if (formEntry.error) %}{{ formEntry.phone }}{% else %}{{ global.user.xfields_phone }}{% endif %}" class="">
                             </span>
                         </label>
 
@@ -85,7 +85,7 @@
                                 Адрес доставки <span class="must">*</span></span>
                         </span>
                         <span class="frame-form-field">
-                            <input name="userInfo[deliverTo]" type="text" value="{{ formEntry.address }}">
+                            <input name="userInfo[deliverTo]" type="text" value="{% if (formEntry.error) %}{{ formEntry.address }}{% else %}{{ global.user.xfields_address }}{% endif %}">
                         </span>
                     </label>
                     <!-- End. Delivery  address block and comment-->

@@ -1,31 +1,31 @@
 <script type="text/javascript">
-	document.ready=function()
+    document.ready=function()
     {
         var sizelimit = {about_sizelimit};
         if(sizelimit <= 0 ) { document.getElementById('sizelimit_text').style.display = "none"; }
     }
-	function validate_form() {
-		var f = document.getElementById('profileForm');
-		// ICQ
-		var icq = f.editicq.value;
-		if ((icq.length > 0)&&(! icq.match(/^\d{4,10}$/))) { 
-			alert("{{ lang.uprofile['wrong_icq'] }}"); 
-			return false; 
-		}
-		// Email
-		var email = f.editmail.value;
-		if ((email.length > 0) && (! emailCheck(email))) {
-			alert("{{ lang.uprofile['wrong_email'] }}");
-			return false;
-		}
-		// About
-		var about = f.editabout.value;
-		if (({about_sizelimit} > 0) && (about.length > {about_sizelimit})) {
-			alert("{{ info_sizelimit_text }}");
-			return false;	
-		}
-		return true;
-	}
+    function validate_form() {
+        var f = document.getElementById('profileForm');
+        // ICQ
+        var icq = f.editicq.value;
+        if ((icq.length > 0)&&(! icq.match(/^\d{4,10}$/))) { 
+            alert("{{ lang.uprofile['wrong_icq'] }}"); 
+            return false; 
+        }
+        // Email
+        var email = f.editmail.value;
+        if ((email.length > 0) && (! emailCheck(email))) {
+            alert("{{ lang.uprofile['wrong_email'] }}");
+            return false;
+        }
+        // About
+        var about = f.editabout.value;
+        if (({about_sizelimit} > 0) && (about.length > {about_sizelimit})) {
+            alert("{{ info_sizelimit_text }}");
+            return false;   
+        }
+        return true;
+    }
 </script>
 
 <div class="content">
@@ -79,6 +79,29 @@
             <input type="password" name="oldpass" value="" class="input" />
         </span>
     </label>
+    
+    {% if pluginIsActive('xfields') %}
+
+        <label>
+            <span class="title">{{ p.xfields.fields.name.title }}:</span>
+            <span class="frame-form-field">
+                {{ p.xfields.fields.name.input }}
+            </span>
+        </label>
+        <label>
+            <span class="title">{{ p.xfields.fields.phone.title }}:</span>
+            <span class="frame-form-field">
+                
+                {{ p.xfields.fields.phone.input }}
+            </span>
+        </label>
+        <label>
+            <span class="title">{{ p.xfields.fields.address.title }}:</span>
+            <span class="frame-form-field">
+                {{ p.xfields.fields.address.input }}
+            </span>
+        </label>        
+    {% endif %}
         
     <div class="frame-label">
     <span class="title">&nbsp;</span>

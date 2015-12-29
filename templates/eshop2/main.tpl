@@ -644,6 +644,8 @@
                 </div>
               </div>
               {% else %}
+              
+              {{ breadcrumbs }}
 
               {{ mainblock }}
               {% endif %}

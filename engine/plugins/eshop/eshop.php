@@ -58,24 +58,17 @@ global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang;
                 $lang['eshop']['titles_common']);
             break;
         case 'search':
-            $titles = str_replace(
-                array ('%name_site%', '%group%', '%others%'),
-                array ($SYSTEM_FLAGS['info']['title']['header'], $SYSTEM_FLAGS['info']['title']['group'], $SYSTEM_FLAGS['info']['title']['others']),
-                $lang['eshop']['titles_common']);
-            break;
         case 'stocks':
+        case 'compare':
+            $SYSTEM_FLAGS['info']['breadcrumbs'][0]['text'] = $SYSTEM_FLAGS['info']['title']['others'];
             $titles = str_replace(
                 array ('%name_site%', '%group%', '%others%'),
                 array ($SYSTEM_FLAGS['info']['title']['header'], $SYSTEM_FLAGS['info']['title']['group'], $SYSTEM_FLAGS['info']['title']['others']),
                 $lang['eshop']['titles_common']);
             break;
         case 'ebasket_list':
-            $titles = str_replace(
-                array ('%name_site%', '%group%', '%others%'),
-                array ($SYSTEM_FLAGS['info']['title']['header'], $SYSTEM_FLAGS['info']['title']['group'], $SYSTEM_FLAGS['info']['title']['others']),
-                $lang['eshop']['titles_common']);
-            break;
         case 'order':
+            $SYSTEM_FLAGS['info']['breadcrumbs'][0]['text'] = $SYSTEM_FLAGS['info']['title']['group'];
             $titles = str_replace(
                 array ('%name_site%', '%group%', '%others%'),
                 array ($SYSTEM_FLAGS['info']['title']['header'], $SYSTEM_FLAGS['info']['title']['group'], $SYSTEM_FLAGS['info']['title']['others']),
@@ -190,6 +183,33 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
             {
 
                 $cat_cnt = $mysql->record("SELECT COUNT(*) as CNT FROM ".prefix."_eshop_products_categories pc LEFT JOIN ".prefix."_eshop_products p ON p.id = pc.product_id WHERE pc.category_id IN (".$catz_filter_comma_separated.") AND p.active = 1 ");
+
+                $cat_ids = $cat_row['id'];
+                $i = 0;
+                $location_tmp = array();
+                $location = array();
+                do {
+                    $bcat_row = $mysql->record("SELECT * FROM ".prefix."_eshop_categories c WHERE c.id IN (".$cat_ids.")");
+                    $cat_ids = $bcat_row['parent_id'];
+                    $catlink = checkLinkAvailable('eshop', '')?
+                        generateLink('eshop', '', array('alt' => $bcat_row['url'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $bcat_row['url']));
+                    
+                    $location_tmp[] = array('text' => $bcat_row['name'],
+                                            'link' => $catlink,
+                    );
+                    $i += 1;
+                }
+                while($cat_ids != 0);
+                
+                $location = array_merge($location, array_reverse($location_tmp));
+                foreach ($location as $loc_k => $loc)
+                {
+                    $SYSTEM_FLAGS['info']['breadcrumbs'][$loc_k]['text'] = $loc['text'];
+                    $SYSTEM_FLAGS['info']['breadcrumbs'][$loc_k]['link'] = $loc['link'];
+                }
+
+                //$SYSTEM_FLAGS['info']['breadcrumbs'][0]['text'] = $SYSTEM_FLAGS['info']['title']['others'];
                 
                 //$sql_cat_cnt = "SELECT COUNT(*) as CNT FROM ".prefix."_eshop_products_categories where category_id = ".db_squote($cat_row['id'])." ";
 
@@ -963,7 +983,38 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
     {
             
         $qid = $row['id'];
-        
+
+        $fulllink = checkLinkAvailable('eshop', 'show')?
+                        generateLink('eshop', 'show', array('alt' => $row['url'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
+        $cat_ids = $row['cid'];
+        $i = 0;
+        $location_tmp = array();
+        $location = array();
+        $location_tmp[] = array('text' => $row['name'],
+                                'link' => $fulllink,
+        );
+        do {
+            $bcat_row = $mysql->record("SELECT * FROM ".prefix."_eshop_categories c WHERE c.id IN (".$cat_ids.")");
+            $cat_ids = $bcat_row['parent_id'];
+            $catlink = checkLinkAvailable('eshop', '')?
+                generateLink('eshop', '', array('alt' => $bcat_row['url'])):
+                generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $bcat_row['url']));
+            
+            $location_tmp[] = array('text' => $bcat_row['name'],
+                                    'link' => $catlink,
+            );
+            $i += 1;
+        }
+        while($cat_ids != 0);
+
+        $location = array_merge($location, array_reverse($location_tmp));
+        foreach ($location as $loc_k => $loc)
+        {
+            $SYSTEM_FLAGS['info']['breadcrumbs'][$loc_k]['text'] = $loc['text'];
+            $SYSTEM_FLAGS['info']['breadcrumbs'][$loc_k]['link'] = $loc['link'];
+        }
+
         /*    
             $filter = array();
             if (is_array($userROW)) {

@@ -1,28 +1,6 @@
 [TWIG]
 <div class="content">
-    
-    <div class="frame-crumbs">
-        <div class="crumbs" xmlns:v="http://rdf.data-vocabulary.org/#">
-            <div class="container">
-                <ul class="items items-crumbs">
-                    <li class="btn-crumb">
-                        <a href="{{ home }}" typeof="v:Breadcrumb">
-                            <span class="text-el">Главная</span>
-                            <span class="divider">/</span>
-                        </a>
-                    </li>
-                    {% if (news.categories.count > 0) %}
-                    <li class="btn-crumb">
-                        <button typeof="v:Breadcrumb" disabled="disabled">
-                        <span class="text-el">{{ news.categories.list[0].name }}</span>
-                        </button>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </div>
-    
+
     <div class="frame-inside page-text">
         <div class="container">
             <div class="text-right">

@@ -50,14 +50,14 @@
                 <label>
                     <span class="title">Имя</span>
                     <span class="frame-form-field">
-                        <input type="text" name="name">
+                        <input type="text" name="name" value="{{ global.user.xfields_name }}">
                         <!--<span class="must">*</span>-->
                     </span>
                 </label>
                 <label>
                     <span class="title">Телефон</span>
                     <span class="frame-form-field">
-                        <input type="text" name="phone">
+                        <input type="text" name="phone" value="{{ global.user.xfields_phone }}">
                         <!--<span class="must">*</span>-->
                     </span>
                 </label>
@@ -65,7 +65,7 @@
                 <label>
                     <span class="title">Адрес доставки</span>
                     <span class="frame-form-field">
-                        <input type="text" name="address">
+                        <input type="text" name="address" value="{{ global.user.xfields_address }}">
                         <!--<span class="must">*</span>-->
                     </span>
                 </label>
@@ -115,14 +115,14 @@
                 <label>
                     <span class="title">Имя</span>
                     <span class="frame-form-field">
-                        <input type="text" name="name">
+                        <input type="text" name="name" value="{{ global.user.xfields_name }}">
                         <!--<span class="must">*</span>-->
                     </span>
                 </label>
                 <label>
                     <span class="title">Телефон</span>
                     <span class="frame-form-field">
-                        <input type="text" name="phone">
+                        <input type="text" name="phone" value="{{ global.user.xfields_name }}">
                         <!--<span class="must">*</span>-->
                     </span>
                 </label>
@@ -130,7 +130,7 @@
                 <label>
                     <span class="title">Адрес доставки</span>
                     <span class="frame-form-field">
-                        <input type="text" name="address">
+                        <input type="text" name="address" value="{{ global.user.xfields_address }}">
                         <!--<span class="must">*</span>-->
                     </span>
                 </label>
