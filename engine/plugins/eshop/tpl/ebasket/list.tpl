@@ -62,7 +62,7 @@
                                                                                     </span>
                                     </span>
                                     <span class="frame-form-field">
-                                        <input type="text" value="{% if (formEntry.error) %}{{ formEntry.email }}{% else %}{{ global.user.xfields_mail }}{% endif %}" name="userInfo[email]">
+                                        <input type="text" value="{% if (formEntry.error) %}{{ formEntry.email }}{% else %}{{ global.user.mail }}{% endif %}" name="userInfo[email]">
                                     </span>
                                 </label>
                                 <label>
@@ -231,7 +231,7 @@
                                     <span class="plus-minus">
                                         <div class="input-group quantity-control" unselectable="on" style="-webkit-user-select: none;">
                                             <a rel="nofollow" class="input-group-addon cart_quantity_down" title="Уменьшить">-</a>
-                                            <input size="2" type="text" autocomplete="off" class="cart_quantity_input" name="count_{{ entry.id }}" value="{{ entry.count }}" data-id="{{ entry.id }}" data-linked_ds="{{ entry.linked_ds }}" data-linked_id="{{ entry.linked_id }}" data-price="{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}"">     
+                                            <input size="2" type="text" autocomplete="off" class="cart_quantity_input" name="count_{{ entry.id }}" value="{{ entry.count }}" data-id="{{ entry.id }}" data-linked_ds="{{ entry.linked_ds }}" data-linked_id="{{ entry.linked_id }}" data-price="{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}">     
                                             <a rel="nofollow" class="input-group-addon cart_quantity_up" title="Добавить">+</a>
                                         </div>
                                     </span>

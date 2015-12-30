@@ -42,6 +42,10 @@
 <td class="contentEntry1" valign=top>Разрешенные расширения для изображений<br /><small>Формат записи <b>*.jpg;*.jpeg;*.gif;*.png</b></small></td>
 <td class="contentEntry2" valign=top><input name="ext_image" type="text" title="Разрешенные разширения для изображений" size="50" value="{{entries.ext_image}}" /></td>
 </tr>
+<tr>
+<td class="contentEntry1" valign=top>Ширина при загрузке<br /></td>
+<td class="contentEntry2" valign=top><input name="pre_width" type="text" title="Ширина при загрузке" size="20" value="{{entries.pre_width}}" /></td>
+</tr>
 <!--
 <tr>
 <td class="contentEntry1" valign=top>Максимальный размер загружаемого изображения<br /><small>Размер в мегабайтах</small></td>

@@ -2730,6 +2730,8 @@ global $tpl, $mysql, $cron, $twig;
         pluginSetVariable('eshop', 'height', intval($_REQUEST['height']));
         pluginSetVariable('eshop', 'ext_image', secure_html(trim($_REQUEST['ext_image'])));
         
+        pluginSetVariable('eshop', 'pre_width', intval($_REQUEST['pre_width']));
+        
         pluginSetVariable('eshop', 'catz_max_image_size', intval($_REQUEST['catz_max_image_size']));
         pluginSetVariable('eshop', 'catz_width_thumb', intval($_REQUEST['catz_width_thumb']));
         pluginSetVariable('eshop', 'catz_width', intval($_REQUEST['catz_width']));
@@ -2786,7 +2788,9 @@ global $tpl, $mysql, $cron, $twig;
     $width = pluginGetVariable('eshop', 'width');
     $height = pluginGetVariable('eshop', 'height');
     $ext_image = pluginGetVariable('eshop', 'ext_image');
-
+    
+    $pre_width = pluginGetVariable('eshop', 'pre_width');
+    
     $catz_max_image_size = pluginGetVariable('eshop', 'catz_max_image_size');
     $catz_width_thumb = pluginGetVariable('eshop', 'catz_width_thumb');
     $catz_width = pluginGetVariable('eshop', 'catz_width');
@@ -2814,6 +2818,8 @@ global $tpl, $mysql, $cron, $twig;
         'width' => $width,
         'height' => $height,
         'ext_image' => $ext_image,
+        
+        'pre_width' => $pre_width,
         
         'catz_max_image_size' => $catz_max_image_size,
         'catz_width_thumb' => $catz_width_thumb,

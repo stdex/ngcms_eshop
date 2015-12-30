@@ -12,7 +12,6 @@ try {
 
     $tempFile = $_FILES['Filedata']['tmp_name'];
     $imagen= $archivo;
-    //$id = $_REQUEST['des'];
     $id = intval($_REQUEST['id']);
     $targetFile = str_replace("//", "/", $targetPath) . $imagen;
     $targetThumb = str_replace("//", "/", $targetThumbPath) . $imagen;
@@ -25,9 +24,6 @@ try {
         return "0";
     }
 
-    //$resultadoi = $mysql->query("INSERT INTO ".prefix."_zboard_images (`filepath`, `zid`)VALUES('$imagen','$id')") or die (mysql_error());
-
-    //if ($resultadoi) {
     echo "1";
 
     // CREATE THUMBNAIL
@@ -57,12 +53,39 @@ try {
 
     imagedestroy ( $src );
     imagedestroy ( $tmp );
+    
+    $newwidth = pluginGetVariable('eshop', 'pre_width');
+    if(isset($newwidth) && ($newwidth != '0')) {
+        
+        if ($extension == "jpg" || $extension == "jpeg") {
+            $src = imagecreatefromjpeg ( $tempFile );
+        } else if ($extension == "png") {
+            $src = imagecreatefrompng ( $tempFile );
+        } else {
+            $src = imagecreatefromgif ( $tempFile );
+        }
+        
+        list ( $width, $height ) = getimagesize ( $tempFile );
+        $newheight = ($height / $width) * $newwidth;
+        $tmp = imagecreatetruecolor ( $newwidth, $newheight );
+        imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
 
-    move_uploaded_file($tempFile, $targetFile);
+        $thumbname = $targetFile;
+
+        if (file_exists ( $thumbname )) {
+            unlink ( $thumbname );
+        }
+        
+        imagejpeg ( $tmp, $thumbname, 100 );
+        
+        imagedestroy ( $src );
+        imagedestroy ( $tmp );
             
-    //} else {
-    //echo "0";
-    //}
+    }
+    else {
+        move_uploaded_file($tempFile, $targetFile);
+    }
+
 } catch (Exception $ex) {
     return "0";
 }

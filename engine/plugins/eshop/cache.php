@@ -29,11 +29,19 @@ function generate_catz_cache($load = false)
             
             $cur = &$levels[$rows['id']];
             $cur['id'] = $rows['id'];
-            $cur['parent_id'] = $rows['parent_id'];
-            $cur['name'] = $rows['name'];
             $cur['url'] = $rows['url'];
             $cur['image'] = $rows['image'];
+            
+            $cur['parent_id'] = $rows['parent_id'];
+            $cur['position'] = $rows['position'];
+            
+            $cur['name'] = $rows['name'];
             $cur['description'] = $rows['description'];
+            
+            $cur['meta_title'] = $rows['meta_title'];
+            $cur['meta_keywords'] = $rows['meta_keywords'];
+            $cur['meta_description'] = $rows['meta_description'];
+            
             $cur['active'] = $rows['active'];
             
             $cat_link = checkLinkAvailable('eshop', '')?

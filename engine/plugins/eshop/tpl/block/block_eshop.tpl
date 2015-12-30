@@ -1,4 +1,3 @@
-
 {% for entry in entries %}
 
 <li class="globalFrameProduct to-cart jcarousel-item jcarousel-item-horizontal jcarousel-item-{{ loop.index }} jcarousel-item-{{ loop.index }}-horizontal" data-pos="top" jcarouselindex="{{ loop.index }}" style="float: left; list-style: none; width: 209px;">

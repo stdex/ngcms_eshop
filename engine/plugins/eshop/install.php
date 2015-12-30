@@ -412,6 +412,8 @@ function plugin_eshop_install($action) {
                 'width_thumb' => '350',
                 'ext_image' => 'jpg, jpeg, gif, png',
                 
+                'pre_width' => '0',
+                
                 'catz_max_image_size' => '5',
                 'catz_width' => '2000',
                 'catz_height' => '2000',

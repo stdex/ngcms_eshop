@@ -1,3 +1,5 @@
+<script type="text/javascript" src="{{ admin_url }}/plugins/eshop/tpl/js/eshop.js"></script>
+
 <form action="{{php_self}}" method="post" name="options_bar">
 <table width="1000" border="0" cellspacing="0" cellpadding="0" class="editfilter">
   <tr>
@@ -87,8 +89,8 @@
     </div>
 </td>
 <td width="15%" class="contentEntry1">{{ entry.category }}</td>
-<td width="10%" class="contentEntry1">{{ entry.price }}</td>
-<td width="10%" class="contentEntry1">{{ entry.compare_price }}</td>
+<td width="10%" class="contentEntry1"><input size="3" type="text" autocomplete="off" class="price_input" value="{{ entry.price }}" data-id="{{ entry.id }}"></td>
+<td width="10%" class="contentEntry1"><input size="3" type="text" autocomplete="off" class="compare_price_input" value="{{ entry.compare_price }}" data-id="{{ entry.id }}"></td>
 <td width="10%" class="contentEntry1"><img src="{{home}}/engine/skins/default/images/{% if (entry.active == 1) %}yes.png{% else %}no.png{% endif %}" alt=""></td>
 <td width="5%" class="contentEntry1"><input name="selected_product[]" value="{{ entry.id }}" class="check" type="checkbox" /></td>
 </tr>
@@ -128,3 +130,21 @@
 </tr>
 </table>
 </form>
+
+<script>
+$(document).ready(function(){
+    $(document).on('change', '.price_input',  function(e) {
+        var id = $(this).attr("data-id");
+        var mode = "price";
+        var price = $(this).val();
+        rpcEshopRequest('eshop_change_price', {'id':id, 'mode':mode, 'price':price}, function (resTX) {});
+    });
+    
+    $(document).on('change', '.compare_price_input',  function(e) {
+        var id = $(this).attr("data-id");
+        var mode = "compare_price";
+        var price = $(this).val();
+        rpcEshopRequest('eshop_change_price', {'id':id, 'mode':mode, 'price':price}, function (resTX) {});
+    });
+});
+</script>

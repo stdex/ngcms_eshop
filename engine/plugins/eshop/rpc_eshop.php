@@ -7,6 +7,7 @@ if(!defined('NGCMS'))
 
 rpcRegisterFunction('eshop_linked_products', 'linked_prd');
 rpcRegisterFunction('eshop_change_img_pos', 'change_img_pos');
+rpcRegisterFunction('eshop_change_price', 'change_price');
 
 rpcRegisterFunction('eshop_compare', 'compare_prd');
 rpcRegisterFunction('eshop_viewed', 'viewed_prd');
@@ -75,9 +76,46 @@ function change_img_pos($params){
     }
 
     return array('status' => 0, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
-
 }
 
+function change_price($params){
+    global $userROW, $mysql;
+
+    $results = array();
+    $params = arrayCharsetConvert(1, $params);
+
+    $qid = intval($params['id']);
+    $mode = filter_var( $params['mode'], FILTER_SANITIZE_STRING );
+    $price = floatval(filter_var( $params['price'], FILTER_SANITIZE_STRING ));
+    
+    if($price < 0) {
+        $price = 0;
+    }
+
+    if($userROW['status'] < 3) {
+        
+        $SQL = array();
+        switch ($mode) {
+            case 'price':
+                $SQL['price'] = $price;
+            break;
+            case 'compare_price':
+                $SQL['compare_price'] = $price;
+            break;
+        }
+        
+        if(isset($qid)) {
+            $vnames = array();
+            foreach ($SQL as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
+            //var_dump('UPDATE '.prefix.'_eshop_variants SET '.implode(', ',$vnames).' WHERE product_id = \''.intval($qid).'\'  ');
+            $mysql->query('UPDATE '.prefix.'_eshop_variants SET '.implode(', ',$vnames).' WHERE product_id = \''.intval($qid).'\'  ');
+            return array('status' => 1, 'errorCode' => 0, 'data' => 'Price success changed', 'update' => '');
+        }
+
+    }
+
+    return array('status' => 0, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
+}
 
 function compare_prd($params){
     global $tpl, $template, $twig, $SYSTEM_FLAGS, $config, $userROW, $mysql, $twigLoader;
