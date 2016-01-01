@@ -382,7 +382,14 @@ function comments_add($params) {
     $SQL['text']    = str_replace("\r\n", "<br />", $SQL['text']);
     $SQL['ip']      = $ip;
     $SQL['reg']     = ($is_member) ? '1' : '0';
-    $SQL['status']      = '1';
+    
+    $approve_comments = pluginGetVariable('eshop', 'approve_comments');
+    if($approve_comments == "1") {
+        $SQL['status']      = '0';
+    }
+    else {
+        $SQL['status']      = '1';
+    }
 
     if(empty($SQL['name']))
     {
@@ -492,6 +499,11 @@ function comments_show_handler($params){
     $conditions = array();
     if ($params['product_id']) {
         array_push($conditions, "c.product_id = ".db_squote($params['product_id']));
+    }
+    
+    $approve_comments = pluginGetVariable('eshop', 'approve_comments');
+    if($approve_comments == "1") {
+        array_push($conditions, "c.status = 1");
     }
 
     $fSort = "ORDER BY c.postdate ASC";

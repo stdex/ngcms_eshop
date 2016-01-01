@@ -1828,7 +1828,7 @@ global $tpl, $mysql, $twig;
 
     $fSort = "ORDER BY c.postdate ASC";
     $sqlQPart = "from ".prefix."_eshop_products_comments c LEFT JOIN ".prefix."_users u ON c.author_id = u.id LEFT JOIN ".prefix."_eshop_products p ON c.product_id = p.id ".(count($conditions)?"where ".implode(" AND ", $conditions):'').' '.$fSort;
-    $sqlQ = "select c.id as cid, u.id as uid, u.name as uname, c.name as name, p.id as product_id, p.url as url, p.name as title, c.mail as mail, c.postdate as postdate, c.author as author, c.author_id as author_id, u.avatar as avatar, c.reg as reg, c.text as text ".$sqlQPart;
+    $sqlQ = "select c.id as cid, u.id as uid, u.name as uname, c.name as name, p.id as product_id, p.url as url, p.name as title, c.mail as mail, c.postdate as postdate, c.author as author, c.author_id as author_id, u.avatar as avatar, c.reg as reg, c.text as text, c.status as status ".$sqlQPart;
     
     $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
     
@@ -1877,6 +1877,7 @@ global $tpl, $mysql, $twig;
                 'view_link' => $view_link,
                 'product_edit_link' => "?mod=extra-config&plugin=eshop&action=edit_product&id=".$row['product_id']."",
                 'reg' => $row['reg'],
+                'status' => $row['status'],
                 );
                 
     }
@@ -1920,7 +1921,9 @@ global $mysql;
     }
     
     switch($subaction) {
-        case 'mass_delete'       : $del = true; break;
+        case 'mass_delete'          : $del = true; break;
+        case 'mass_active_add'      : $active_add = true; break;
+        case 'mass_active_remove'   : $active_remove = true; break;
     }
 
     if(isset($del))
@@ -1933,6 +1936,23 @@ global $mysql;
         
         msg(array("type" => "info", "info" => "Записи с ID${id} удалены!"));
     }
+    
+    if(isset($active_add))
+    {
+        $mysql->query("UPDATE ".prefix."_eshop_products_comments SET status = 1 WHERE id IN ({$id})");
+        
+        //redirect_eshop('?mod=extra-config&plugin=eshop');
+        msg(array("type" => "info", "info" => "Записи с ID ${id} обновлены!"));
+    }
+
+    if(isset($active_remove))
+    {
+        $mysql->query("UPDATE ".prefix."_eshop_products_comments SET status = 0 WHERE id IN ({$id})");
+        
+        //redirect_eshop('?mod=extra-config&plugin=eshop');
+        msg(array("type" => "info", "info" => "Записи с ID ${id} обновлены!"));
+    }    
+    
 }
 
 
@@ -2245,6 +2265,7 @@ global $tpl, $mysql, $cron, $twig;
         
         pluginSetVariable('eshop', 'views_count', $_REQUEST['views_count']);
         pluginSetVariable('eshop', 'bidirect_linked_products', $_REQUEST['bidirect_linked_products']);
+        pluginSetVariable('eshop', 'approve_comments', $_REQUEST['approve_comments']);
         
         pluginSetVariable('eshop', 'max_image_size', intval($_REQUEST['max_image_size']));
         pluginSetVariable('eshop', 'width_thumb', intval($_REQUEST['width_thumb']));
@@ -2306,6 +2327,9 @@ global $tpl, $mysql, $cron, $twig;
     $bidirect_linked_products = pluginGetVariable('eshop', 'bidirect_linked_products');
     $bidirect_linked_products = '<option value="0" '.($bidirect_linked_products==0?'selected':'').'>Нет</option><option value="1" '.($bidirect_linked_products==1?'selected':'').'>Да</option>';
     
+    $approve_comments = pluginGetVariable('eshop', 'approve_comments');
+    $approve_comments = '<option value="0" '.($approve_comments==0?'selected':'').'>Нет</option><option value="1" '.($approve_comments==1?'selected':'').'>Да</option>';
+    
     $max_image_size = pluginGetVariable('eshop', 'max_image_size');
     $width_thumb = pluginGetVariable('eshop', 'width_thumb');
     $width = pluginGetVariable('eshop', 'width');
@@ -2335,6 +2359,8 @@ global $tpl, $mysql, $cron, $twig;
         
         'views_count' => $views_count,
         'bidirect_linked_products' => $bidirect_linked_products,
+        
+        'approve_comments' => $approve_comments,
         
         'max_image_size' => $max_image_size,
         'width_thumb' => $width_thumb,

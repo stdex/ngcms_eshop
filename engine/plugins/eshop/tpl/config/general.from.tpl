@@ -24,6 +24,10 @@
 <td class="contentEntry1" valign=top>Двухсторонние связанные товары?<br /></td>
 <td class="contentEntry2" valign=top><select name="bidirect_linked_products" >{{entries.bidirect_linked_products}}</select></td>
 </tr>
+<tr>
+<td class="contentEntry1" valign=top>Премодерация комментариев?<br /></td>
+<td class="contentEntry2" valign=top><select name="approve_comments" >{{entries.approve_comments}}</select></td>
+</tr>
 </table>
 </fieldset>
 </td>

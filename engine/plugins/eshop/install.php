@@ -417,6 +417,8 @@ function plugin_eshop_install($action) {
                 'views_count' => '1',
                 'bidirect_linked_products' => '0',
                 
+                'approve_comments' => '0',
+                
                 'url' => '1',
                 
                 'max_image_size' => '5',
