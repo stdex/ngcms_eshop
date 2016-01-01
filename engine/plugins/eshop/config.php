@@ -7,7 +7,7 @@ plugins_load_config();
 LoadPluginLang('eshop', 'config', '', '', '#');
 
 include_once(dirname(__FILE__).'/cache.php');
-#include_once(dirname(__FILE__).'/catz.php');
+include_once(dirname(__FILE__).'/functions.php');
 
 switch ($_REQUEST['action']) {
     
@@ -810,6 +810,12 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
         
         $tempFile = $upload_dir . $img_name;
         $extension = $parts["extension"];
+
+        $extensions = array_map('trim', explode(',', pluginGetVariable('eshop', 'catz_ext_image')));
+
+        if(!in_array($extension, $extensions)) {
+            return "";
+        }
         
         // CREATE THUMBNAIL
         if ($extension == "jpg" || $extension == "jpeg") {
@@ -1025,12 +1031,6 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         {
             $error_text[] = 'Название категории не задано';
         }
-        
-        $description = input_filter_com(convert($_REQUEST['description']));
-        if(empty($description))
-        {
-            $error_text[] = 'Описание категории не задано';
-        }
 
         $url = input_filter_com(convert($_REQUEST['url']));
         if(empty($url))
@@ -1043,7 +1043,6 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                 $error_text[] = 'Такой altname уже существует.';
             }
         }
- 
 
         $meta_title = input_filter_com(convert($_REQUEST['meta_title']));
         if(empty($meta_title))
@@ -2185,495 +2184,18 @@ global $tpl, $mysql, $twig;
 function urls()
 {global $tpl, $mysql, $twig;
     $tpath = locatePluginTemplates(array('config/main', 'config/urls'), 'eshop', 1);
+
+    $url = pluginGetVariable('eshop', 'url');
     
     if (isset($_REQUEST['submit']))
     {
-        if(isset($_REQUEST['url']) && !empty($_REQUEST['url']))
+        //var_dump($_REQUEST['url']);
+        if(($url != '1') && ($_REQUEST['url'] == '1'))
         {
-            $ULIB = new urlLibrary();
-            $ULIB->loadConfig();
+            create_urls();
+        } elseif(($_REQUEST['url'] == '0')) {
             
-            $ULIB->registerCommand('eshop', '',
-                array ('vars' =>
-                        array(  'alt' => array('matchRegex' => '.+?', 'descr' => array('russian' => 'Altname категории')),
-                                'cat' => array('matchRegex' => '\d+', 'descr' => array('russian' => 'ID категории')),
-                                'page' => array('matchRegex' => '\d{1,4}', 'descr' => array('russian' => 'Постраничная навигация'))
-                        ),
-                        'descr' => array ('russian' => 'Главная страница'),
-                )
-            );
-            
-            $ULIB->registerCommand('eshop', 'show',
-                array ('vars' =>
-                        array('alt' => array('matchRegex' => '.+?', 'descr' => array('russian' => 'Altname продукта')),
-                              'id' => array('matchRegex' => '\d+', 'descr' => array('russian' => 'ID продукта')),
-                        ),
-                        'descr' => array ('russian' => 'Ссылка на продукт'),
-                )
-            );
-                       
-            $ULIB->registerCommand('eshop', 'search',
-                array ('vars' =>
-                        array('page' => array('matchRegex' => '\d{1,4}', 'descr' => array('russian' => 'Постраничная навигация'))
-                        ),
-                        'descr' => array ('russian' => 'Поиск по продукции'),
-                )
-            );
-            
-            $ULIB->registerCommand('eshop', 'stocks',
-                array ('vars' =>
-                        array('page' => array('matchRegex' => '\d{1,4}', 'descr' => array('russian' => 'Постраничная навигация'))
-                        ),
-                        'descr' => array ('russian' => 'Акции'),
-                )
-            );
-            
-            $ULIB->registerCommand('eshop', 'compare',
-                array (
-                        'descr' => array ('russian' => 'Сравнение продукции'),
-                )
-            );
-            
-            $ULIB->registerCommand('eshop', 'currency',
-                array (
-                        'descr' => array ('russian' => 'Валюты'),
-                )
-            );
-            
-            $ULIB->registerCommand('eshop', 'xml_export',
-                array (
-                        'descr' => array ('russian' => 'Экспорт XML'),
-                )
-            );
-            
-            $ULIB->registerCommand('eshop', 'ebasket_list',
-                array (
-                        'descr' => array ('russian' => 'Корзина'),
-                )
-            );
-
-            $ULIB->registerCommand('eshop', 'order',
-                array (
-                        'descr' => array ('russian' => 'Заказы'),
-                )
-            );
-
-            $ULIB->saveConfig();
-            
-            $UHANDLER = new urlHandler();
-            $UHANDLER->loadConfig();
-            
-            $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
-                'handlerName' => '',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/[{alt}/][page/{page}/]',
-                  'regex' => '#^/(.+?){0,1}(?:page/(\\d{1,4})/){0,1}$#',
-                  'regexMap' => 
-                  array (
-                    1 => 'alt',
-                    2 => 'page',
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/',
-                      2 => 0,
-                    ),
-                    1 => 
-                    array (
-                      0 => 1,
-                      1 => 'alt',
-                      2 => 1,
-                    ),
-                    2 => 
-                    array (
-                      0 => 0,
-                      1 => '/',
-                      2 => 1,
-                    ),
-                    3 => 
-                    array (
-                      0 => 0,
-                      1 => 'page/',
-                      2 => 3,
-                    ),
-                    4 => 
-                    array (
-                      0 => 1,
-                      1 => 'page',
-                      2 => 3,
-                    ),
-                    5 => 
-                    array (
-                      0 => 0,
-                      1 => '/',
-                      2 => 3,
-                    ),
-                  ),
-                ),
-              )
-            );
-            
-            $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
-                'handlerName' => 'show',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/{alt}.html',
-                  'regex' => '#^/(.+?){0,1}.html$#',
-                  'regexMap' => 
-                  array (
-                    1 => 'alt',
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/',
-                      2 => 0,
-                    ),
-                    1 => 
-                    array (
-                      0 => 1,
-                      1 => 'alt',
-                      2 => 0,
-                    ),
-                    2 => 
-                    array (
-                      0 => 0,
-                      1 => '.html',
-                      2 => 0,
-                    ),
-                  ),
-                ),
-              )
-            );
-            
-           $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
-                'handlerName' => 'search',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/eshop/search/[page/{page}/]',
-                  'regex' => '#^/eshop/search/(?:page/(\\d{1,4})/){0,1}$#',
-                  'regexMap' => 
-                  array (
-                    1 => 'page',
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/eshop/search/',
-                      2 => 0,
-                    ),
-                    1 => 
-                    array (
-                      0 => 0,
-                      1 => 'page/',
-                      2 => 1,
-                    ),
-                    2 => 
-                    array (
-                      0 => 1,
-                      1 => 'page',
-                      2 => 1,
-                    ),
-                    3 => 
-                    array (
-                      0 => 0,
-                      1 => '/',
-                      2 => 1,
-                    ),
-                  ),
-                ),
-              )
-            );
-
-           $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
-                'handlerName' => 'stocks',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/eshop/stocks/[page/{page}/]',
-                  'regex' => '#^/eshop/stocks/(?:page/(\\d{1,4})/){0,1}$#',
-                  'regexMap' => 
-                  array (
-                    1 => 'page',
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/eshop/stocks/',
-                      2 => 0,
-                    ),
-                    1 => 
-                    array (
-                      0 => 0,
-                      1 => 'page/',
-                      2 => 1,
-                    ),
-                    2 => 
-                    array (
-                      0 => 1,
-                      1 => 'page',
-                      2 => 1,
-                    ),
-                    3 => 
-                    array (
-                      0 => 0,
-                      1 => '/',
-                      2 => 1,
-                    ),
-                  ),
-                ),
-              )
-            );
-
-           $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
-                'handlerName' => 'compare',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/eshop/compare/',
-                  'regex' => '#^/eshop/compare/$#',
-                  'regexMap' => 
-                  array (
-                    1 => 'page',
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/eshop/compare/',
-                      2 => 0,
-                    ),
-                  ),
-                ),
-              )
-            );
-            
-           $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
-                'handlerName' => 'currency',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/eshop/currency/',
-                  'regex' => '#^/eshop/currency/$#',
-                  'regexMap' => 
-                  array (
-                    1 => 'page',
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/eshop/currency/',
-                      2 => 0,
-                    ),
-                  ),
-                ),
-              )
-            );            
-
-           $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
-                'handlerName' => 'xml_export',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/eshop/xml_export/',
-                  'regex' => '#^/eshop/xml_export/$#',
-                  'regexMap' => 
-                  array (
-                    1 => 'page',
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/eshop/xml_export/',
-                      2 => 0,
-                    ),
-                  ),
-                ),
-              )
-            );
-
-           $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
-                'handlerName' => 'ebasket_list',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/eshop/ebasket_list/',
-                  'regex' => '#^/eshop/ebasket_list/$#',
-                  'regexMap' => 
-                  array (
-                    1 => 'page',
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/eshop/ebasket_list/',
-                      2 => 0,
-                    ),
-                  ),
-                ),
-              )
-            );
-
-           $UHANDLER->registerHandler(0,
-                array (
-                'pluginName' => 'eshop',
-                'handlerName' => 'order',
-                'flagPrimary' => true,
-                'flagFailContinue' => false,
-                'flagDisabled' => false,
-                'rstyle' => 
-                array (
-                  'rcmd' => '/eshop/order/',
-                  'regex' => '#^/eshop/order/$#',
-                  'regexMap' => 
-                  array (
-                    1 => 'page',
-                  ),
-                  'reqCheck' => 
-                  array (
-                  ),
-                  'setVars' => 
-                  array (
-                  ),
-                  'genrMAP' => 
-                  array (
-                    0 => 
-                    array (
-                      0 => 0,
-                      1 => '/eshop/order/',
-                      2 => 0,
-                    ),
-                  ),
-                ),
-              )
-            );
-
-            $UHANDLER->saveConfig();
-        } else {
-            $ULIB = new urlLibrary();
-            $ULIB->loadConfig();
-            $ULIB->removeCommand('eshop', '');
-            $ULIB->removeCommand('eshop', 'show');
-            $ULIB->removeCommand('eshop', 'search');
-            $ULIB->removeCommand('eshop', 'stocks');
-            $ULIB->removeCommand('eshop', 'compare');
-            $ULIB->removeCommand('eshop', 'currency');
-            $ULIB->removeCommand('eshop', 'xml_export');
-            $ULIB->removeCommand('eshop', 'ebasket_list');
-            $ULIB->removeCommand('eshop', 'order');
-            $ULIB->saveConfig();
-            $UHANDLER = new urlHandler();
-            $UHANDLER->loadConfig();
-            $UHANDLER->removePluginHandlers('eshop', '');
-            $UHANDLER->removePluginHandlers('eshop', 'show');
-            $UHANDLER->removePluginHandlers('eshop', 'search');
-            $UHANDLER->removePluginHandlers('eshop', 'stocks');
-            $UHANDLER->removePluginHandlers('eshop', 'compare');
-            $UHANDLER->removePluginHandlers('eshop', 'currency');
-            $UHANDLER->removePluginHandlers('eshop', 'xml_export');
-            $UHANDLER->removePluginHandlers('eshop', 'ebasket_list');
-            $UHANDLER->removePluginHandlers('eshop', 'order');
-            $UHANDLER->saveConfig();
+            remove_urls();
         }
         
         pluginSetVariable('eshop', 'url', intval($_REQUEST['url']));
@@ -2681,7 +2203,7 @@ function urls()
         
         redirect_eshop('?mod=extra-config&plugin=eshop&action=urls');
     }
-    $url = pluginGetVariable('eshop', 'url');
+
     $url = '<option value="0" '.(empty($url)?'selected':'').'>Нет</option><option value="1" '.(!empty($url)?'selected':'').'>Да</option>';
 
     $xt = $twig->loadTemplate($tpath['config/urls'].'config/'.'urls.tpl');
@@ -2728,7 +2250,8 @@ global $tpl, $mysql, $cron, $twig;
         pluginSetVariable('eshop', 'width_thumb', intval($_REQUEST['width_thumb']));
         pluginSetVariable('eshop', 'width', intval($_REQUEST['width']));
         pluginSetVariable('eshop', 'height', intval($_REQUEST['height']));
-        pluginSetVariable('eshop', 'ext_image', secure_html(trim($_REQUEST['ext_image'])));
+
+        pluginSetVariable('eshop', 'ext_image', check_php_str($_REQUEST['ext_image']) );
         
         pluginSetVariable('eshop', 'pre_width', intval($_REQUEST['pre_width']));
         
@@ -2736,7 +2259,7 @@ global $tpl, $mysql, $cron, $twig;
         pluginSetVariable('eshop', 'catz_width_thumb', intval($_REQUEST['catz_width_thumb']));
         pluginSetVariable('eshop', 'catz_width', intval($_REQUEST['catz_width']));
         pluginSetVariable('eshop', 'catz_height', intval($_REQUEST['catz_height']));
-        pluginSetVariable('eshop', 'catz_ext_image', secure_html(trim($_REQUEST['catz_ext_image'])));
+        pluginSetVariable('eshop', 'catz_ext_image', check_php_str($_REQUEST['catz_ext_image']) );
        
         pluginSetVariable('eshop', 'email_notify_orders', $_REQUEST['email_notify_orders']);
         pluginSetVariable('eshop', 'email_notify_comments', $_REQUEST['email_notify_comments']);

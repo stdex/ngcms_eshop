@@ -570,11 +570,15 @@ function ebasket_add_item($linked_ds, $linked_id, $title, $price, $count, $xfld 
         $tCount = $res['count'];
         $tPrice = $res['price'];
     }
+    
+    $basket_link = checkLinkAvailable('eshop', 'ebasket_list')?
+            generateLink('eshop', 'ebasket_list', array()):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'ebasket_list'), array());
 
     $tVars = array(
         'count'         => $tCount,
         'price'         => $tPrice,
-        'ajaxUpdate'    => 1,
+        'basket_link'   => $basket_link,
     );
 
     $tpath = locatePluginTemplates(array('ebasket/total'), 'eshop', pluginGetVariable('eshop', 'localsource'));

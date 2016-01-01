@@ -4,6 +4,8 @@ if (!defined('NGCMS'))
     die ('HAL');
 }
 
+include_once(dirname(__FILE__).'/functions.php');
+
 function plugin_eshop_install($action) {
     global $lang, $mysql;
 
@@ -391,7 +393,18 @@ function plugin_eshop_install($action) {
         case 'apply':
             if (fixdb_plugin_install('eshop', $db_update, 'install', ($action=='autoapply')?true:false)) {
                 $mysql->query("insert into ".prefix."_eshop_currencies values (1,'доллары','$','USD','1.00','1.00',1,0,1), (2,'рубли','руб','RUR','70.58','1.00',1,1,1), (3,'гривна','грн','UAH','23.48','1.00',1,2,1)");
+                
+                if(!$mysql->record('SHOW INDEX FROM '.prefix.'_eshop_products WHERE Key_name = \'name\''))
+                    $mysql->query('alter table '.prefix.'_eshop_products add FULLTEXT (name)');
+
+                if(!$mysql->record('SHOW INDEX FROM '.prefix.'_eshop_products WHERE Key_name = \'annotation\''))
+                    $mysql->query('alter table '.prefix.'_eshop_products add FULLTEXT (annotation)');
+
+                if(!$mysql->record('SHOW INDEX FROM '.prefix.'_eshop_products WHERE Key_name = \'body\''))
+                    $mysql->query('alter table '.prefix.'_eshop_products add FULLTEXT (body)');
+                
                 plugin_mark_installed('eshop');
+                create_urls();
             } else {
                 return false;
             }
@@ -404,7 +417,7 @@ function plugin_eshop_install($action) {
                 'views_count' => '1',
                 'bidirect_linked_products' => '0',
                 
-                'url' => '0',
+                'url' => '1',
                 
                 'max_image_size' => '5',
                 'width' => '2000',
