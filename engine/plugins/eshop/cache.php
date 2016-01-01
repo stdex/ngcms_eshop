@@ -82,12 +82,8 @@ function generate_catz_cache($load = false)
             'tree' => $tree,
             'cnt' => $cnt_arr,
         );
-
-        $tpath = locatePluginTemplates(array('cats_tree'), 'eshop', pluginGetVariable('eshop', 'localsource'));
-        $xt = $twig->loadTemplate($tpath['cats_tree'].'cats_tree.tpl');
-
-        file_put_contents($eshop_dir.'/cache_catz.php', serialize($xt->render($tVars)));
         
+        file_put_contents($eshop_dir.'/cache_catz.php', serialize($tVars));
     }
 
 }

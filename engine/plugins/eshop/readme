@@ -3,7 +3,6 @@
 # =========================================================================== #
 
 Установка:
-По установке:
 1) Залить плагин в /engine/plugins/:
 2) Залить тестовый шаблон eshop2 в /templates/, выбрать шаблон eshop2 в настройках CMS (не обязательно, если будете использовать свой).
 3) Установить плагин eshop в админке.
@@ -44,7 +43,9 @@ plugins/eshop/tpl/mail/lfeedback_comment.tpl -  шаблон вывода пис
 - cat - категории из которых выводить товары (если не используется, то по-умолчанию все категории).
 - cacheExpire - время жизни кеша в секундах (если не используется, то по-умолчанию без кеша).
 
-2. {{ callPlugin('eshop.show_catz_tree') }} - выводит дерево категорий. Шаблон вывода: plugins/eshop/tpl/cats_tree.tpl
+2. {{ callPlugin('eshop.show_catz_tree', {'template': 'block_cats_tree'}) }} - выводит дерево категорий. Шаблон вывода: plugins/eshop/tpl/cats_tree.tpl
+Доступные параметры:
+- template - шаблон вывода, например если block_cats_tree, то это plugins/eshop/tpl/block/block_cats_tree.tpl (если не используется, то по-умолчанию block_cats_tree)
 
 3. {{ eshop_ebasket }} - выводит блок корзины с количеством и ценой. Шаблон вывода: plugins/eshop/tpl/ebasket/total.tpl
 

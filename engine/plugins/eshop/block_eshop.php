@@ -89,7 +89,7 @@ function plugin_block_eshop($number, $mode, $cat, $overrideTemplateName, $cacheE
     if ($overrideTemplateName) {
         $templateName = 'block/'.$overrideTemplateName;
     } else {
-         $templateName = 'block/block_eshop';
+        $templateName = 'block/block_eshop';
     }
 
     // Determine paths for all template files
@@ -131,14 +131,26 @@ function plugin_block_eshop($number, $mode, $cat, $overrideTemplateName, $cacheE
     return $output;
 }
 
-function plugin_m_eshop_catz_tree() {
-    global $config;
+function plugin_m_eshop_catz_tree($overrideTemplateName) {
+    global $config, $twig;
 
     $eshop_dir = get_plugcfg_dir('eshop');
     generate_catz_cache();
 
     if(file_exists($eshop_dir.'/cache_catz.php')){
-        $output = unserialize(file_get_contents($eshop_dir.'/cache_catz.php'));
+        $tVars = unserialize(file_get_contents($eshop_dir.'/cache_catz.php'));
+        
+        if ($overrideTemplateName) {
+            $templateName = 'block/'.$overrideTemplateName;
+        } else {
+            $templateName = 'block/block_cats_tree';
+        }
+        
+        $tpath = locatePluginTemplates(array($templateName), 'eshop', pluginGetVariable('eshop', 'localsource'));
+        $xt = $twig->loadTemplate($tpath[$templateName].$templateName.'.tpl');
+        
+        $output = $xt->render($tVars);
+        
     } else {
         $output = '';
     }
@@ -161,10 +173,12 @@ function plugin_block_eshop_showTwig($params) {
 
 //
 // Twig блок для вывода дерева категорий
+// Параметры:
+// * template       - шаблон
 function plugin_m_eshop_catz_tree_showTwig($params) {
     global $CurrentHandler, $config;
 
-    return plugin_m_eshop_catz_tree();
+    return plugin_m_eshop_catz_tree($params['template']);
 }
 
 twigRegisterFunction('eshop', 'show', plugin_block_eshop_showTwig);
