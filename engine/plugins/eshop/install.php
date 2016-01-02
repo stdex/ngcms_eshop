@@ -418,6 +418,7 @@ function plugin_eshop_install($action) {
                 'bidirect_linked_products' => '0',
                 
                 'approve_comments' => '0',
+                'sort_comments' => '0',
                 
                 'url' => '1',
                 

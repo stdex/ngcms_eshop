@@ -514,3 +514,57 @@ function check_php_str($ext_image)
     return implode(', ', $ext_image);
     
 }
+
+
+function import_yml($yml_url)
+{global $tpl, $mysql, $twig, $parse;
+
+    include_once(dirname(__FILE__).'/import.class.php');
+
+    $file = file_get_contents($_REQUEST['yml_url']);
+    $xml = new SimpleXMLElement($file);
+    unset($file);
+    unset(
+        $_SESSION['cats'],
+        $_SESSION['cats_uf_ids'],
+        $_SESSION['update'],
+        $_SESSION['offers'],
+        $_SESSION['IDS'],
+        $_SESSION['j'],
+        $_SESSION['page'],
+        $_SESSION['work']
+    );
+    
+    foreach($xml->shop->offers->offer as $key => $offer) {
+        $_SESSION['work'][] = (int)$offer->attributes()->id;
+    }
+
+    $ctg = new YMLCategory();
+    $ctg->GetFromSite();
+    $ctg->GetFromXML($xml->shop->categories->category);
+    
+    $ofs = new YMLOffer();
+    
+    foreach($xml->shop->offers->offer as $key => $offer) {
+        $oif = (int)$offer->attributes()->id;
+        
+        $name = iconv('utf-8','windows-1251',(string)$offer->name);
+        if(!empty($name))
+        {
+            $url = strtolower($parse->translit($name,1, 1));
+        }
+        
+        if ($url) {
+            $prd_row = $mysql->record("select * from ".prefix."_eshop_products where url = ".db_squote($url)." limit 1");
+            if ( !is_array($prd_row) ) {
+                $oid = $ofs->Add($offer);
+                $ofs->eco('Добавлен товар: '.$name.'<br>');
+            }
+            else {
+                $oid = $ofs->Update($prd_row['id'], $offer);
+                $ofs->eco('Обновлен товар: '.$name.'<br>');
+            }
+        } 
+    }
+    
+}

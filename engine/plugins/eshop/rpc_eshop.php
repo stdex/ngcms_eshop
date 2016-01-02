@@ -505,8 +505,16 @@ function comments_show_handler($params){
     if($approve_comments == "1") {
         array_push($conditions, "c.status = 1");
     }
+    
+    $sort_comments = pluginGetVariable('eshop', 'sort_comments');
+    if($sort_comments == "0") {
+        $dSort = " ASC";
+    }
+    else {
+        $dSort = " DESC";
+    }
 
-    $fSort = "ORDER BY c.postdate ASC";
+    $fSort = "ORDER BY c.postdate".$dSort;
 
     $sqlQPart = "from ".prefix."_eshop_products_comments c LEFT JOIN ".prefix."_users u ON c.author_id = u.id ".(count($conditions)?"where ".implode(" AND ", $conditions):'').' '.$fSort;
     $sqlQ = "select *, c.id as cid, u.id as uid, u.name as uname, c.name as name ".$sqlQPart;
@@ -520,7 +528,7 @@ function comments_show_handler($params){
         if ($config['use_htmlformatter'])   { $text = $parse -> htmlformatter($text); }
         if ($config['use_smilies'])         { $text = $parse -> smilies($text); }
 
-            if ($config['use_avatars']) {
+        if ($config['use_avatars']) {
             if ($row['avatar']) {
                 $avatar = avatars_url."/".$row['avatar'];
             } else {

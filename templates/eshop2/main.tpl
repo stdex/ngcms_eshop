@@ -357,6 +357,7 @@
                                                 </span>
                                               </a>
                                             </div>
+
                                             <div class="frame-drop-menu left-drop">
 
                                                 {{ callPlugin('eshop.show_catz_tree') }}

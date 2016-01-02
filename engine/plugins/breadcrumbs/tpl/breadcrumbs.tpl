@@ -2,19 +2,21 @@
     <div class="crumbs" xmlns:v="http://rdf.data-vocabulary.org/#">
         <div class="container">
             <ul class="items items-crumbs">
-                 {location_last}
+                {% for loc in location %}
                 <li class="btn-crumb">
-                    {location} {separator}
-                    <a href="http://testsite000.ru" typeof="v:Breadcrumb"><span class="text-el">Главная</span></a>
+                    <a href="{{ loc.url }}" typeof="v:Breadcrumb"><span class="text-el">{{ loc.title }}</span></a>
                     <span class="divider">/</span>
-                    
                 </li>
+                {% endfor %}
+                {% if (location_last) %}
                 <li class="btn-crumb">
                     <button typeof="v:Breadcrumb" disabled="disabled">
-                    <span class="text-el">Поиск</span>
+                    <span class="text-el">{{ location_last }}</span>
                     </button>
                 </li>
+                {% endif %}
             </ul>
         </div>
     </div>
 </div>
+

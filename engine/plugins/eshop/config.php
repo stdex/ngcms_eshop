@@ -41,6 +41,7 @@ switch ($_REQUEST['action']) {
     case 'options':         options();                             break;
 
     case 'urls':            urls();                                break;
+    case 'automation':      automation();                          break;
     
     default:                list_product();
 }
@@ -54,6 +55,7 @@ global $tpl, $mysql, $lang, $twig;
     $tVars = array();
     
     $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id");
+    
     $cats = getCats($res);
     
     // Load admin page based cookies
@@ -1809,7 +1811,7 @@ global $mysql;
 
 function list_comment($params)
 {
-global $tpl, $mysql, $twig;
+global $tpl, $mysql, $twig, $parse, $config;
 
     $tpath = locatePluginTemplates(array('config/main', 'config/list_comment'), 'eshop', 1);
     
@@ -1818,7 +1820,7 @@ global $tpl, $mysql, $twig;
     $news_per_page  = isset($_REQUEST['rpp'])?intval($_REQUEST['rpp']):intval($admCookie['eshop']['pp_comment']);
     // - Set default value for `Records Per Page` parameter
     if (($news_per_page < 2)||($news_per_page > 2000))
-        $news_per_page = 5;
+        $news_per_page = 10;
     
     // - Save into cookies current value
     $admCookie['eshop']['pp_comment'] = $news_per_page;
@@ -1826,7 +1828,7 @@ global $tpl, $mysql, $twig;
 
     $conditions = array();
 
-    $fSort = "ORDER BY c.postdate ASC";
+    $fSort = "ORDER BY c.postdate DESC";
     $sqlQPart = "from ".prefix."_eshop_products_comments c LEFT JOIN ".prefix."_users u ON c.author_id = u.id LEFT JOIN ".prefix."_eshop_products p ON c.product_id = p.id ".(count($conditions)?"where ".implode(" AND ", $conditions):'').' '.$fSort;
     $sqlQ = "select c.id as cid, u.id as uid, u.name as uname, c.name as name, p.id as product_id, p.url as url, p.name as title, c.mail as mail, c.postdate as postdate, c.author as author, c.author_id as author_id, u.avatar as avatar, c.reg as reg, c.text as text, c.status as status ".$sqlQPart;
     
@@ -1848,7 +1850,7 @@ global $tpl, $mysql, $twig;
         if ($config['use_htmlformatter'])   { $text = $parse -> htmlformatter($text); }
         if ($config['use_smilies'])         { $text = $parse -> smilies($text); }
 
-            if ($config['use_avatars']) {
+        if ($config['use_avatars']) {
             if ($row['avatar']) {
                 $avatar = avatars_url."/".$row['avatar'];
             } else {
@@ -2199,8 +2201,6 @@ global $tpl, $mysql, $twig;
 
 }
 
-
-
 function urls()
 {global $tpl, $mysql, $twig;
     $tpath = locatePluginTemplates(array('config/main', 'config/urls'), 'eshop', 1);
@@ -2209,7 +2209,6 @@ function urls()
     
     if (isset($_REQUEST['submit']))
     {
-        //var_dump($_REQUEST['url']);
         if(($url != '1') && ($_REQUEST['url'] == '1'))
         {
             create_urls();
@@ -2249,6 +2248,49 @@ function urls()
 }
 
 
+function automation()
+{global $tpl, $mysql, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/automation'), 'eshop', 1);
+
+//var_dump($_REQUEST);
+    if (isset($_REQUEST['yml_url']) && !empty($_REQUEST['yml_url']))
+    {
+        
+        import_yml($_REQUEST['yml_url']);
+        
+        msg(array("type" => "info", "info" => "Импорт YML успешно завершен"));
+    }
+
+    $xt = $twig->loadTemplate($tpath['config/automation'].'config/'.'automation.tpl');
+    
+    $xml_export_link = checkLinkAvailable('eshop', 'xml_export')?
+                generateLink('eshop', 'xml_export', array()):
+                generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'xml_export'), array());
+    
+    $tVars = array(
+        'xml_export_link' => $xml_export_link,
+        'info' => '',
+    );
+    
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Автоматизация',
+    );
+    
+    print $xg->render($tVars);
+
+}
+
+
+
+
 function options()
 {
 global $tpl, $mysql, $cron, $twig;
@@ -2266,6 +2308,7 @@ global $tpl, $mysql, $cron, $twig;
         pluginSetVariable('eshop', 'views_count', $_REQUEST['views_count']);
         pluginSetVariable('eshop', 'bidirect_linked_products', $_REQUEST['bidirect_linked_products']);
         pluginSetVariable('eshop', 'approve_comments', $_REQUEST['approve_comments']);
+        pluginSetVariable('eshop', 'sort_comments', $_REQUEST['sort_comments']);
         
         pluginSetVariable('eshop', 'max_image_size', intval($_REQUEST['max_image_size']));
         pluginSetVariable('eshop', 'width_thumb', intval($_REQUEST['width_thumb']));
@@ -2330,6 +2373,9 @@ global $tpl, $mysql, $cron, $twig;
     $approve_comments = pluginGetVariable('eshop', 'approve_comments');
     $approve_comments = '<option value="0" '.($approve_comments==0?'selected':'').'>Нет</option><option value="1" '.($approve_comments==1?'selected':'').'>Да</option>';
     
+    $sort_comments = pluginGetVariable('eshop', 'sort_comments');
+    $sort_comments = '<option value="0" '.($sort_comments==0?'selected':'').'>Новые снизу</option><option value="1" '.($sort_comments==1?'selected':'').'>Новые сверху</option>';
+    
     $max_image_size = pluginGetVariable('eshop', 'max_image_size');
     $width_thumb = pluginGetVariable('eshop', 'width_thumb');
     $width = pluginGetVariable('eshop', 'width');
@@ -2361,6 +2407,7 @@ global $tpl, $mysql, $cron, $twig;
         'bidirect_linked_products' => $bidirect_linked_products,
         
         'approve_comments' => $approve_comments,
+        'sort_comments' => $sort_comments,
         
         'max_image_size' => $max_image_size,
         'width_thumb' => $width_thumb,
