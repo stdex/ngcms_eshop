@@ -113,15 +113,14 @@ class YMLOffer extends YMLCategory {
      * @return bool
      */
     function Add($offer) {
-        global $tpl, $mysql, $twig, $parse;
+        global $tpl, $mysql, $twig, $parse, $SYSTEM_FLAGS;
         
-        // Свойства
         $name = iconv('utf-8','windows-1251',(string)$offer->name);
         $description = iconv('utf-8','windows-1251',(string)$offer->description);
         $PROP = array();
         $PROP['id'] = (int)$offer->attributes()->id;
         $PROP['name'] = $name;
-        $PROP['url'] = strtolower($parse->translit($name,1, 1));
+        $PROP['url'] = str_replace("/", "-", strtolower($parse->translit($name,1, 1)));
         $PROP['meta_title'] = $name;
         $PROP['annotation'] = $description;
 
@@ -130,14 +129,10 @@ class YMLOffer extends YMLCategory {
         $mysql->query('INSERT INTO '.prefix.'_eshop_products SET '.implode(', ',$vnames).' ');
         
         $qid = $mysql->lastid('eshop_products');
-        
-        $PROP = array();
-        // Массив картинок
-        
+
         if(count($offer->picture) > 0) {
             foreach($offer->picture as $inx_img => $picture) {
-                $PROP['picture'][] = $picture;
-                
+
                 try {
                     $rootpath = $_SERVER['DOCUMENT_ROOT'];
                     $url = $picture;
@@ -164,24 +159,30 @@ class YMLOffer extends YMLCategory {
                     }
                     
                     list ( $width, $height ) = getimagesize ( $file_path );
-                    
+
                     $newwidth = pluginGetVariable('eshop', 'width_thumb');
-                    $newheight = ($height / $width) * $newwidth;
-                    $tmp = imagecreatetruecolor ( $newwidth, $newheight );
                     
-                    imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
-                    
-                    $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
-                    
-                    if (file_exists ( $thumbname )) {
-                        unlink ( $thumbname );
+                    if($width > $newwidth) {
+                        $newheight = ($height / $width) * $newwidth;
+                        $tmp = imagecreatetruecolor ( $newwidth, $newheight );
+                        
+                        imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
+                        
+                        $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
+                        
+                        if (file_exists ( $thumbname )) {
+                            unlink ( $thumbname );
+                        }
+                        
+                        imagejpeg ( $tmp, $thumbname, 100 );
+                        
+                        imagedestroy ( $src );
+                        imagedestroy ( $tmp );
                     }
-                    
-                    imagejpeg ( $tmp, $thumbname, 100 );
-                    
-                    imagedestroy ( $src );
-                    imagedestroy ( $tmp );
-                    
+                    else {
+                        $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
+                        copy($file_path, $thumbname);
+                    }
                     
                     $img = $name;
 
@@ -213,12 +214,49 @@ class YMLOffer extends YMLCategory {
         }
         
         $price = (string)$offer->price;
+        $currencyId = (string)$offer->currencyId;
         $stock = "5";
-        if(isset($stock)) {
+        if(isset($price)) {
+            foreach ($SYSTEM_FLAGS['eshop_currency'] as $currency) {
+                if($currency['code'] == $currencyId) {
+                    $price = $price / $currency['rate_from'];
+                }
+            }
+            
             $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id='$qid'");
             $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `stock`) VALUES ('$qid', '$price', '$stock')");
         }
         
+        $returnArr = array();
+        foreach ($offer->children() as $element) {
+
+            if (mb_strtolower($element->getName()) == 'param') {
+                $returnArr[] = array_merge(
+                        ['value' => (string) $element], $this->getElementAttributes($element)
+                );
+            }
+        }
+        
+        foreach ($returnArr as $el) {
+            $name = iconv('utf-8','windows-1251', $el['name']);
+            $feature_row = $mysql->record("select * from ".prefix."_eshop_features where name = ".db_squote($name)." limit 1");
+            if ( !is_array($feature_row) ) {
+                $mysql->query('INSERT INTO '.prefix.'_eshop_features (name) 
+                    VALUES ('.db_squote($name).')
+                ');
+                $rowID = $mysql->record("select LAST_INSERT_ID() as id");
+                $f_key = $rowID['id'];
+            }
+            else {
+                $f_key = $feature_row['id'];
+            }
+            
+            $f_value = iconv('utf-8','windows-1251', $el['value']);
+            $mysql->query("INSERT INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')");
+            
+        }
+        
+        //var_dump($returnArr);
     }
 
     /**
@@ -229,35 +267,8 @@ class YMLOffer extends YMLCategory {
      */
     function Update($id, $offer) {
 
-        $el = new CIBlockElement;
+        
 
-        // Свойства
-        $PROP = array();
-        $PROP['id'] = (int)$offer->attributes()->id;
-        $PROP['available'] = (string)$offer->attributes()->available;
-        $PROP['url'] = (string)$offer->url;
-        $PROP['price'] = (string)$offer->price;
-        $PROP['picture'] = (string)$offer->picture;
-        $PROP['prop_shoose_size'] = (string)$offer->prop_shoose_size;
-        $PROP['prop_close_size'] = (string)$offer->prop_close_size;
-
-        // Основное
-        $arLoadProductArray = Array(
-            "IBLOCK_SECTION_ID" => $this->GetParentID((int)$offer->categoryId),
-            "PROPERTY_VALUES"=> $PROP,
-            "NAME"           => (string)$offer->name,
-            "ACTIVE"         => "Y",
-            "PREVIEW_TEXT"   => substr((string)$offer->description, 0, 255),
-            "DETAIL_TEXT"    => (string)$offer->description
-        );
-
-        // Обновляем
-        $result = $el->Update($id, $arLoadProductArray);
-        if(!empty($result)) {
-            return true;
-        } else {
-            die($el->LAST_ERROR);
-        }
     }
 
 
@@ -300,6 +311,23 @@ class ImportConfig {
         );
         
         //return $_FILES[$key];
+    }
+    
+    /**
+     * Gets lement attributes.
+     *
+     * @param \SimpleXMLElement $element
+     *
+     * @return array
+     */
+    function getElementAttributes(\SimpleXMLElement $element) {
+        $returnArr = [];
+
+        foreach ($element->attributes() as $attrName => $attrValue):
+            $returnArr[strtolower($attrName)] = (string) $attrValue;
+        endforeach;
+
+        return $returnArr;
     }
 }
 

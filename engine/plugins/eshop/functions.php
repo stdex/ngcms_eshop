@@ -517,7 +517,7 @@ function check_php_str($ext_image)
 
 
 function import_yml($yml_url)
-{global $tpl, $mysql, $twig, $parse;
+{global $tpl, $mysql, $twig, $parse, $SYSTEM_FLAGS;
 
     include_once(dirname(__FILE__).'/import.class.php');
 
@@ -566,5 +566,7 @@ function import_yml($yml_url)
             }
         } 
     }
+    
+    generate_catz_cache(true);
     
 }

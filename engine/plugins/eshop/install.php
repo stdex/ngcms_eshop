@@ -392,7 +392,7 @@ function plugin_eshop_install($action) {
         case 'autoapply':
         case 'apply':
             if (fixdb_plugin_install('eshop', $db_update, 'install', ($action=='autoapply')?true:false)) {
-                $mysql->query("insert into ".prefix."_eshop_currencies values (1,'доллары','$','USD','1.00','1.00',1,0,1), (2,'рубли','руб','RUR','70.58','1.00',1,1,1), (3,'гривна','грн','UAH','23.48','1.00',1,2,1)");
+                $mysql->query("insert into ".prefix."_eshop_currencies values (1,'доллары','$','USD','1.00','1.00',1,0,1), (2,'рубли','руб','RUB','70.58','1.00',1,1,1), (3,'гривна','грн','UAH','23.48','1.00',1,2,1)");
                 
                 if(!$mysql->record('SHOW INDEX FROM '.prefix.'_eshop_products WHERE Key_name = \'name\''))
                     $mysql->query('alter table '.prefix.'_eshop_products add FULLTEXT (name)');
@@ -404,7 +404,16 @@ function plugin_eshop_install($action) {
                     $mysql->query('alter table '.prefix.'_eshop_products add FULLTEXT (body)');
                 
                 plugin_mark_installed('eshop');
-                create_urls();
+                //create_urls();
+                
+                $rootpath = $_SERVER['DOCUMENT_ROOT'];
+                $rewrite_filepath_src = $rootpath."/engine/plugins/eshop/install_tmp/rewrite.php";
+                $urlconf_filepath_src = $rootpath."/engine/plugins/eshop/install_tmp/urlconf.php";
+                $rewrite_filepath_dst = $rootpath."/engine/conf/rewrite.php";
+                $urlconf_filepath_dst = $rootpath."/engine/conf/urlconf.php";
+                copy($rewrite_filepath_src, $rewrite_filepath_dst);
+                copy($urlconf_filepath_src, $urlconf_filepath_dst);
+                
             } else {
                 return false;
             }
