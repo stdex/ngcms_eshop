@@ -113,7 +113,7 @@ class YMLOffer extends YMLCategory {
      * @return bool
      */
     function Add($offer) {
-        global $tpl, $mysql, $twig, $parse, $SYSTEM_FLAGS;
+        global $tpl, $mysql, $twig, $parse, $SYSTEM_FLAGS, $config;
         
         $name = iconv('utf-8','windows-1251',(string)$offer->name);
         $description = iconv('utf-8','windows-1251',(string)$offer->description);
@@ -123,6 +123,8 @@ class YMLOffer extends YMLCategory {
         $PROP['url'] = str_replace("/", "-", strtolower($parse->translit($name,1, 1)));
         $PROP['meta_title'] = $name;
         $PROP['annotation'] = $description;
+        $PROP['date'] = time() + ($config['date_adjust'] * 60);
+        $PROP['editdate'] = $PROP['date'];
 
         $vnames = array();
         foreach ($PROP as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
@@ -131,7 +133,8 @@ class YMLOffer extends YMLCategory {
         $qid = $mysql->lastid('eshop_products');
 
         if(count($offer->picture) > 0) {
-            foreach($offer->picture as $inx_img => $picture) {
+            $inx_img = 0;
+            foreach($offer->picture as $picture) {
 
                 try {
                     $rootpath = $_SERVER['DOCUMENT_ROOT'];
@@ -199,6 +202,7 @@ class YMLOffer extends YMLCategory {
                                         
                     $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')");
                     
+                    $inx_img += 1;
                     
                 } catch (Exception $ex) {
                     return "0";
@@ -252,7 +256,9 @@ class YMLOffer extends YMLCategory {
             }
             
             $f_value = iconv('utf-8','windows-1251', $el['value']);
-            $mysql->query("INSERT INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')");
+            if($f_value != "") {
+                $mysql->query("INSERT INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')");
+            }
             
         }
         
@@ -266,9 +272,6 @@ class YMLOffer extends YMLCategory {
      * @return bool1
      */
     function Update($id, $offer) {
-
-        
-
     }
 
 

@@ -98,7 +98,6 @@ global $tpl, $mysql, $lang, $twig;
     $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
     
     //$sqlQCount = "SELECT COUNT(p.id) FROM ng_eshop_products p ORDER BY p.id DESC";
-    //var_dump($sqlQ);
     
     $pageNo     = intval($_REQUEST['page'])?$_REQUEST['page']:0;
     if ($pageNo < 1)    $pageNo = 1;
@@ -106,6 +105,8 @@ global $tpl, $mysql, $lang, $twig;
     
     $count = $mysql->result($sqlQCount);
     $countPages = ceil($count / $news_per_page);
+    
+    //var_dump($sqlQ.' LIMIT '.$start_from.', '.$news_per_page);
 
     foreach ($mysql->select($sqlQ.' LIMIT '.$start_from.', '.$news_per_page) as $row)
     {
@@ -2309,6 +2310,7 @@ global $tpl, $mysql, $cron, $twig;
         pluginSetVariable('eshop', 'bidirect_linked_products', $_REQUEST['bidirect_linked_products']);
         pluginSetVariable('eshop', 'approve_comments', $_REQUEST['approve_comments']);
         pluginSetVariable('eshop', 'sort_comments', $_REQUEST['sort_comments']);
+        pluginSetVariable('eshop', 'integrate_gsmg', $_REQUEST['integrate_gsmg']);
         
         pluginSetVariable('eshop', 'max_image_size', intval($_REQUEST['max_image_size']));
         pluginSetVariable('eshop', 'width_thumb', intval($_REQUEST['width_thumb']));
@@ -2375,6 +2377,9 @@ global $tpl, $mysql, $cron, $twig;
     
     $sort_comments = pluginGetVariable('eshop', 'sort_comments');
     $sort_comments = '<option value="0" '.($sort_comments==0?'selected':'').'>Новые снизу</option><option value="1" '.($sort_comments==1?'selected':'').'>Новые сверху</option>';
+
+    $integrate_gsmg = pluginGetVariable('eshop', 'integrate_gsmg');
+    $integrate_gsmg = '<option value="0" '.($integrate_gsmg==0?'selected':'').'>Нет</option><option value="1" '.($integrate_gsmg==1?'selected':'').'>Да</option>';
     
     $max_image_size = pluginGetVariable('eshop', 'max_image_size');
     $width_thumb = pluginGetVariable('eshop', 'width_thumb');
@@ -2408,6 +2413,7 @@ global $tpl, $mysql, $cron, $twig;
         
         'approve_comments' => $approve_comments,
         'sort_comments' => $sort_comments,
+        'integrate_gsmg' => $integrate_gsmg,
         
         'max_image_size' => $max_image_size,
         'width_thumb' => $width_thumb,

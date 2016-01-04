@@ -32,6 +32,10 @@
 <td class="contentEntry1" valign=top>Порядок сортировки отзывов?<br /></td>
 <td class="contentEntry2" valign=top><select name="sort_comments" >{{entries.sort_comments}}</select></td>
 </tr>
+<tr>
+<td class="contentEntry1" valign=top>Добавлять страницы категорий и продукции в GSMG?<br /></td>
+<td class="contentEntry2" valign=top><select name="integrate_gsmg" >{{entries.integrate_gsmg}}</select></td>
+</tr>
 </table>
 </fieldset>
 </td>

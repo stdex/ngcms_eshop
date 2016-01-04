@@ -548,6 +548,8 @@ function import_yml($yml_url)
     foreach($xml->shop->offers->offer as $key => $offer) {
         $oif = (int)$offer->attributes()->id;
         
+        //var_dump(iconv('utf-8','windows-1251',(string)$offer->name));
+        
         $name = iconv('utf-8','windows-1251',(string)$offer->name);
         if(!empty($name))
         {

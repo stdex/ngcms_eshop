@@ -44,11 +44,11 @@ function plugin_eshop_install($action) {
         'table'     => 'eshop_products',
         'action'    => 'cmodify',
         'engine'    => 'MyISAM',
-        'key'       => 'primary key(id), KEY `url` (`url`), KEY `name` (`name`), KEY `brand_id` (`brand_id`), KEY `position` (`position`), KEY `featured` (`featured`), KEY `active` (`active`), KEY `likes` (`likes`), KEY `comments` (`comments`), KEY `stocked` (`stocked`), KEY `views` (`views`)',
+        'key'       => 'primary key(id), KEY `name` (`name`), KEY `brand_id` (`brand_id`), KEY `position` (`position`), KEY `featured` (`featured`), KEY `active` (`active`), KEY `likes` (`likes`), KEY `comments` (`comments`), KEY `stocked` (`stocked`), KEY `views` (`views`), UNIQUE `url` (`url`)',
         'fields'    => array(
             array('action'  => 'cmodify', 'name' => 'id', 'type' => 'int(11)', 'params' => 'NOT NULL AUTO_INCREMENT'),
-            array('action'  => 'cmodify', 'name' => 'code', 'type' => 'varchar(255)', 'params' => 'NOT NULL DEFAULT \'0\''),
-            array('action'  => 'cmodify', 'name' => 'url', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
+            array('action'  => 'cmodify', 'name' => 'code', 'type' => 'char(255)', 'params' => 'NOT NULL DEFAULT \'\''),
+            array('action'  => 'cmodify', 'name' => 'url', 'type' => 'char(255)', 'params' => 'NOT NULL default \'\''),
             
             array('action'  => 'cmodify', 'name' => 'brand_id', 'type' => 'INT(11)', 'params' => 'NOT NULL default \'0\''),
             
@@ -97,7 +97,7 @@ function plugin_eshop_install($action) {
     array(
         'table' => 'eshop_products_likes',
         'action' => 'cmodify',
-        'key' => 'primary key (`id`)',
+        'key' => 'primary key (`id`), KEY `product_id` (`product_id`)',
         'fields' => array(
             array('action' => 'cmodify', 'name' => 'id', 'type' => 'int(11)', 'params' => 'not null auto_increment'),
             array('action' => 'cmodify', 'name' => 'product_id', 'type' => 'int(11)', 'params' => "default '0'"),
@@ -140,7 +140,7 @@ function plugin_eshop_install($action) {
         'fields'    => array(
             array('action'  => 'cmodify', 'name' => 'product_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
             array('action'  => 'cmodify', 'name' => 'feature_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
-            array('action'  => 'cmodify', 'name' => 'value', 'type' => 'text', 'params' => 'NOT NULL default \'\''),
+            array('action'  => 'cmodify', 'name' => 'value', 'type' => 'varchar(500)', 'params' => 'NOT NULL default \'\''),
         )
     ),
 
@@ -148,7 +148,7 @@ function plugin_eshop_install($action) {
         'table'     => 'eshop_related_products',
         'action'    => 'cmodify',
         'engine'    => 'MyISAM',
-        'key'       => 'primary key(`product_id`, `related_id`), KEY `product_id` (`product_id`), KEY `related_id` (`related_id`)',
+        'key'       => 'primary key(`product_id`, `related_id`), KEY `product_id` (`product_id`), KEY `related_id` (`related_id`), KEY `position` (`position`)',
         'fields'    => array(
             array('action'  => 'cmodify', 'name' => 'product_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
             array('action'  => 'cmodify', 'name' => 'related_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
@@ -160,10 +160,10 @@ function plugin_eshop_install($action) {
         'table'     => 'eshop_categories',
         'action'    => 'cmodify',
         'engine'    => 'MyISAM',
-        'key'       => 'primary key(id), KEY `url` (`url`), KEY `name` (`name`), KEY `parent_id` (`parent_id`)',
+        'key'       => 'primary key(id), KEY `name` (`name`), KEY `parent_id` (`parent_id`), UNIQUE `url` (`url`)',
         'fields'    => array(
             array('action'  => 'cmodify', 'name' => 'id', 'type' => 'int(11)', 'params' => 'NOT NULL AUTO_INCREMENT'),
-            array('action'  => 'cmodify', 'name' => 'url', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
+            array('action'  => 'cmodify', 'name' => 'url', 'type' => 'char(255)', 'params' => 'NOT NULL default \'\''),
             array('action'  => 'cmodify', 'name' => 'image', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
             
             array('action'  => 'cmodify', 'name' => 'parent_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
@@ -184,7 +184,7 @@ function plugin_eshop_install($action) {
         'table'     => 'eshop_products_categories',
         'action'    => 'cmodify',
         'engine'    => 'MyISAM',
-        'key'       => 'primary key(`category_id`, `product_id`)',
+        'key'       => 'primary key(`category_id`, `product_id`), KEY `product_id` (`product_id`), KEY `category_id` (`category_id`)',
         'fields'    => array(
             array('action'  => 'cmodify', 'name' => 'product_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
             array('action'  => 'cmodify', 'name' => 'category_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
@@ -259,7 +259,7 @@ function plugin_eshop_install($action) {
         'table'     => 'eshop_orders',
         'action'    => 'cmodify',
         'engine'    => 'MyISAM',
-        'key'       => 'primary key(id)',
+        'key'       => 'primary key(id), KEY `uniqid` (`uniqid`), KEY `author_id` (`author_id`)',
         'fields'    => array(
             array('action'  => 'cmodify', 'name' => 'id', 'type' => 'int(11)', 'params' => 'NOT NULL AUTO_INCREMENT'),
             array('action'  => 'cmodify', 'name' => 'author_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
@@ -314,7 +314,7 @@ function plugin_eshop_install($action) {
         'table'     => 'eshop_variants',
         'action'    => 'cmodify',
         'engine'    => 'MyISAM',
-        'key'       => 'primary key(id), KEY `product_id` (`product_id`)',
+        'key'       => 'primary key(id), KEY `product_id` (`product_id`), KEY `position` (`position`)',
         'fields'    => array(
             array('action'  => 'cmodify', 'name' => 'id', 'type' => 'int(11)', 'params' => 'NOT NULL AUTO_INCREMENT'),
             array('action'  => 'cmodify', 'name' => 'product_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
@@ -368,7 +368,7 @@ function plugin_eshop_install($action) {
     array(
         'table'  => 'eshop_ebasket',
         'action' => 'cmodify',
-        'key'    => 'primary key(id)',
+        'key'    => 'primary key(id), KEY `linked_id` (`linked_id`)',
         'fields' => array(
             array('action' => 'cmodify', 'name' => 'id', 'type' => 'int', 'params' => 'not null auto_increment'),
             array('action' => 'cmodify', 'name' => 'user_id', 'type' => 'int', 'params' => 'default 0'),
@@ -411,6 +411,10 @@ function plugin_eshop_install($action) {
                 $urlconf_filepath_src = $rootpath."/engine/plugins/eshop/install_tmp/urlconf.php";
                 $rewrite_filepath_dst = $rootpath."/engine/conf/rewrite.php";
                 $urlconf_filepath_dst = $rootpath."/engine/conf/urlconf.php";
+                
+                copy($rewrite_filepath_dst, $rootpath."/engine/plugins/eshop/install_tmp/backup/rewrite.php");
+                copy($urlconf_filepath_dst, $rootpath."/engine/plugins/eshop/install_tmp/backup/urlconf.php");
+                
                 copy($rewrite_filepath_src, $rewrite_filepath_dst);
                 copy($urlconf_filepath_src, $urlconf_filepath_dst);
                 
@@ -428,6 +432,7 @@ function plugin_eshop_install($action) {
                 
                 'approve_comments' => '0',
                 'sort_comments' => '0',
+                'integrate_gsmg' => '0',
                 
                 'url' => '1',
                 

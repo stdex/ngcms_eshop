@@ -4,6 +4,7 @@ if (!defined('NGCMS'))
     exit('HAL');
 
 loadPluginLibrary('uprofile', 'lib');
+LoadPluginLibrary('gsmg', 'common');
 
 LoadPluginLang('eshop', 'main', '', '', '#');
 add_act('core', 'eshop_infovars_show');
@@ -191,4 +192,49 @@ if (class_exists('p_uprofileFilter')) {
     }
 
     register_filter('plugin.uprofile','orders', new uOrderFilter);
+}
+
+
+if (class_exists('gsmgFilter')) {
+    class gShopFilter extends gsmgFilter {
+        function onShow(&$output) {
+            global $userROW, $mysql, $twig;
+    
+            if(pluginGetVariable('eshop', 'integrate_gsmg') == "1") {
+                $lm = $mysql->record("select date(from_unixtime(max(date))) as pd from ".prefix."_eshop_products");
+                foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id") as $rows)
+                {
+                    $cat_link = checkLinkAvailable('eshop', '')?
+                            generateLink('eshop', '', array('alt' => $rows['url'])):
+                            generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $rows['url']));
+                    $new_output.= "<url>";
+                    $new_output.= "<loc>".home.$cat_link."</loc>";
+                    $new_output.= "<priority>".floatval(pluginGetVariable('gsmg', 'catp_pr'))."</priority>";
+                    $new_output.= "<lastmod>".$lm['pd']."</lastmod>";
+                    $new_output.= "<changefreq>daily</changefreq>";
+                    $new_output.= "</url>";
+                }
+                
+                $query = "select * from ".prefix."_eshop_products where active = 1 order by id desc";
+
+                foreach ($mysql->select($query) as $rec) {
+                    $link = checkLinkAvailable('eshop', 'show')?
+                            generateLink('eshop', 'show', array('alt' => $rec['url'])):
+                            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $rec['url']));;
+                    $new_output.= "<url>";
+                    $new_output.= "<loc>".home.$link."</loc>";
+                    $new_output.= "<priority>".floatval(pluginGetVariable('gsmg', 'news_pr'))."</priority>";
+                    $new_output.= "<lastmod>".strftime("%Y-%m-%d", max($rec['editdate'], $rec['date']))."</lastmod>";
+                    $new_output.= "<changefreq>daily</changefreq>";
+                    $new_output.= "</url>";
+                }
+                
+                $output = $output.$new_output;
+                
+            }
+            
+        }
+    }
+    
+    register_filter('gsmg','eshop', new gShopFilter);
 }

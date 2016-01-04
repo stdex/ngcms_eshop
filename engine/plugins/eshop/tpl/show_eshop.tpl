@@ -1,42 +1,3 @@
-<!--
-<div class="frame-crumbs">
-   <div class="crumbs" xmlns:v="http://rdf.data-vocabulary.org/#">
-    <div class="container">
-        <ul class="items items-crumbs">
-            <li class="btn-crumb">
-                <a href="http://fluid.imagecmsdemo.net/" typeof="v:Breadcrumb">
-                    <span class="text-el">Главная</span>
-                    <span class="divider">/</span>
-                </a>
-            </li>
-                             <li class="btn-crumb">
-                                            <a href="http://fluid.imagecmsdemo.net/shop/category/telefoniia-pleery-gps" typeof="v:Breadcrumb">
-                            <span class="text-el">Телефония, МР3-плееры, GPS</span>
-                            <span class="divider">/</span>
-                        </a>
-                                    </li>
-                             <li class="btn-crumb">
-                                            <a href="http://fluid.imagecmsdemo.net/shop/category/telefoniia-pleery-gps/telefony" typeof="v:Breadcrumb">
-                            <span class="text-el">Телефоны</span>
-                            <span class="divider">/</span>
-                        </a>
-                                    </li>
-                             <li class="btn-crumb">
-                                            <a href="http://fluid.imagecmsdemo.net/shop/category/telefoniia-pleery-gps/telefony/mobilnye-telefony" typeof="v:Breadcrumb">
-                            <span class="text-el">Мобильные телефоны</span>
-                            <span class="divider">/</span>
-                        </a>
-                                    </li>
-                             <li class="btn-crumb">
-                                            <button typeof="v:Breadcrumb" disabled="disabled">
-                            <span class="text-el">Мобильный телефон Fly E141 TV Dual SIM Black</span>
-                        </button>
-                                    </li>
-                    </ul>
-    </div>
-</div> </div>
--->
-
 <div class="frame-inside page-product">
    <div class="container">
             <div class="clearfix item-product {% if (stock == 0) or (stock == 1) %}not-avail{% elseif (stock == 5) %}to-cart{% endif %}">
@@ -73,12 +34,12 @@
                 <ul class="items items-default items-h-carousel items-product ">
                     
 {% for entry in entriesRelated %}
-<li class="globalFrameProduct {% if (entry.stock == 0) or (entry.stock == 1) %}not-avail{% elseif (entry.stock == 5) %}to-cart{% endif %}" data-pos="top">
+<li class="globalFrameProduct {% if (entry.variants[0].stock == 0) or (entry.variants[0].stock == 1) %}not-avail{% elseif (entry.variants[0].stock == 5) %}to-cart{% endif %}" data-pos="top">
     <!-- Start. Photo & Name product -->
     <a href="{{entry.fulllink}}" class="frame-photo-title">
         <span class="photo-block">
             <span class="helper"></span>
-                        {% if (entry.image_filepath) %}<img src='{{home}}/uploads/eshop/products/thumb/{{entry.image_filepath}}' class="vImg">{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' class="vImg">{% endif %}
+                        {% if (entry.images[0].filepath) %}<img src='{{home}}/uploads/eshop/products/thumb/{{entry.images[0].filepath}}' class="vImg">{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' class="vImg">{% endif %}
                                             </span>
         <span class="title">{{ entry.name }}</span>
     </a>
@@ -92,13 +53,13 @@
             <span class="current-prices f-s_0">
                 <span class="price-new">
                     <span>
-<span class="price priceVariant">{% if (entry.price) %}{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0.00{% endif %}</span> {{ system_flags.current_currency.sign }}
+<span class="price priceVariant">{% if (entry.variants[0].price) %}{{ (entry.variants[0].price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0.00{% endif %}</span> {{ system_flags.current_currency.sign }}
                     </span>
                 </span>
-                {% if not (entry.compare_price == '0.00') %}
+                {% if not (entry.variants[0].compare_price == '0.00') %}
                 <span class="price-add">
                     <span>
-<span class="price addCurrPrice"><s>{{ (entry.compare_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</s></span> <s>{{ system_flags.current_currency.sign }}</s>
+<span class="price addCurrPrice"><s>{{ (entry.variants[0].compare_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</s></span> <s>{{ system_flags.current_currency.sign }}</s>
                     </span>
                 </span>
                 {% endif %}
@@ -414,8 +375,6 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
 
 
 <div class="tabs-product-out f-s_0">
-
-
  <!-- Start. Tabs block-->
  <ul class="tabs tabs-data tabs-product">
     <li class="active"><button data-href="#first">Характеристики</button></li>
@@ -447,7 +406,7 @@ langs["Limit of Wish List finished "] = 'Лимит списков пожеланий исчерпан';
               <td><span class="text-el">{{ feature.value }}</span></td>
             </tr>
         {% endfor %}
-              </tbody>
+      </tbody>
     </table>
   </div>
 </div>
