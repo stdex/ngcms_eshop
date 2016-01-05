@@ -127,13 +127,13 @@
             <span class="current-prices f-s_0">
                 <span class="price-new">
                     <span>
-<span class="price priceVariant">{% if (entry.price) %}{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}</span> {{ system_flags.current_currency.sign }}
+<span class="price priceVariant">{% if (entry.price) %}{{ (entry.price * system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}</span> {{ system_flags.eshop.current_currency.sign }}
                     </span>
                 </span>
                 {% if not (entry.compare_price == '0.00') %}
                 <span class="price-add">
                     <span>
-<span class="price addCurrPrice"><s>{{ (entry.compare_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</s></span> <s>{{ system_flags.current_currency.sign }}</s>
+<span class="price addCurrPrice"><s>{{ (entry.compare_price * system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</s></span> <s>{{ system_flags.eshop.current_currency.sign }}</s>
                     </span>
                 </span>
                 {% endif %}

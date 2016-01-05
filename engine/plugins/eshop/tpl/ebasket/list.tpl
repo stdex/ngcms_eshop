@@ -231,7 +231,7 @@
                                     <span class="plus-minus">
                                         <div class="input-group quantity-control" unselectable="on" style="-webkit-user-select: none;">
                                             <a rel="nofollow" class="input-group-addon cart_quantity_down" title="Уменьшить">-</a>
-                                            <input size="2" type="text" autocomplete="off" class="cart_quantity_input" name="count_{{ entry.id }}" value="{{ entry.count }}" data-id="{{ entry.id }}" data-linked_ds="{{ entry.linked_ds }}" data-linked_id="{{ entry.linked_id }}" data-price="{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}">     
+                                            <input size="2" type="text" autocomplete="off" class="cart_quantity_input" name="count_{{ entry.id }}" value="{{ entry.count }}" data-id="{{ entry.id }}" data-linked_ds="{{ entry.linked_ds }}" data-linked_id="{{ entry.linked_id }}" data-price="{{ (entry.price * system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}">     
                                             <a rel="nofollow" class="input-group-addon cart_quantity_up" title="Добавить">+</a>
                                         </div>
                                     </span>
@@ -253,7 +253,7 @@
                                 <span class="current-prices f-s_0">
                                     <span class="price-new">
                                         <span>
-                                            <span class="price">{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.current_currency.sign }}
+                                            <span class="price">{{ (entry.price * system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.eshop.current_currency.sign }}
                                         </span>
                                     </span>
                                 </span>
@@ -264,7 +264,7 @@
                                 <span class="current-prices f-s_0">
                                     <span class="price-new">
                                         <span>
-                                            <span class="price">{{ (entry.sum * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.current_currency.sign }}
+                                            <span class="price">{{ (entry.sum * system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.eshop.current_currency.sign }}
                                         </span>
                                     </span>
                                 </span>
@@ -292,7 +292,7 @@
                         <td colspan="3">
                             <span class="s-t f_l">Cтоимость товаров:</span>
                             <div class="f_r">
-                                <span class="price f-w_b">{{ (total * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.current_currency.sign }}
+                                <span class="price f-w_b">{{ (total * system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.eshop.current_currency.sign }}
                             </div>
                         </td>
                     </tr>
@@ -318,7 +318,7 @@
                             <span class="price-new">
                                 <span>
 
-                                    <span id="finalAmount" class="price">{{ (total* system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.current_currency.sign }}
+                                    <span id="finalAmount" class="price">{{ (total* system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.eshop.current_currency.sign }}
 
                                 </span>
                             </span>

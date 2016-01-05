@@ -2,6 +2,8 @@
 
 if (!defined('NGCMS'))
     exit('HAL');
+    
+include_once(dirname(__FILE__).'/cache.php');
 
 loadPluginLibrary('uprofile', 'lib');
 LoadPluginLibrary('gsmg', 'common');
@@ -19,28 +21,33 @@ function eshop_infovars_show()
 {
 global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang, $mysql, $twig, $userROW, $ngCookieDomain;
 
-    //$template['vars']['plugin_eshop_description_delivery'] = pluginGetVariable('eshop', 'description_delivery');
-    //$template['vars']['plugin_eshop_description_order'] = pluginGetVariable('eshop', 'description_order');
-    //$template['vars']['plugin_eshop_description_phones'] = pluginGetVariable('eshop', 'description_phones');
-    //$template['vars']['plugin_eshop_currency'] = $currency_tEntry;
-    //$template['vars']['plugin_eshop_currency_rate'] = $current_currency;
-    
-    $SYSTEM_FLAGS["eshop_description_delivery"] = pluginGetVariable('eshop', 'description_delivery');
-    $SYSTEM_FLAGS["eshop_description_order"] = pluginGetVariable('eshop', 'description_order');
-    $SYSTEM_FLAGS["eshop_description_phones"] = pluginGetVariable('eshop', 'description_phones');
+    $SYSTEM_FLAGS["eshop"]["description_delivery"] = pluginGetVariable('eshop', 'description_delivery');
+    $SYSTEM_FLAGS["eshop"]["description_order"] = pluginGetVariable('eshop', 'description_order');
+    $SYSTEM_FLAGS["eshop"]["description_phones"] = pluginGetVariable('eshop', 'description_phones');
 
+    $eshop_dir = get_plugcfg_dir('eshop');
+    generate_currency_cache();
+    
+    if(file_exists($eshop_dir.'/cache_currency.php')){
+        $currency_tEntry = unserialize(file_get_contents($eshop_dir.'/cache_currency.php'));
+    } else {
+        $currency_tEntry = array();
+    }
+
+/*
     $currency_link = checkLinkAvailable('eshop', 'currency')?
             generateLink('eshop', 'currency', array()):
             generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'currency'), array());
 
-    $tEntry = array();
+    $currency_tEntry = array();
     foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_currencies WHERE enabled = 1 ORDER BY position, id") as $row)
     {
         $row['currency_link'] = $currency_link."?id=".$row['id'];
         $currency_tEntry[] = $row;
     }
-    
-    $SYSTEM_FLAGS["eshop_currency"] = $currency_tEntry;
+*/
+
+    $SYSTEM_FLAGS["eshop"]["currency"] = $currency_tEntry;
     
     $current_currency = array();
 
@@ -63,11 +70,7 @@ global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang, $mysql, $twig, $userROW
         
     }
     
-    $SYSTEM_FLAGS["current_currency"] = $current_currency;
-}
-
-function plugin_eshop_compare() {
-    global $mysql, $twig, $userROW, $template;
+    $SYSTEM_FLAGS["eshop"]["current_currency"] = $current_currency;
 
     $filter = array();
     if (is_array($userROW)) {
@@ -79,63 +82,68 @@ function plugin_eshop_compare() {
     }
 
     $tCount = 0;
-
-    if (count($filter) && is_array($res = $mysql->record("select count(*) as count from ".prefix."_eshop_compare where ".join(" or ", $filter), 1))) {
-        $tCount = $res['count'];
+    $tEntries = array();
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_compare WHERE ".join(" or ", $filter)."") as $row)
+    {
+        $tEntries[] = $row;
+        $tCount += 1;
     }
+    
+    $compare_link = checkLinkAvailable('eshop', 'compare')?
+        generateLink('eshop', 'compare', array()):
+        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'compare'), array());
 
-    $tVars = array(
+    $compare_tVars = array(
         'count' => $tCount,
+        'link'  => $compare_link,
+        'entries' => $tEntries,
     );
 
+    $SYSTEM_FLAGS["eshop"]["compare"] = $compare_tVars;
+
+    $tCount = 0;
+    $tPrice = 0;
+    $tEntries = array();
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_ebasket WHERE ".join(" or ", $filter)."") as $row)
+    {
+        $tEntries[] = $row;
+        $tCount += 1;
+        $tPrice += $row['price']*$row['count'];
+    }
+
+    $basket_link = checkLinkAvailable('eshop', 'ebasket_list')?
+            generateLink('eshop', 'ebasket_list', array()):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'ebasket_list'), array());
+
+    $basket_tVars = array(
+        'count' => $tCount,
+        'price' => $tPrice,
+        'entries' => $tEntries,
+        'basket_link' => $basket_link,
+    );
+
+    $SYSTEM_FLAGS["eshop"]["basket"] = $basket_tVars;
+    
+}
+
+//
+// Отображение общей информации о сравнеии продукции
+function plugin_eshop_compare() {
+    global $mysql, $twig, $userROW, $template, $SYSTEM_FLAGS;
+
     $tpath = locatePluginTemplates(array('compare_block_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'));
-
     $xt = $twig->loadTemplate($tpath['compare_block_eshop'].'compare_block_eshop.tpl');
-    $template['vars']['eshop_compare'] = $xt->render($tVars);
-
+    $template['vars']['eshop_compare'] = $xt->render($SYSTEM_FLAGS["eshop"]["compare"]);
 }
 
 //
 // Отображение общей информации/остатков в корзине
 function plugin_ebasket_total() {
-    global $mysql, $twig, $userROW, $template;
+    global $mysql, $twig, $userROW, $template, $SYSTEM_FLAGS;
 
-    // Определяем условия выборки
-    $filter = array();
-    if (is_array($userROW)) {
-        $filter []= '(user_id = '.db_squote($userROW['id']).')';
-    }
-
-    if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {
-        $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';
-    }
-
-    // Считаем итоги
-    $tCount = 0;
-    $tPrice = 0;
-
-    if (count($filter) && is_array($res = $mysql->record("select count(*) as count, sum(price*count) as price from ".prefix."_eshop_ebasket where ".join(" or ", $filter), 1))) {
-        $tCount = $res['count'];
-        $tPrice = $res['price'];
-    }
-    
-    $basket_link = checkLinkAvailable('eshop', 'ebasket_list')?
-            generateLink('eshop', 'ebasket_list', array()):
-            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'ebasket_list'), array());
-
-    // Готовим переменные
-    $tVars = array(
-        'count' => $tCount,
-        'price' => $tPrice,
-        'basket_link' => $basket_link,
-    );
-
-    // Выводим шаблон
     $tpath = locatePluginTemplates(array('ebasket/total'), 'eshop', pluginGetVariable('eshop', 'localsource'));
-
     $xt = $twig->loadTemplate($tpath['ebasket/total'].'ebasket/'.'total.tpl');
-    $template['vars']['eshop_ebasket'] = $xt->render($tVars);
-    
+    $template['vars']['eshop_ebasket'] = $xt->render($SYSTEM_FLAGS["eshop"]["basket"]);
 }
 
 //
@@ -193,7 +201,6 @@ if (class_exists('p_uprofileFilter')) {
 
     register_filter('plugin.uprofile','orders', new uOrderFilter);
 }
-
 
 if (class_exists('gsmgFilter')) {
     class gShopFilter extends gsmgFilter {

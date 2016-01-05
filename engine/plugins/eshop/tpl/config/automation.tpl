@@ -10,7 +10,7 @@
                 </tr>
                 <tr>
                     <td><br/>
-                        URL: <a href="{{ home }}{{ xml_export_link }}">{{ home }}{{ xml_export_link }}</a>
+                        URL: <a href="{{ home }}{{ yml_export_link }}">{{ home }}{{ yml_export_link }}</a>
                     </td>
                 </tr>
             </tbody>

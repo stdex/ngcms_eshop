@@ -88,6 +88,29 @@ function generate_catz_cache($load = false)
 
 }
 
+function generate_currency_cache($load = false)
+{global $mysql, $config;
+
+    $eshop_dir = get_plugcfg_dir('eshop');
+    
+    if(!file_exists($eshop_dir.'/cache_currency.php') or $load){
+        
+        $currency_link = checkLinkAvailable('eshop', 'currency')?
+            generateLink('eshop', 'currency', array()):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'currency'), array());
+            
+        $currency_tEntry = array();
+        foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_currencies WHERE enabled = 1 ORDER BY position, id") as $row)
+        {
+            $row['currency_link'] = $currency_link."?id=".$row['id'];
+            $currency_tEntry[] = $row;
+        }
+        
+        file_put_contents($eshop_dir.'/cache_currency.php', serialize($currency_tEntry));
+    }
+    
+}
+
 function reCategory($arr, $flg){
     global $cat_tt;
     foreach($arr as $k=>$v){
@@ -103,6 +126,5 @@ function reCategory($arr, $flg){
             reCategory($v['children'], $flg);
         }
     }
-    //return $outt;
 }
 

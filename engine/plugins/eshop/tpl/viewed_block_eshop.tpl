@@ -19,7 +19,7 @@
                                 <a href="{{entry.fulllink}}" class="frame-photo-title">
                                     <span class="photo-block">
                                         <span class="helper"></span>
-                                        {% if (entry.image_filepath) %}<img src='{{home}}/uploads/eshop/products/thumb/{{entry.image_filepath}}' class="vImg">{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' class="vImg">{% endif %}
+                                        {% if (entry.images[0].filepath) %}<img src='{{home}}/uploads/eshop/products/thumb/{{entry.images[0].filepath}}' class="vImg">{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' class="vImg">{% endif %}
                                                                         </span>
                                     <span class="title">{{ entry.name }}</span>
                                 </a>
@@ -48,18 +48,18 @@
                                       <span class="price-new">
                                         <span>
                                           <span class="price priceVariant">
-                                            {% if (entry.price) %}{{ (entry.price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}
+                                            {% if (entry.variants[0].price) %}{{ (entry.variants[0].price * system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}
                                           </span>
-                                          {{ system_flags.current_currency.sign }}
+                                          {{ system_flags.eshop.current_currency.sign }}
                                         </span>
                                       </span>
-                                      {% if not (entry.compare_price == '0.00') %}
+                                      {% if not (entry.variants[0].compare_price == '0.00') %}
                                       <span class="price-add">
                                         <span>
                                           <span class="price addCurrPrice">
-                                            <s>{{ (entry.compare_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</s>
+                                            <s>{{ (entry.variants[0].compare_price * system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</s>
                                           </span>
-                                          <s>{{ system_flags.current_currency.sign }}</s>
+                                          <s>{{ system_flags.eshop.current_currency.sign }}</s>
                                         </span>
                                       </span>
                                       {% endif %}

@@ -4,7 +4,7 @@
         <name>{{ system_flags.info.title.header }}</name>
         <url>{{ home }}</url>
         <currencies>
-            <currency id="{{ system_flags.eshop_currency[0].code }}" rate="{{ system_flags.eshop_currency[0].rate_from }}" />
+            <currency id="{{ system_flags.eshop.currency[0].code }}" rate="{{ system_flags.eshop.currency[0].rate_from }}" />
         </currencies>
         <categories>
             {% for cat in cat_info %}
@@ -13,11 +13,11 @@
         </categories>
         <offers>
             {% for entry in entries %}
-            <offer id="{{ entry.id }}" available="{% if (entry.stock == 0) or (entry.stock == 1) %}false{% elseif (entry.stock == 5) %}true{% endif %}">
+            <offer id="{{ entry.id }}" available="{% if (entry.variants[0].stock == 0) or (entry.variants[0].stock == 1) %}false{% elseif (entry.variants[0].stock == 5) %}true{% endif %}">
                 <url>{{ home }}{{ entry.fulllink }}</url>
-                <price>{{ entry.price }}</price>
-                <baseprice>{{ entry.compare_price }}</baseprice>
-                <currencyId>{{ system_flags.eshop_currency[0].code }}</currencyId>
+                <price>{{ entry.variants[0].price }}</price>
+                <baseprice>{{ entry.variants[0].compare_price }}</baseprice>
+                <currencyId>{{ system_flags.eshop.currency[0].code }}</currencyId>
                 <categoryId>{{ entry.cid }}</categoryId>
                 {% if (entry.images) %}
                     {% for img in entry.images %}

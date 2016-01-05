@@ -128,7 +128,7 @@ function plugin_eshop_install($action) {
             array('action'  => 'cmodify', 'name' => 'id', 'type' => 'int(11)', 'params' => 'NOT NULL AUTO_INCREMENT'),
             array('action'  => 'cmodify', 'name' => 'name', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
             array('action'  => 'cmodify', 'name' => 'position', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
-            array('action'  => 'cmodify', 'name' => 'in_filter', 'type' => 'int(1)', 'params' => 'NOT NULL default \'1\''),
+            array('action'  => 'cmodify', 'name' => 'in_filter', 'type' => 'int(1)', 'params' => 'NOT NULL default \'0\''),
         )
     ),
         
@@ -411,6 +411,10 @@ function plugin_eshop_install($action) {
                 $urlconf_filepath_src = $rootpath."/engine/plugins/eshop/install_tmp/urlconf.php";
                 $rewrite_filepath_dst = $rootpath."/engine/conf/rewrite.php";
                 $urlconf_filepath_dst = $rootpath."/engine/conf/urlconf.php";
+                
+                if (!file_exists($rootpath."/engine/plugins/eshop/install_tmp/backup")) {
+                    mkdir($rootpath."/engine/plugins/eshop/install_tmp/backup", 0777, true);
+                }
                 
                 copy($rewrite_filepath_dst, $rootpath."/engine/plugins/eshop/install_tmp/backup/rewrite.php");
                 copy($urlconf_filepath_dst, $rootpath."/engine/plugins/eshop/install_tmp/backup/urlconf.php");

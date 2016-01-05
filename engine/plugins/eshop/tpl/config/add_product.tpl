@@ -229,7 +229,7 @@ $(document).ready(function() {
         {% if (entries.related) %}
         prePopulate: [
             {% for rel in entries.related %}
-                {id: "{{rel.related_id}}", name: "{{rel.name}}"},
+                {id: "{{rel.related_id}}", name: `"{{rel.name}}"`},
             {% endfor %}
         ],
         {% endif %}

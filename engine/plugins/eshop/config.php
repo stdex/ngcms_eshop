@@ -92,8 +92,8 @@ global $tpl, $mysql, $lang, $twig;
     }
 
     $fSort = " GROUP BY p.id ORDER BY p.id DESC";
-    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN (SELECT * FROM ".prefix."_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-    $sqlQ = "SELECT p.id AS id, p.url AS url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+    $sqlQ = "SELECT p.id AS id, p.url AS url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.name AS category ".$sqlQPart;
     
     $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
     
@@ -114,7 +114,7 @@ global $tpl, $mysql, $lang, $twig;
             generateLink('eshop', 'show', array('alt' => $row['url'])):
             generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
         
-        $tEntry[] = array (
+        $tEntry[$row['id']] = array (
             'id'                   => $row['id'],
             'code'                 => $row['code'],
             'name'                 => $row['name'],
@@ -138,6 +138,24 @@ global $tpl, $mysql, $lang, $twig;
             'edit_link'            => "?mod=extra-config&plugin=eshop&action=edit_product&id=".$row['id']."",
             'view_link'            => $view_link,
         );
+    }
+    
+    $entries_array_ids = array_keys($tEntry);
+    
+    if(isset($entries_array_ids) && !empty($entries_array_ids)) {
+        
+        $entries_string_ids = implode(',', $entries_array_ids);
+    
+        foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_images i WHERE i.product_id IN ('.$entries_string_ids.') ORDER BY i.position, i.id') as $irow)
+        {
+            $tEntry[$irow['product_id']]['images'][] = $irow;
+        }
+        
+        foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_variants v WHERE v.product_id IN ('.$entries_string_ids.') ORDER BY v.position, v.id') as $vrow)
+        {
+            $tEntry[$vrow['product_id']]['variants'][] = $vrow;
+        }
+        
     }
 
     $xt = $twig->loadTemplate($tpath['config/list_product'].'config/'.'list_product.tpl');
@@ -2005,7 +2023,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
             $vnames = array();
             foreach ($SQL as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
             $mysql->query('INSERT INTO '.prefix.'_eshop_currencies SET '.implode(', ',$vnames).' ');
-            
+            generate_currency_cache(true);
             redirect_eshop('?mod=extra-config&plugin=eshop&action=list_currencies');
         }
 
@@ -2100,6 +2118,8 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
             foreach ($SQL as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
             $mysql->query('UPDATE '.prefix.'_eshop_currencies SET '.implode(', ',$vnames).' WHERE id = \''.intval($id).'\' ');
             
+            generate_currency_cache(true);
+            
             redirect_eshop('?mod=extra-config&plugin=eshop&action=list_currencies');
         }
 
@@ -2159,6 +2179,7 @@ function del_currency($params)
     }
     
     $mysql->query("DELETE FROM ".prefix."_eshop_currencies WHERE id = {$id}");
+    generate_currency_cache(true);
     msg(array("type" => "info", "info" => "Валюта удалена"));
     
 }
@@ -2264,12 +2285,12 @@ function automation()
 
     $xt = $twig->loadTemplate($tpath['config/automation'].'config/'.'automation.tpl');
     
-    $xml_export_link = checkLinkAvailable('eshop', 'xml_export')?
-                generateLink('eshop', 'xml_export', array()):
-                generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'xml_export'), array());
+    $yml_export_link = checkLinkAvailable('eshop', 'yml_export')?
+                generateLink('eshop', 'yml_export', array()):
+                generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'yml_export'), array());
     
     $tVars = array(
-        'xml_export_link' => $xml_export_link,
+        'yml_export_link' => $yml_export_link,
         'info' => '',
     );
     

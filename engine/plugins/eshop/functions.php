@@ -56,7 +56,7 @@ function create_urls()
         )
     );
     
-    $ULIB->registerCommand('eshop', 'xml_export',
+    $ULIB->registerCommand('eshop', 'yml_export',
         array (
                 'descr' => array ('russian' => 'Ёкспорт XML'),
         )
@@ -365,14 +365,14 @@ function create_urls()
    $UHANDLER->registerHandler(0,
         array (
         'pluginName' => 'eshop',
-        'handlerName' => 'xml_export',
+        'handlerName' => 'yml_export',
         'flagPrimary' => true,
         'flagFailContinue' => false,
         'flagDisabled' => false,
         'rstyle' => 
         array (
-          'rcmd' => '/eshop/xml_export/',
-          'regex' => '#^/eshop/xml_export/$#',
+          'rcmd' => '/eshop/yml_export/',
+          'regex' => '#^/eshop/yml_export/$#',
           'regexMap' => 
           array (
             1 => 'page',
@@ -388,7 +388,7 @@ function create_urls()
             0 => 
             array (
               0 => 0,
-              1 => '/eshop/xml_export/',
+              1 => '/eshop/yml_export/',
               2 => 0,
             ),
           ),
@@ -478,7 +478,7 @@ function remove_urls()
     $ULIB->removeCommand('eshop', 'stocks');
     $ULIB->removeCommand('eshop', 'compare');
     $ULIB->removeCommand('eshop', 'currency');
-    $ULIB->removeCommand('eshop', 'xml_export');
+    $ULIB->removeCommand('eshop', 'yml_export');
     $ULIB->removeCommand('eshop', 'ebasket_list');
     $ULIB->removeCommand('eshop', 'order');
     $ULIB->saveConfig();
@@ -491,7 +491,7 @@ function remove_urls()
     $UHANDLER->removePluginHandlers('eshop', 'stocks');
     $UHANDLER->removePluginHandlers('eshop', 'compare');
     $UHANDLER->removePluginHandlers('eshop', 'currency');
-    $UHANDLER->removePluginHandlers('eshop', 'xml_export');
+    $UHANDLER->removePluginHandlers('eshop', 'yml_export');
     $UHANDLER->removePluginHandlers('eshop', 'ebasket_list');
     $UHANDLER->removePluginHandlers('eshop', 'order');
     $UHANDLER->saveConfig();

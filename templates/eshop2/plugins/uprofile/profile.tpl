@@ -164,7 +164,7 @@
                 <span class="current-prices">
                 <span class="price-new">
                 <span>
-                <span class="price">{{ (order.total_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.current_currency.sign }}
+                <span class="price">{{ (order.total_price * system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.eshop.current_currency.sign }}
                 </span>
                 </span>
                 </span>

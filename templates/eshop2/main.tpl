@@ -286,7 +286,7 @@
           </div>
           <div class="frame-time-work">
 
-              {{ system_flags.eshop_description_phones }}
+              {{ system_flags.eshop.description_phones }}
             <!--
             <div class="frame-ico">
               <span class="icon_work">
@@ -1059,8 +1059,8 @@
 
         <div id="jq-dropdown-1" class="jq-dropdown jq-dropdown-tip">
             <ul class="jq-dropdown-menu">
-                {% for cc in system_flags.eshop_currency %}
-                    <li{% if (system_flags.current_currency.id == cc.id) %} class="active"{% endif %}><a href="{{ cc.currency_link }}">{{ cc.code }}</a></li>
+                {% for cc in system_flags.eshop.currency %}
+                    <li{% if (system_flags.eshop.current_currency.id == cc.id) %} class="active"{% endif %}><a href="{{ cc.currency_link }}">{{ cc.code }}</a></li>
                 {% endfor %}
             </ul>
         </div>
@@ -1245,4 +1245,7 @@ $(document).ready(function() {
           </div>
   </body>
 </html>
+[debug]
+{debug_queries}<br/>{debug_profiler}
+[/debug]
 [/TWIG]

@@ -49,8 +49,8 @@ function plugin_block_eshop($number, $mode, $cat, $overrideTemplateName, $cacheE
     }
 
     $fSort = " GROUP BY p.id ".$orderby." LIMIT ".$number;
-    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN (SELECT * FROM ".prefix."_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-    $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.stocked AS stocked, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+    $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+    $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.stocked AS stocked, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url as curl, c.name AS category ".$sqlQPart;
 
     $tEntries = array();
 
@@ -60,17 +60,12 @@ function plugin_block_eshop($number, $mode, $cat, $overrideTemplateName, $cacheE
                         generateLink('eshop', 'show', array('alt' => $row['url'])):
                         generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
         
-        $tEntries[] = array (
+        $tEntries[$row['id']] = array (
             'id'                   => $row['id'],
             'code'                 => $row['code'],
             'name'                 => $row['name'],
             
             'category'             => $row['category'],
-            'image_filepath'       => $row['image_filepath'],
-
-            'price'                => $row['price'],
-            'compare_price'        => $row['compare_price'],
-            'stock'                => $row['stock'],
             
             'active'               => $row['active'],
             'featured'             => $row['featured'],
@@ -84,6 +79,24 @@ function plugin_block_eshop($number, $mode, $cat, $overrideTemplateName, $cacheE
             'edit_link'            => "?mod=extra-config&plugin=eshop&action=edit_product&id=".$row['id']."",
             'view_link'            => $view_link,
         );
+    }
+    
+    $entries_array_ids = array_keys($tEntries);
+    
+    if(isset($entries_array_ids) && !empty($entries_array_ids)) {
+        
+        $entries_string_ids = implode(',', $entries_array_ids);
+    
+        foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_images i WHERE i.product_id IN ('.$entries_string_ids.') ORDER BY i.position, i.id') as $irow)
+        {
+            $tEntries[$irow['product_id']]['images'][] = $irow;
+        }
+        
+        foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_variants v WHERE v.product_id IN ('.$entries_string_ids.') ORDER BY v.position, v.id') as $vrow)
+        {
+            $tEntries[$vrow['product_id']]['variants'][] = $vrow;
+        }
+        
     }
 
     if ($overrideTemplateName) {

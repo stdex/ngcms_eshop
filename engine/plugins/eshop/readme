@@ -16,7 +16,7 @@
 /eshop/search/[page/{page}/] - поиск по продукции. (Шаблон вывода plugins/eshop/tpl/search_eshop.tpl)
 /eshop/stocks/[page/{page}/] - страница акциионной продукции. (Шаблон вывода plugins/eshop/tpl/stocks_eshop.tpl)
 /eshop/compare/ - страница сравнения продукции. (Шаблон вывода plugins/eshop/tpl/compare_eshop.tpl)
-/eshop/xml_export/ - страница вывода продукции в XML. (Шаблон вывода plugins/eshop/tpl/xml_export_eshop.tpl)
+/eshop/yml_export/ - страница вывода продукции в XML. (Шаблон вывода plugins/eshop/tpl/yml_export_eshop.tpl)
 /eshop/ebasket_list/ - страница вывода корзины и формы заказа. (Шаблон вывода plugins/eshop/tpl/ebasket/list.tpl)
 /eshop/order/?id={id}&uniqid={uniqid} - страница существуюшего заказа. (Шаблон вывода plugins/eshop/tpl/order_eshop.tpl)
 /eshop/currency/?id={id} - страница смены валюты.
@@ -62,7 +62,7 @@ plugins/eshop/tpl/mail/lfeedback_comment.tpl -  шаблон вывода пис
     {{ order.id }}
     {{ order.order_link }}
     {{ order.dt|date("d.m.Y H:i") }}
-    {{ (order.total_price * system_flags.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.current_currency.sign }}
+    {{ (order.total_price * system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.eshop.current_currency.sign }}
     {% if (order.paid == 0) %}Не оплачен{% else %}Оплачен{% endif %}
 {% endfor %}
 
@@ -70,13 +70,13 @@ plugins/eshop/tpl/mail/lfeedback_comment.tpl -  шаблон вывода пис
 
 Переменные, доступные в любых шаблонах:
 
-1. {{ debugValue(system_flags.eshop_currency) }} - массив с валютами. {{ debugValue(system_flags.current_currency) }} - массив с текущей (выбранной) валютой.
+1. {{ debugValue(system_flags.eshop.currency) }} - массив с валютами. {{ debugValue(system_flags.eshop.current_currency) }} - массив с текущей (выбранной) валютой.
 Пример вывода блока со списком валют:
-{% for cc in system_flags.eshop_currency %}
-    <li{% if (system_flags.current_currency.id == cc.id) %} class="active"{% endif %}><a href="{{ cc.currency_link }}">{{ cc.code }}</a></li>
+{% for cc in system_flags.eshop.currency %}
+    <li{% if (system_flags.eshop.current_currency.id == cc.id) %} class="active"{% endif %}><a href="{{ cc.currency_link }}">{{ cc.code }}</a></li>
 {% endfor %}
 
-2. {{ system_flags.eshop_description_order }} - блок описания покупки (берется из админки), {{ system_flags.eshop_description_delivery }} - блок описания доставки (берется из админки), {{ system_flags.eshop_description_phones }} - блок телефоны магазина (берется из админки)
+2. {{ system_flags.eshop.description_order }} - блок описания покупки (берется из админки), {{ system_flags.eshop.description_delivery }} - блок описания доставки (берется из админки), {{ system_flags.eshop.description_phones }} - блок телефоны магазина (берется из админки)
 
 # =========================================================================== #
 
