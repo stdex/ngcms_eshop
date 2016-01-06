@@ -544,22 +544,27 @@ function import_yml($yml_url)
     $ctg->GetFromXML($xml->shop->categories->category);
     
     $ofs = new YMLOffer();
-    
+
     foreach($xml->shop->offers->offer as $key => $offer) {
         $oif = (int)$offer->attributes()->id;
-        
-        //var_dump(iconv('utf-8','windows-1251',(string)$offer->name));
-        
+
         $name = iconv('utf-8','windows-1251',(string)$offer->name);
-        if(!empty($name))
+        
+        if($name == "")
+        {
+            $name = iconv('utf-8','windows-1251', trim((string)$offer->model." ".(string)$offer->barcode));
+        }
+        
+        if($name != "")
         {
             $url = strtolower($parse->translit($name,1, 1));
+            $url = str_replace("/", "-", $url);
         }
         
         if ($url) {
             $prd_row = $mysql->record("select * from ".prefix."_eshop_products where url = ".db_squote($url)." limit 1");
             if ( !is_array($prd_row) ) {
-                $oid = $ofs->Add($offer);
+                $oid = $ofs->Add($offer, $name, $url);
                 $ofs->eco('Добавлен товар: '.$name.'<br>');
             }
             else {

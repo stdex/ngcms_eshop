@@ -16,7 +16,7 @@
             <offer id="{{ entry.id }}" available="{% if (entry.variants[0].stock == 0) or (entry.variants[0].stock == 1) %}false{% elseif (entry.variants[0].stock == 5) %}true{% endif %}">
                 <url>{{ home }}{{ entry.fulllink }}</url>
                 <price>{{ entry.variants[0].price }}</price>
-                <baseprice>{{ entry.variants[0].compare_price }}</baseprice>
+                <oldprice>{{ entry.variants[0].compare_price }}</oldprice>
                 <currencyId>{{ system_flags.eshop.currency[0].code }}</currencyId>
                 <categoryId>{{ entry.cid }}</categoryId>
                 {% if (entry.images) %}

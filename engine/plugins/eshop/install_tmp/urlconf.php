@@ -740,11 +740,11 @@ $urlLibrary = array (
         'russian' => '¬алюты',
       ),
     ),
-    'xml_export' => 
+    'yml_export' => 
     array (
       'descr' => 
       array (
-        'russian' => 'Ёкспорт XML',
+        'russian' => 'Ёкспорт YML',
       ),
     ),
     'ebasket_list' => 

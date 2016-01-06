@@ -575,14 +575,14 @@ $handlerList = array (
   13 => 
   array (
     'pluginName' => 'eshop',
-    'handlerName' => 'xml_export',
+    'handlerName' => 'yml_export',
     'flagPrimary' => true,
     'flagFailContinue' => false,
     'flagDisabled' => false,
     'rstyle' => 
     array (
-      'rcmd' => '/eshop/xml_export/',
-      'regex' => '#^/eshop/xml_export/$#',
+      'rcmd' => '/eshop/yml_export/',
+      'regex' => '#^/eshop/yml_export/$#',
       'regexMap' => 
       array (
       ),
@@ -597,7 +597,7 @@ $handlerList = array (
         0 => 
         array (
           0 => 0,
-          1 => '/eshop/xml_export/',
+          1 => '/eshop/yml_export/',
           2 => 0,
         ),
       ),
@@ -1003,7 +1003,7 @@ $handlerPrimary = array (
       0 => 12,
       1 => true,
     ),
-    'xml_export' => 
+    'yml_export' => 
     array (
       0 => 13,
       1 => true,

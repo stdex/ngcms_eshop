@@ -50,7 +50,17 @@ plugins/eshop/tpl/mail/lfeedback_comment.tpl -  шаблон вывода пис
 
 4. {{ eshop_ebasket_notify }} - выводит блоки, связанные с добавлением заказов (добавление в корзину, заказ в один клик, и.т.д).  Шаблон вывода: plugins/eshop/tpl/ebasket/notify.tpl
 
-5. {{ eshop_compare }} - выводит блок количества добавленных к сравнению продуктов. Шаблон вывода: plugins/eshop/tpl/compare_block_eshop.tpl 
+5. {{ eshop_compare }} - выводит блок количества добавленных к сравнению продуктов. Шаблон вывода: plugins/eshop/tpl/compare_block_eshop.tpl
+
+6. Также в main.tpl поддерживаются страндартные TWIG блоки, которые позволяют выводить/скрывать определенные блоки в зависимости от страницы на которой находится посетитель.
+- {% if pluginIsActive('eshop') %}XXX{% endif %} - выводится если плагин eshop активирован.
+- {% if isHandler('eshop') %}XXX{% endif %} - выводится только на всех страницах плагина eshop, но не выводится на других страницах.
+- {% if isHandler('eshop:show') %}XXX{% endif %} - выводится только на всех страницах продукции плагина eshop.
+- {% if isHandler('eshop:search') %}XXX{% endif %} - выводится только на на странице /eshop/ плагина eshop.
+- {% if isHandler('eshop:stocks') %}XXX{% endif %} - выводится только на на странице /stocks/ плагина eshop.
+- {% if isHandler('eshop:compare') %}XXX{% endif %} - выводится только на на странице /compare/ плагина eshop.
+- {% if isHandler('eshop:ebasket_list') %}XXX{% endif %} - выводится только на на странице /ebasket_list/ плагина eshop.
+- {% if isHandler('eshop:order') %}XXX{% endif %} - выводится только на на странице /order/ плагина eshop.
 
 # =========================================================================== #
 

@@ -112,15 +112,14 @@ class YMLOffer extends YMLCategory {
      * @param $offer
      * @return bool
      */
-    function Add($offer) {
+    function Add($offer, $name, $url) {
         global $tpl, $mysql, $twig, $parse, $SYSTEM_FLAGS, $config;
-        
-        $name = iconv('utf-8','windows-1251',(string)$offer->name);
+
         $description = iconv('utf-8','windows-1251',(string)$offer->description);
         $PROP = array();
         $PROP['id'] = (int)$offer->attributes()->id;
         $PROP['name'] = $name;
-        $PROP['url'] = str_replace("/", "-", strtolower($parse->translit($name,1, 1)));
+        $PROP['url'] = $url;
         $PROP['meta_title'] = $name;
         $PROP['annotation'] = $description;
         $PROP['date'] = time() + ($config['date_adjust'] * 60);
@@ -128,141 +127,151 @@ class YMLOffer extends YMLCategory {
 
         $vnames = array();
         foreach ($PROP as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
-        $mysql->query('INSERT INTO '.prefix.'_eshop_products SET '.implode(', ',$vnames).' ');
+        $result = $mysql->query('INSERT INTO '.prefix.'_eshop_products SET '.implode(', ',$vnames).' ');
         
-        $qid = $mysql->lastid('eshop_products');
+        if($result) {
+            usleep(250000);
+            $qid = $mysql->lastid('eshop_products');
 
-        if(count($offer->picture) > 0) {
-            $inx_img = 0;
-            foreach($offer->picture as $picture) {
-
-                try {
-                    $rootpath = $_SERVER['DOCUMENT_ROOT'];
-                    $url = $picture;
-                    $name = basename($url);
-                    $file_path = $rootpath."/uploads/eshop/products/temp/$name";
-                    file_put_contents($file_path, file_get_contents($url));
-                
-                    $fileParts = pathinfo ( $file_path );
-                    $extension = $fileParts ['extension'];
+            if(count($offer->picture) > 0) {
+                $pictures = $this->xml2array($offer->picture);
+                $inx_img = 0;
+                foreach($pictures as $picture) {
+                    try {
+                        $rootpath = $_SERVER['DOCUMENT_ROOT'];
+                        $url = substr($picture, 0, strpos($tt, '?')?strpos($picture, '?'):strlen($picture));
+                        $name = basename($url);
+                        $file_path = $rootpath."/uploads/eshop/products/temp/$name";
+                        file_put_contents($file_path, file_get_contents($url));
                     
-                    $extensions = array_map('trim', explode(',', pluginGetVariable('eshop', 'ext_image')));
-                    
-                    if(!in_array($extension, $extensions)) {
-                        return "0";
-                    }
-                    
-                    // CREATE THUMBNAIL
-                    if ($extension == "jpg" || $extension == "jpeg") {
-                        $src = imagecreatefromjpeg ( $file_path );
-                    } else if ($extension == "png") {
-                        $src = imagecreatefrompng ( $file_path );
-                    } else {
-                        $src = imagecreatefromgif ( $file_path );
-                    }
-                    
-                    list ( $width, $height ) = getimagesize ( $file_path );
-
-                    $newwidth = pluginGetVariable('eshop', 'width_thumb');
-                    
-                    if($width > $newwidth) {
-                        $newheight = ($height / $width) * $newwidth;
-                        $tmp = imagecreatetruecolor ( $newwidth, $newheight );
+                        $fileParts = pathinfo ( $file_path );
+                        $extension = $fileParts ['extension'];
                         
-                        imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
+                        $extensions = array_map('trim', explode(',', pluginGetVariable('eshop', 'ext_image')));
                         
-                        $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
-                        
-                        if (file_exists ( $thumbname )) {
-                            unlink ( $thumbname );
+                        if(!in_array($extension, $extensions)) {
+                            return "0";
                         }
                         
-                        imagejpeg ( $tmp, $thumbname, 100 );
+                        // CREATE THUMBNAIL
+                        if ($extension == "jpg" || $extension == "jpeg") {
+                            $src = imagecreatefromjpeg ( $file_path );
+                        } else if ($extension == "png") {
+                            $src = imagecreatefrompng ( $file_path );
+                        } else {
+                            $src = imagecreatefromgif ( $file_path );
+                        }
                         
-                        imagedestroy ( $src );
-                        imagedestroy ( $tmp );
+                        list ( $width, $height ) = getimagesize ( $file_path );
+
+                        $newwidth = pluginGetVariable('eshop', 'width_thumb');
+                        
+                        if($width > $newwidth) {
+                            $newheight = ($height / $width) * $newwidth;
+                            $tmp = imagecreatetruecolor ( $newwidth, $newheight );
+                            
+                            imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
+                            
+                            $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
+                            
+                            if (file_exists ( $thumbname )) {
+                                unlink ( $thumbname );
+                            }
+                            
+                            imagejpeg ( $tmp, $thumbname, 100 );
+                            
+                            imagedestroy ( $src );
+                            imagedestroy ( $tmp );
+                        }
+                        else {
+                            $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
+                            copy($file_path, $thumbname);
+                        }
+                        
+                        $img = $name;
+
+                        $timestamp = time();
+                        $iname = $timestamp."-".$img;
+                        
+                        $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
+                        $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$iname;
+                        rename($temp_name, $current_name);
+                        
+                        $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
+                        $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/thumb/'.$iname;
+                        rename($temp_name, $current_name);
+                                            
+                        $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')");
+                        
+                        $inx_img += 1;
+                        
+                    } catch (Exception $ex) {
+                        $this->eco('Ошибка: '.$ex.'<br>');
+                        return "0";
                     }
-                    else {
-                        $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
-                        copy($file_path, $thumbname);
+
+                }
+            }
+            
+            $category_id = (int)$offer->categoryId;
+
+            if($category_id != 0) {
+                $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
+            }
+            
+            $price = (string)$offer->price;
+            $currencyId = (string)$offer->currencyId;
+            $stock = "5";
+            
+            if(isset($price)) {
+                foreach ($SYSTEM_FLAGS['eshop']['currency'] as $currency) {
+                    if($currencyId == "RUR") {
+                        $currencyId = "RUB";
                     }
                     
-                    $img = $name;
-
-                    $timestamp = time();
-                    $iname = $timestamp."-".$img;
-                    
-                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
-                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$iname;
-                    rename($temp_name, $current_name);
-                    
-                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
-                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/thumb/'.$iname;
-                    rename($temp_name, $current_name);
-                                        
-                    $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')");
-                    
-                    $inx_img += 1;
-                    
-                } catch (Exception $ex) {
-                    return "0";
+                    if($currency['code'] == $currencyId) {
+                        $price = $price / $currency['rate_from'];
+                    }
                 }
-
+                
+                $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id='$qid'");
+                $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `stock`) VALUES ('$qid', '$price', '$stock')");
             }
-        }
-        
-        $category_id = (int)$offer->categoryId;
             
-        if($category_id != 0) {
-            $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
-        }
-        
-        $price = (string)$offer->price;
-        $currencyId = (string)$offer->currencyId;
-        $stock = "5";
-        if(isset($price)) {
-            foreach ($SYSTEM_FLAGS['eshop_currency'] as $currency) {
-                if($currency['code'] == $currencyId) {
-                    $price = $price / $currency['rate_from'];
+            $returnArr = array();
+            foreach ($offer->children() as $element) {
+
+                if (mb_strtolower($element->getName()) == 'param') {
+                    $returnArr[] = array_merge(
+                            ['value' => (string) $element], $this->getElementAttributes($element)
+                    );
                 }
             }
             
-            $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id='$qid'");
-            $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `stock`) VALUES ('$qid', '$price', '$stock')");
+            foreach ($returnArr as $el) {
+                $f_name = iconv('utf-8','windows-1251', $el['name']);
+                $feature_row = $mysql->record("select * from ".prefix."_eshop_features where name = ".db_squote($f_name)." limit 1");
+                if ( !is_array($feature_row) ) {
+                    $mysql->query('INSERT INTO '.prefix.'_eshop_features (name) 
+                        VALUES ('.db_squote($f_name).')
+                    ');
+                    $rowID = $mysql->lastid('eshop_features');
+                    $f_key = $rowID;
+                }
+                else {
+                    $f_key = $feature_row['id'];
+                }
+                
+                $f_value = iconv('utf-8','windows-1251', $el['value']);
+                if($f_value != "") {
+                    $mysql->query("INSERT INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')");
+                }
+                
+            }
+        
         }
         
-        $returnArr = array();
-        foreach ($offer->children() as $element) {
-
-            if (mb_strtolower($element->getName()) == 'param') {
-                $returnArr[] = array_merge(
-                        ['value' => (string) $element], $this->getElementAttributes($element)
-                );
-            }
-        }
         
-        foreach ($returnArr as $el) {
-            $name = iconv('utf-8','windows-1251', $el['name']);
-            $feature_row = $mysql->record("select * from ".prefix."_eshop_features where name = ".db_squote($name)." limit 1");
-            if ( !is_array($feature_row) ) {
-                $mysql->query('INSERT INTO '.prefix.'_eshop_features (name) 
-                    VALUES ('.db_squote($name).')
-                ');
-                $rowID = $mysql->record("select LAST_INSERT_ID() as id");
-                $f_key = $rowID['id'];
-            }
-            else {
-                $f_key = $feature_row['id'];
-            }
-            
-            $f_value = iconv('utf-8','windows-1251', $el['value']);
-            if($f_value != "") {
-                $mysql->query("INSERT INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')");
-            }
-            
-        }
-        
-        //var_dump($returnArr);
     }
 
     /**
@@ -332,6 +341,18 @@ class ImportConfig {
 
         return $returnArr;
     }
+
+    /**
+     * function xml2array
+     */
+    function xml2array( $xmlObject, $out = array () )
+    {
+        foreach ( (array) $xmlObject as $index => $node )
+            $out[$index] = ( is_object ( $node ) ) ? xml2array ( $node ) : $node;
+
+        return $out;
+    }
+    
 }
 
 final class Translit{

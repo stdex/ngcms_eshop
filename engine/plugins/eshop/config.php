@@ -212,7 +212,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
             if ( is_array($mysql->record("select id from ".prefix."_eshop_products where url = ".db_squote($SQL["url"])." limit 1")) ) {
                 $error_text[] = 'Такой altname уже существует.';
             }
-        } 
+        }
 
         $SQL['meta_title'] = input_filter_com(convert($_REQUEST['meta_title']));
         if(empty($SQL['meta_title']))
@@ -669,6 +669,8 @@ global $mysql;
             delete_product_image($irow['filepath']);
         }
         $mysql->query("delete from ".prefix."_eshop_images where product_id in ({$id})");
+        
+        $mysql->query("DELETE FROM ".prefix."_eshop_products_categories WHERE product_id in ({$id})");
         
         //redirect_eshop('?mod=extra-config&plugin=eshop');
         msg(array("type" => "info", "info" => "Записи с ID ${id} удалены!"));
