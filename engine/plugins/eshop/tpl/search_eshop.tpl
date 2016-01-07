@@ -91,12 +91,12 @@
 
 
 {% for entry in entries %}
-<li class="globalFrameProduct {% if (entry.stock == 0) or (entry.stock == 1) %}not-avail{% elseif (entry.stock == 5) %}to-cart{% endif %}" data-pos="top">
+<li class="globalFrameProduct {% if (entry.variants[0].stock == 0) or (entry.variants[0].stock == 1) %}not-avail{% elseif (entry.variants[0].stock == 5) %}to-cart{% endif %}" data-pos="top">
     <!-- Start. Photo & Name product -->
     <a href="{{entry.fulllink}}" class="frame-photo-title">
         <span class="photo-block">
             <span class="helper"></span>
-            {% if (entry.image_filepath) %}<img src='{{home}}/uploads/eshop/products/thumb/{{entry.image_filepath}}' class="vImg">{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' class="vImg">{% endif %}
+            {% if (entry.images[0].filepath) %}<img src='{{home}}/uploads/eshop/products/thumb/{{entry.images[0].filepath}}' class="vImg">{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' class="vImg">{% endif %}
                                             </span>
         <span class="title">{{ entry.name }}</span>
     </a>
@@ -127,13 +127,15 @@
             <span class="current-prices f-s_0">
                 <span class="price-new">
                     <span>
-<span class="price priceVariant">{% if (entry.price) %}{{ (entry.price * system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}{% else %}0{% endif %}</span> {{ system_flags.eshop.current_currency.sign }}
+                    {% if (entry.variants[0].price) %}
+<span class="price priceVariant">{{ (entry.variants[0].price * system_flags.eshop.currency[0].rate_from / system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.eshop.current_currency.sign }}
+                    {% endif %}
                     </span>
                 </span>
-                {% if not (entry.compare_price == '0.00') %}
+                {% if (not (entry.variants[0].compare_price == '0.00')) and (not (entry.variants[0].compare_price == '')) %}
                 <span class="price-add">
                     <span>
-<span class="price addCurrPrice"><s>{{ (entry.compare_price * system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</s></span> <s>{{ system_flags.eshop.current_currency.sign }}</s>
+<span class="price addCurrPrice"><s>{{ (entry.variants[0].compare_price * system_flags.eshop.currency[0].rate_from / system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</s></span> <s>{{ system_flags.eshop.current_currency.sign }}</s>
                     </span>
                 </span>
                 {% endif %}
@@ -144,7 +146,7 @@
                         
                 <div class="funcs-buttons frame-without-top" style="position: relative; top: 0px;">
             <div class="no-vis-table">
-                {% if (entry.stock == 0) or (entry.stock == 1) %}
+                {% if (entry.variants[0].stock == 0) or (entry.variants[0].stock == 1) %}
                 <div class="js-variant-5834 js-variant">
                 <div class="alert-exists">Нет в наличии</div>
                 <div class="btn-not-avail">
@@ -152,7 +154,7 @@
                 </button>
                 </div>
                 </div>
-                {% elseif (entry.stock == 5) %}
+                {% elseif (entry.variants[0].stock == 5) %}
                 <!-- Start. Collect information about Variants, for future processing -->
                                                                                                 <div class="frame-count-buy js-variant-5853 js-variant">
                         <div class="btn-buy btn-cart d_n">

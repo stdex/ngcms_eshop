@@ -19,6 +19,7 @@
 
     <td width="50%" class="contentEntry1" valign="top">
         <form action="" method="post">
+        <input type="hidden" name="import" value="1">
         <table border="0" cellspacing="0" cellpadding="0" class="content" align="center">
             <tbody>
             <tr>
@@ -61,5 +62,50 @@
         </form>
     </td>
 </tr>
+<tr>
+    
+    <td width="50%" valign="top" class="contentEntry1">
+        <table border="0" cellspacing="0" cellpadding="0" class="content" align="center">
+            <tbody>
+                <tr>
+                    <td class="contentHead"><img src="{{ admin_url }}/skins/default/images/nav.gif" hspace="8" alt="">Массовое изменение цен</td>
+                </tr>
+                <tr>
+                    <td>
+                        
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </td>
+
+    <td width="50%" class="contentEntry1" valign="top">
+        <form action="" method="post">
+        <input type="hidden" name="currency" value="1">
+        <table border="0" cellspacing="0" cellpadding="0" class="content" align="center">
+            <tbody>
+            <tr>
+                <td class="contentHead"><img src="{{ admin_url }}/skins/default/images/nav.gif" hspace="8" alt="">Обновление валют</td>
+            </tr>
+            <tr>
+                <td>
+
+                <div class="list">
+                    Источник данных: CurrencyConverterApi.com 
+                </div>
+                
+                </td>
+            </tr>
+            <tr align="center">
+            <td width="100%" class="contentEdit" align="center" valign="top">
+                <input type="submit" value="Загрузить!" class="button">
+            </td>
+            </tr>
+            </tbody>
+        </table>
+        </form>
+    </td>
+</tr>
+
 </tbody>
 </table>

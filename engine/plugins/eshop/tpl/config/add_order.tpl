@@ -79,7 +79,7 @@
             <td width="15%" class="contentEntry1"><a href="{{entry.xfields.item.view_link}}"><img alt="" src="{% if (entry.xfields.item.image_filepath) %}{{home}}/uploads/eshop/products/thumb/{{entry.xfields.item.image_filepath}}{% else %}{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg{% endif %}"  width="100" height="100"></a></td>
             <td width="60%" class="contentEntry1"><a href="{{entry.xfields.item.view_link}}">{{ entry.title }}</a></td>
             <td width="10%" class="contentEntry1">{{ entry.count }} шт.</td>
-            <td width="10%" class="contentEntry1">{{ entry.price }} $</td>
+            <td width="10%" class="contentEntry1">{{ entry.price }} {{ system_flags.eshop.currency[0].sign }}</td>
             </tr>
             {% endfor %}
             <tr>
@@ -89,7 +89,7 @@
             <tr align="center">
             <td colspan="9" class="contentEdit" align="right" valign="top">
             <div style="text-align: left;">
-            Cтоимость товаров: {{ entries.basket_total|number_format(2, '.', '') }} $
+            Cтоимость товаров: {{ entries.basket_total|number_format(2, '.', '') }} {{ system_flags.eshop.currency[0].sign }}
             </div>
             </td>
             </tr>

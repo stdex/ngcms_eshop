@@ -16,16 +16,14 @@
     {% if pluginIsActive('rss_export') %}
     <link href="{{ home }}/rss.xml" rel="alternate" type="application/rss+xml" title="RSS" />
     {% endif %}
-    <script src="{{ tpl_url }}/js/jquery-1.8.3.min.js">
-    </script>
+    <script src="{{ tpl_url }}/js/jquery-1.8.3.min.js"></script>
     
     <script type="text/javascript" src="{{ tpl_url }}/js/jquery.dropdown.min.js"></script>
     <link href="{{ tpl_url }}/css/jquery.dropdown.min.css" rel="stylesheet" type="text/css" />
 
-
     <script type="text/javascript" src="{{ tpl_url }}/js/cusel_original.js"></script>
 
-    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js" type="text/javascript"></script>
+    <!-- <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js" type="text/javascript"></script> -->
 
     <script type="text/javascript">
       var locale = "";
@@ -960,11 +958,10 @@
               </div>
             </div>
           </footer>
-          
-          
-          <script src="{{ tpl_url }}/js/united_scripts.js">
-          </script>
-          
+ 
+          <script src="{{ tpl_url }}/js/jquery.equalhorizcell.js"></script>
+          <script src="{{ tpl_url }}/js/compare.js"></script>
+          <script src="{{ tpl_url }}/js/united_scripts.js"></script>
   
           <script type="text/javascript">
             init();
@@ -1153,7 +1150,6 @@ color:#6A920F;
 }
 </style>
 
-
 <script>
 $(document).ready(function() {
 
@@ -1234,7 +1230,7 @@ $(document).ready(function() {
  
 });    
 
-          </script>
+</script>
           <div id="fancybox-loading">
             <div>
             </div>

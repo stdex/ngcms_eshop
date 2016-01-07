@@ -230,7 +230,7 @@ class YMLOffer extends YMLCategory {
                     }
                     
                     if($currency['code'] == $currencyId) {
-                        $price = $price / $currency['rate_from'];
+                        $price = $price / $SYSTEM_FLAGS['eshop']['currency'][0]['rate_from'] * $currency['rate_from'];
                     }
                 }
                 
@@ -289,12 +289,21 @@ class YMLOffer extends YMLCategory {
 class ImportConfig {
     public $iblock_id = 6;
     public $debug = true;
-
+    
+    /*
+    function eco($data) {
+        if($this->debug === true) {
+            $_SESSION['import_yml'][] = $data;
+        }
+    }
+    */
+    
     function eco($data) {
         if($this->debug === true) {
             echo $data;
         }
     }
+    
 
     function translitIt($str) {
         $str = Translit::transliterate($str);

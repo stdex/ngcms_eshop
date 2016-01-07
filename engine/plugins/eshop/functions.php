@@ -515,7 +515,6 @@ function check_php_str($ext_image)
     
 }
 
-
 function import_yml($yml_url)
 {global $tpl, $mysql, $twig, $parse, $SYSTEM_FLAGS;
 
@@ -575,5 +574,31 @@ function import_yml($yml_url)
     }
     
     generate_catz_cache(true);
+    
+}
+
+function update_currency()
+{global $tpl, $mysql, $twig, $parse, $SYSTEM_FLAGS;
+
+    $rates_array = array();
+    foreach ($SYSTEM_FLAGS['eshop']['currency'] as $currency)
+    {
+        if($currency['code'] != "USD") {
+            $code = $currency['code'];
+            $q = $code."_USD";
+            $q_url = "http://free.currencyconverterapi.com/api/v3/convert?q=".$q."&compact=ultra";
+            $get_rate = (array) json_decode(file_get_contents($q_url));
+            $mysql->query('UPDATE '.prefix.'_eshop_currencies SET rate_from = '.db_squote($get_rate[$q]).' WHERE code ='.db_squote($code).' ');
+            
+            $rates_array[$q] = $get_rate[$q];
+        }
+    }
+
+    generate_currency_cache(true);
+    
+    $rates_str = "";
+    foreach ($rates_array as $k => $v) { $rates_str .= $k.' = '.$v."<br/><br/>"; }
+    
+    return $rates_str;
     
 }

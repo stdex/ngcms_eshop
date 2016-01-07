@@ -185,7 +185,7 @@
     
     <tr>
         <td width="50%" class="contentEntry1">Цены<br /><small></small></td>
-        <td width="50%" class="contentEntry2"><input type="text" size="10" name="price" value="{{entries.prices[0].price}}" > <input type="text" size="10" name="compare_price" value="{{entries.prices[0].compare_price}}" > 
+        <td width="50%" class="contentEntry2"><input type="text" size="6" name="price" value="{{entries.prices[0].price}}" >&nbsp;{{ system_flags.eshop.currency[0].sign }} &nbsp;&nbsp;&nbsp;<input type="text" size="6" name="compare_price" value="{{entries.prices[0].compare_price}}" >&nbsp;{{ system_flags.eshop.currency[0].sign }}&nbsp;&nbsp;&nbsp;
         <select name="stock" style="width: 200px;">
             <option {% if entries.mode == 'add' %}selected="selected"{% else %}{% if entries.prices[0].stock == '5' %}selected="selected"{% endif %}{% endif %} value="5">Есть</option>
             <option {% if entries.prices[0].stock == '0' %}selected="selected"{% endif %}value="0">Нет</option>

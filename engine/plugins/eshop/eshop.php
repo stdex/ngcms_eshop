@@ -484,8 +484,8 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
         if (!$limitStart)   $limitStart = ($pageNo - 1)* $limitCount;
 
         $fSort = " GROUP BY p.id ORDER BY p.id DESC";
-        $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN (SELECT * FROM ".prefix."_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-        $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+        $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+        $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url as curl, c.name AS category ".$sqlQPart;
         
         $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ. ") AS T ";
 
@@ -529,7 +529,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
 
             $cmp_flag = in_array($row['id'], $cmp_array);
 
-            $entries[] = array (
+            $entries[$row['id']] = array (
                 'id' => $row['id'],
                 'code' => $row['code'],
                 'name' => $row['name'],
@@ -539,11 +539,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
                 
                 'active' => $row['active'],
                 'featured' => $row['featured'],
-                
-                'price'                => $row['price'],
-                'compare_price'        => $row['compare_price'],
-                'stock'                => $row['stock'],
-                
+
                 'meta_title' => $row['meta_title'],
                 'meta_keywords' => $row['meta_keywords'],
                 'meta_description' => $row['meta_description'],
@@ -562,14 +558,32 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
                 'compare' => $cmp_flag,
                 
                 'home' => home,
-                'image_filepath'    =>  $row['image_filepath'],
                 'tpl_url' => home.'/templates/'.$config['theme'],
             );
 
-        }       
+        }
+        
+            
+        $entries_array_ids = array_keys($entries);
+        
+        if(isset($entries_array_ids) && !empty($entries_array_ids)) {
+            
+            $entries_string_ids = implode(',', $entries_array_ids);
+        
+            foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_images i WHERE i.product_id IN ('.$entries_string_ids.') ORDER BY i.position, i.id') as $irow)
+            {
+                $entries[$irow['product_id']]['images'][] = $irow;
+            }
+            
+            foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_variants v WHERE v.product_id IN ('.$entries_string_ids.') ORDER BY v.position, v.id') as $vrow)
+            {
+                $entries[$vrow['product_id']]['variants'][] = $vrow;
+            }
+            
+        }
+               
         
     }
-
 
         $tVars = array(
             'search_request' => $get_url,

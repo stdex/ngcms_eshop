@@ -2276,14 +2276,26 @@ function automation()
 {global $tpl, $mysql, $twig;
     $tpath = locatePluginTemplates(array('config/main', 'config/automation'), 'eshop', 1);
 
-//var_dump($_REQUEST);
-    if (isset($_REQUEST['yml_url']) && !empty($_REQUEST['yml_url']))
+    if (isset($_REQUEST['yml_url']) && !empty($_REQUEST['yml_url']) && isset($_REQUEST['import']))
     {
         
         import_yml($_REQUEST['yml_url']);
+        //$import_str = implode('<br/>',$_SESSION['import_yml']);
+        //$info = "Импорт YML успешно завершен<br/><br/>".$import_str;
+        $info = "Импорт YML успешно завершен";
         
-        msg(array("type" => "info", "info" => "Импорт YML успешно завершен"));
+        msg(array("type" => "info", "info" => $info));
     }
+    
+    if (isset($_REQUEST['currency']))
+    {
+
+        $rates_str = update_currency();
+        $info = "Валюты обновлены<br/><br/>".$rates_str;
+        
+        msg(array("type" => "info", "info" => $info));
+    }    
+
 
     $xt = $twig->loadTemplate($tpath['config/automation'].'config/'.'automation.tpl');
     

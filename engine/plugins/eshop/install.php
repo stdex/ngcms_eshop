@@ -357,8 +357,8 @@ function plugin_eshop_install($action) {
             array('action'  => 'cmodify', 'name' => 'sign', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
             array('action'  => 'cmodify', 'name' => 'code', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
             
-            array('action'  => 'cmodify', 'name' => 'rate_from', 'type' => 'decimal(10,2)', 'params' => 'NOT NULL default \'1.00\''),
-            array('action'  => 'cmodify', 'name' => 'rate_to', 'type' => 'decimal(10,2)', 'params' => 'NOT NULL default \'1.00\''),
+            array('action'  => 'cmodify', 'name' => 'rate_from', 'type' => 'decimal(10,4)', 'params' => 'NOT NULL default \'1.00\''),
+            array('action'  => 'cmodify', 'name' => 'rate_to', 'type' => 'decimal(10,4)', 'params' => 'NOT NULL default \'1.00\''),
             array('action'  => 'cmodify', 'name' => 'cents', 'type' => 'tinyint(1)', 'params' => 'NOT NULL default \'1\''),
             array('action'  => 'cmodify', 'name' => 'position', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
             array('action'  => 'cmodify', 'name' => 'enabled', 'type' => 'tinyint(1)', 'params' => 'NOT NULL default \'1\''),
@@ -392,7 +392,7 @@ function plugin_eshop_install($action) {
         case 'autoapply':
         case 'apply':
             if (fixdb_plugin_install('eshop', $db_update, 'install', ($action=='autoapply')?true:false)) {
-                $mysql->query("insert into ".prefix."_eshop_currencies values (1,'доллары','$','USD','1.00','1.00',1,0,1), (2,'рубли','руб','RUB','70.58','1.00',1,1,1), (3,'гривна','грн','UAH','23.48','1.00',1,2,1)");
+                $mysql->query("insert into ".prefix."_eshop_currencies values (1,'доллары','$','USD','1.0000','1.0000',1,0,1), (2,'рубли','руб','RUB','0.0133','1.0000',1,1,1), (3,'гривна','грн','UAH','0.0428','1.0000',1,2,1)");
                 
                 if(!$mysql->record('SHOW INDEX FROM '.prefix.'_eshop_products WHERE Key_name = \'name\''))
                     $mysql->query('alter table '.prefix.'_eshop_products add FULLTEXT (name)');

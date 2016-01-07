@@ -89,8 +89,8 @@
     </div>
 </td>
 <td width="15%" class="contentEntry1">{{ entry.category }}</td>
-<td width="10%" class="contentEntry1"><input size="3" type="text" autocomplete="off" class="price_input" value="{{ entry.variants[0].price }}" data-id="{{ entry.id }}"></td>
-<td width="10%" class="contentEntry1"><input size="3" type="text" autocomplete="off" class="compare_price_input" value="{{ entry.variants[0].compare_price }}" data-id="{{ entry.id }}"></td>
+<td width="10%" class="contentEntry1"><input size="3" type="text" autocomplete="off" class="price_input" value="{{ entry.variants[0].price }}" data-id="{{ entry.id }}">&nbsp;{{ system_flags.eshop.currency[0].sign }} &nbsp;</td>
+<td width="10%" class="contentEntry1"><input size="3" type="text" autocomplete="off" class="compare_price_input" value="{{ entry.variants[0].compare_price }}" data-id="{{ entry.id }}">&nbsp;{{ system_flags.eshop.currency[0].sign }} &nbsp;</td>
 <td width="10%" class="contentEntry1"><img src="{{home}}/engine/skins/default/images/{% if (entry.active == 1) %}yes.png{% else %}no.png{% endif %}" alt=""></td>
 <td width="5%" class="contentEntry1"><input name="selected_product[]" value="{{ entry.id }}" class="check" type="checkbox" /></td>
 </tr>
