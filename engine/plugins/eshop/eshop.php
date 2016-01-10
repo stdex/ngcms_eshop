@@ -96,10 +96,12 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
 
     if(isset($cat) && !empty($cat))
     {
-        $fCategory = input_filter_com($cat);
-        
+        $fCategory = filter_var( $cat, FILTER_SANITIZE_STRING );
+        /*
         $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
         $cats = getCats($res);
+        */
+        $cats = $SYSTEM_FLAGS["eshop"]["catz"]["tree"];
         $catz_filter = array();
         recursiveCategory($cats, $fCategory);
         $catz_filter = $tt;
@@ -169,14 +171,51 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
         $info = '';
     }
 
-
     $SYSTEM_FLAGS['info']['title']['group'] = $lang['eshop']['name_plugin'];
 
     $tpath = locatePluginTemplates(array('eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'), pluginGetVariable('eshop','localskin'));
     $xt = $twig->loadTemplate($tpath['eshop'].'eshop.tpl');
 
     $cat_array = array();
+    $cat_ids = $catz_filter[0];
+    $i = 0;
+    $location_tmp = array();
+    $location = array();
 
+    if($cat_ids != "") {
+        do {
+            $result_cat = array();
+            getCatFromTreeByID($SYSTEM_FLAGS["eshop"]["catz"]["tree"], $cat_ids, $result_cat);
+            $bcat_row = $result_cat;
+            if($i == 0) {
+                $cat_array = $bcat_row;
+                $catlink = checkLinkAvailable('eshop', '')?
+                    generateLink('eshop', '', array('alt' => $cat_array['url'])):
+                    generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $cat_array['url']));
+                $cat_array['link'] = $catlink;
+                $cat_array['cnt'] = $SYSTEM_FLAGS["eshop"]["catz"]["cnt"]["count"][$cat_ids];
+            }
+            $cat_ids = $bcat_row['parent_id'];
+            $catlink = checkLinkAvailable('eshop', '')?
+                generateLink('eshop', '', array('alt' => $bcat_row['url'])):
+                generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $bcat_row['url']));
+            
+            $location_tmp[] = array('text' => $bcat_row['name'],
+                                    'link' => $catlink,
+            );
+            $i += 1;
+        }
+        while($cat_ids != 0);
+    }
+    
+    $location = array_merge($location, array_reverse($location_tmp));
+    foreach ($location as $loc_k => $loc)
+    {
+        $SYSTEM_FLAGS['info']['breadcrumbs'][$loc_k]['text'] = $loc['text'];
+        $SYSTEM_FLAGS['info']['breadcrumbs'][$loc_k]['link'] = $loc['link'];
+    }
+
+    /*
     foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_categories ORDER BY position ASC') as $cat_row)
     {
             if($fCategory == $cat_row['url'])
@@ -211,12 +250,6 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
                     $SYSTEM_FLAGS['info']['breadcrumbs'][$loc_k]['text'] = $loc['text'];
                     $SYSTEM_FLAGS['info']['breadcrumbs'][$loc_k]['link'] = $loc['link'];
                 }
-
-                //$SYSTEM_FLAGS['info']['breadcrumbs'][0]['text'] = $SYSTEM_FLAGS['info']['title']['others'];
-                
-                //$sql_cat_cnt = "SELECT COUNT(*) as CNT FROM ".prefix."_eshop_products_categories where category_id = ".db_squote($cat_row['id'])." ";
-
-                //$cat_cnt = $mysql->result($sql_cat_cnt);
                 
                 $catlink = checkLinkAvailable('eshop', '')?
                     generateLink('eshop', '', array('alt' => $cat_row['url'])):
@@ -245,6 +278,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
 
             }
     }
+    */
    
     $SYSTEM_FLAGS['meta']['description']    = ($cat_array['meta_description'])?$cat_array['meta_description']:'';
     $SYSTEM_FLAGS['meta']['keywords']       = ($cat_array['meta_keywords'])?$cat_array['meta_keywords']:'';
@@ -993,9 +1027,7 @@ function show_eshop($params)
 {
 global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $CurrentHandler, $lang;
 
-
     //var_dump($SYSTEM_FLAGS["eshop"]["catz"]);
-
 
     $id = isset($params['id'])?abs(intval($params['id'])):abs(intval($_REQUEST['id']));
     $alt = preg_match('#^[A-Za-z0-9\.\_\-]+$#s', $params['alt'])?input_filter_com(convert($params['alt'])):'';
@@ -1055,7 +1087,9 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
         
         if($cat_ids != "") {
             do {
-                $bcat_row = $mysql->record("SELECT * FROM ".prefix."_eshop_categories c WHERE c.id IN (".$cat_ids.")");
+                $result_cat = array();
+                getCatFromTreeByID($SYSTEM_FLAGS["eshop"]["catz"]["tree"], $cat_ids, $result_cat);
+                $bcat_row = $result_cat;
                 $cat_ids = $bcat_row['parent_id'];
                 $catlink = checkLinkAvailable('eshop', '')?
                     generateLink('eshop', '', array('alt' => $bcat_row['url'])):
@@ -1067,6 +1101,23 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
                 $i += 1;
             }
             while($cat_ids != 0);
+
+            /*
+            do {
+                $bcat_row = $mysql->record("SELECT * FROM ".prefix."_eshop_categories c WHERE c.id IN (".$cat_ids.")");
+                $cat_ids = $bcat_row['parent_id'];
+                $catlink = checkLinkAvailable('eshop', '')?
+                    generateLink('eshop', '', array('alt' => $bcat_row['url'])):
+                    generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $bcat_row['url']));
+                
+                $location_tmp[] = array('text' => $bcat_row['name'],
+                                        'link' => $catlink,
+                );
+                $i += 1;
+                
+            }
+            while($cat_ids != 0);
+            */
         }
 
         $location = array_merge($location, array_reverse($location_tmp));
@@ -1786,7 +1837,6 @@ function recursiveCategory($arr, $flg){
             recursiveCategory($v['children'], $flg);
         }
     }
-    //return $outt;
 }
 
 

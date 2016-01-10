@@ -13,10 +13,18 @@ function generate_catz_cache($load = false)
         $cur = array();
         
         $cat_cnt_arr = array();
-        foreach ($mysql->select("SELECT category_id, COUNT(*) as cnt FROM ".prefix."_eshop_products_categories pc LEFT JOIN ".prefix."_eshop_products p ON p.id = pc.product_id WHERE p.active = 1 GROUP BY category_id") as $crow)
+        foreach ($mysql->select("SELECT category_id, COUNT(*) as cnt FROM ".prefix."_eshop_products_categories pc LEFT JOIN ".prefix."_eshop_products p ON p.id = pc.product_id  WHERE p.active = 1 GROUP BY pc.category_id") as $crow)
         {
             $cat_cnt_arr[$crow['category_id']] = $crow;
         }
+        
+        /*
+        $aggregate_cnt_arr = array();
+        foreach ($mysql->select("SELECT c.id as category_id, MIN(v.price) AS min_price, MAX(v.price) AS max_price FROM ".prefix."_eshop_products_categories pc LEFT JOIN ".prefix."_eshop_products p ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id WHERE p.active = 1 GROUP BY c.id") as $acrow)
+        {
+            $aggregate_cnt_arr[$acrow['category_id']] = $acrow;
+        }
+        */
 
         $catz_arr = array();
         foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id") as $rows)
@@ -65,6 +73,8 @@ function generate_catz_cache($load = false)
             reCategory($tree, $rows['url']);
             
             $sum_cnt = 0;
+            $min_price = 0;
+            $max_price = 0;
             foreach ($cat_tt as $ctt)
             {
                 if(isset($cat_cnt_arr[$ctt])) {
@@ -73,9 +83,24 @@ function generate_catz_cache($load = false)
                 else {
                     $sum_cnt += 0;
                 }
+                
+                /*
+                if($cat_cnt_arr[$ctt]['min_price'] < $min) {
+                    $min_price = $cat_cnt_arr[$ctt]['min_price'];
+                }
+                
+                if($cat_cnt_arr[$ctt]['max_price'] < $min) {
+                    $max_price = $cat_cnt_arr[$ctt]['max_price'];
+                }
+                */
+                
             }
 
-            $cnt_arr[$rows['id']] = $sum_cnt;
+            $cnt_arr['count'][$rows['id']] = $sum_cnt;
+            /*
+            $cnt_arr['min_price'][$rows['id']] = $min_price;
+            $cnt_arr['max_price'][$rows['id']] = $max_price;
+            */
         }
 
         $tVars = array(
@@ -124,6 +149,28 @@ function reCategory($arr, $flg){
     
         if(!empty($v['children'])){     
             reCategory($v['children'], $flg);
+        }
+    }
+}
+
+function getCatFromTreeByID($arr, $id, &$result_cat){
+    foreach($arr as $v){
+        if($v['id']==$id) {
+            $result_cat = $v;
+        }
+        if(!empty($v['children'])){     
+            getCatFromTreeByID($v['children'], $id, $result_cat);
+        }
+    }
+}
+
+function getCatFromTreeByAlt($arr, $url, &$result_cat){
+    foreach($arr as $v){
+        if($v['url']==$url) {
+            $result_cat = $v;
+        }
+        if(!empty($v['children'])){
+            getCatFromTreeByID($v['children'], $url, $result_cat);
         }
     }
 }

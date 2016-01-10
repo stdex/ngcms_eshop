@@ -145,11 +145,25 @@ function plugin_block_eshop($number, $mode, $cat, $overrideTemplateName, $cacheE
 }
 
 function plugin_m_eshop_catz_tree($overrideTemplateName) {
-    global $config, $twig;
+    global $config, $twig, $SYSTEM_FLAGS;
 
     $eshop_dir = get_plugcfg_dir('eshop');
     generate_catz_cache();
-
+    
+    $tVars = $SYSTEM_FLAGS["eshop"]["catz"];
+    
+    if ($overrideTemplateName) {
+        $templateName = 'block/'.$overrideTemplateName;
+    } else {
+        $templateName = 'block/block_cats_tree';
+    }
+    
+    $tpath = locatePluginTemplates(array($templateName), 'eshop', pluginGetVariable('eshop', 'localsource'));
+    $xt = $twig->loadTemplate($tpath[$templateName].$templateName.'.tpl');
+    
+    $output = $xt->render($tVars);
+    
+    /*
     if(file_exists($eshop_dir.'/cache_catz.php')){
         $tVars = unserialize(file_get_contents($eshop_dir.'/cache_catz.php'));
         
@@ -167,6 +181,7 @@ function plugin_m_eshop_catz_tree($overrideTemplateName) {
     } else {
         $output = '';
     }
+    */
 
     return $output;
 }

@@ -1329,7 +1329,6 @@ function get_prefix($CategoryID)
             get_prefix($CategoryID2);
         }
     }
-    #var_dump($prefixed[$CategoryID]);
     return $add_prefix;
 }
 
@@ -1347,15 +1346,9 @@ global $tpl, $mysql, $twig;
     
     foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $row)
     {
-        $tEntry[] = array (
-            'id' => $row['id'],
-            'name' => $row['name'],
-            'edit_link' => "?mod=extra-config&plugin=eshop&action=edit_feature&id=".$row['id'],
-            'del_link' => "?mod=extra-config&plugin=eshop&action=del_feature&id=".$row['id'],
-            'position' => $row['position'],
-            'in_filter' => $row['in_filter'],
-        );
-
+        $row['edit_link'] = "?mod=extra-config&plugin=eshop&action=edit_feature&id=".$row['id'];
+        $row['del_link'] = "?mod=extra-config&plugin=eshop&action=del_feature&id=".$row['id'];
+        $tEntry[] = $row;
     }
  
     $xt = $twig->loadTemplate($tpath['config/list_feature'].'config/'.'list_feature.tpl');
@@ -1388,31 +1381,61 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     if (isset($_REQUEST['submit']))
     {
 
-        $name = input_filter_com(convert($_REQUEST['name']));
-        if(empty($name))
+        $SQL['name'] = input_filter_com(convert($_REQUEST['name']));
+        if(empty($SQL['name']))
         {
             $error_text[] = 'Название свойства не задано';
         }
                   
-        $position = intval($_REQUEST['position']);
-        if(empty($position))
+        $SQL['position'] = intval($_REQUEST['position']);
+        if(empty($SQL['position']))
         {
-            $position = 0;
+            $SQL['position'] = 0;
         }
 
-        $in_filter = "1";
+        $SQL['in_filter'] = intval($_REQUEST['in_filter']);
+        if(empty($SQL['in_filter']))
+        {
+            $SQL['in_filter'] = 0;
+        }
+        
+        $ftype = input_filter_com(convert($_REQUEST['type']));
+        switch ($ftype) {
+            case 'text':
+                $SQL['ftype'] = '0';
+                $SQL['fdefault'] = input_filter_com(convert($_REQUEST['text_default']));
+                break;
+            case 'checkbox':
+                $SQL['ftype'] = '1';
+                $SQL['fdefault'] = intval($_REQUEST['checkbox_default']);
+                break;
+            case 'select':
+                $SQL['ftype'] = '2';
+                $SQL['fdefault'] = input_filter_com(convert($_REQUEST['select_default']));
+                $optlist = array();
+                if (isset($_REQUEST['so_data']) && is_array($_REQUEST['so_data'])) {
+                    foreach ($_REQUEST['so_data'] as $k => $v) {
+                        if (is_array($v) && isset($v[0]) && isset($v[1]) && (($v[0] != '') || ($v[1] != ''))) {
+                            if ($v[0] != '') {
+                                $optlist[$v[0]] = $v[1];
+                            } else {
+                                $optlist[] = $v[1];
+                            }
+                        }
+                    }
+                }
+                $SQL['foptions'] = serialize($optlist);
+                break;
+        }
 
         if(empty($error_text))
         {
-            $mysql->query('INSERT INTO '.prefix.'_eshop_features (name, position, in_filter) 
-                VALUES 
-                ('.db_squote($name).',
-                    '.db_squote($position).',
-                    '.intval($in_filter).'
-                )
-            ');
-            
-            $rowID = $mysql->record("select LAST_INSERT_ID() as id");
+            $vnames = array();
+            foreach ($SQL as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
+            $mysql->query('INSERT INTO '.prefix.'_eshop_features SET '.implode(', ',$vnames).' ');
+
+            $rowID = $mysql->lastid('eshop_features');
+            //$rowID = $mysql->record("select LAST_INSERT_ID() as id");
 
             $ids = $_REQUEST['feature_categories'];
 
@@ -1421,7 +1444,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
               $mysql->query('INSERT INTO '.prefix.'_eshop_categories_features (category_id, feature_id) 
                 VALUES 
                 ('.db_squote($id).',
-                 '.db_squote($rowID['id']).'
+                 '.db_squote($rowID).'
                 )
                ');
             }
@@ -1458,7 +1481,8 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     $xt = $twig->loadTemplate($tpath['config/add_feature'].'config/'.'add_feature.tpl');
     
     $tVars = array(
-        'entries' => isset($tEntry)?$tEntry:'' 
+        'entries' => isset($tEntry)?$tEntry:'',
+        'mode'          => "add", 
     );
     
     $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
@@ -1560,7 +1584,8 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     $xt = $twig->loadTemplate($tpath['config/add_feature'].'config/'.'add_feature.tpl');
     
     $tVars = array(
-        'entries' => isset($tEntry)?$tEntry:'' 
+        'entries' => isset($tEntry)?$tEntry:'',
+        'mode'    => "edit",  
     );
     
     $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
@@ -1572,7 +1597,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
         'skins_url'     =>  skins_url,
         'admin_url'     =>  admin_url,
         'home'          =>  home,
-        'current_title' => 'Категории: Редактирование свойства',
+        'current_title' => 'Свойства: Редактирование свойства',
     );
     
     print $xg->render($tVars);
