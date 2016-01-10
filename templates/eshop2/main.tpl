@@ -803,7 +803,7 @@
                 
                   <div class="frame-type-company">
                     <div class="c_b f-w_b">
-                      © YourStore 2015
+                      © YourStore 2015 — {{ now|date("Y") }}
                     </div>
                     <div class="c_9">
                       Все права защищены.

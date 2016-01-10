@@ -47,6 +47,7 @@ class YMLCategory extends ImportConfig {
             if(!in_array($UF_ID, $_SESSION['cats_uf_ids'])) {
 
                 $URL = strtolower($parse->translit($NAME, 1, 1));
+                $URL = str_replace("/", "-", $URL);
                 
                 if ($URL) {
                     if ( !is_array($mysql->record("select id from ".prefix."_eshop_categories where url = ".db_squote($URL)." limit 1")) ) {
@@ -139,7 +140,7 @@ class YMLOffer extends YMLCategory {
                 foreach($pictures as $picture) {
                     try {
                         $rootpath = $_SERVER['DOCUMENT_ROOT'];
-                        $url = substr($picture, 0, strpos($tt, '?')?strpos($picture, '?'):strlen($picture));
+                        $url = substr($picture, 0, strpos($picture, '?')?strpos($picture, '?'):strlen($picture));
                         $name = basename($url);
                         $file_path = $rootpath."/uploads/eshop/products/temp/$name";
                         file_put_contents($file_path, file_get_contents($url));

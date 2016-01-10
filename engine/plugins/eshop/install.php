@@ -77,6 +77,7 @@ function plugin_eshop_install($action) {
     array(
         'table'  => 'eshop_products_comments',
         'action' => 'cmodify',
+        'engine' => 'MyISAM',
         'key'      => 'primary key(id), KEY `product_id` (`product_id`)',
         'fields' => array(
             array('action' => 'cmodify', 'name' => 'id', 'type' => 'INT(11)', 'params' => 'not null auto_increment'),
@@ -97,6 +98,7 @@ function plugin_eshop_install($action) {
     array(
         'table' => 'eshop_products_likes',
         'action' => 'cmodify',
+        'engine' => 'MyISAM',
         'key' => 'primary key (`id`), KEY `product_id` (`product_id`)',
         'fields' => array(
             array('action' => 'cmodify', 'name' => 'id', 'type' => 'int(11)', 'params' => 'not null auto_increment'),
@@ -301,6 +303,7 @@ function plugin_eshop_install($action) {
     array(
         'table'  => 'eshop_compare',
         'action' => 'cmodify',
+        'engine' => 'MyISAM',
         'key'    => 'primary key(id)',
         'fields' => array(
             array('action' => 'cmodify', 'name' => 'id', 'type' => 'int', 'params' => 'not null auto_increment'),
@@ -368,6 +371,7 @@ function plugin_eshop_install($action) {
     array(
         'table'  => 'eshop_ebasket',
         'action' => 'cmodify',
+        'engine' => 'MyISAM',
         'key'    => 'primary key(id), KEY `linked_id` (`linked_id`)',
         'fields' => array(
             array('action' => 'cmodify', 'name' => 'id', 'type' => 'int', 'params' => 'not null auto_increment'),

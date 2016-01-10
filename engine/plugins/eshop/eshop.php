@@ -992,6 +992,11 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
 function show_eshop($params)
 {
 global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $CurrentHandler, $lang;
+
+
+    //var_dump($SYSTEM_FLAGS["eshop"]["catz"]);
+
+
     $id = isset($params['id'])?abs(intval($params['id'])):abs(intval($_REQUEST['id']));
     $alt = preg_match('#^[A-Za-z0-9\.\_\-]+$#s', $params['alt'])?input_filter_com(convert($params['alt'])):'';
 

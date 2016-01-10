@@ -71,6 +71,17 @@ global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang, $mysql, $twig, $userROW
     }
     
     $SYSTEM_FLAGS["eshop"]["current_currency"] = $current_currency;
+    
+    
+    generate_catz_cache();
+    
+    if(file_exists($eshop_dir.'/cache_catz.php')){
+        $catz_tEntry = unserialize(file_get_contents($eshop_dir.'/cache_catz.php'));
+    } else {
+        $catz_tEntry = array();
+    }
+
+    $SYSTEM_FLAGS["eshop"]["catz"] = $catz_tEntry;
 
     $filter = array();
     if (is_array($userROW)) {

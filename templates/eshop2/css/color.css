@@ -546,7 +546,7 @@ input.input-search:focus{background-color: #fff;border-color: #305d90;}
 
 /*page 404*/
 .page-404 .title{color: #005387;}
-.page-404:before{box-shadow: 0 1px 9px rgba(0,0,0,0.1);}
+/*.page-404:before{box-shadow: 0 1px 9px rgba(0,0,0,0.1);}*/
 .page-404 p{color: #999;}
 .page-404 b{color: #000;}
 /*/page 404*/
