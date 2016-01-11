@@ -201,7 +201,18 @@
         {% for feature in entries.features %}
             <tr>
                 <td width="50%" class="contentEntry1">{{feature.name}}<br /><small></small></td>
-                <td width="50%" class="contentEntry2"><input type="text" size="80" name="data[features][{{feature.id}}]" value="{{feature.value}}" ></td>
+                <td width="50%" class="contentEntry2">
+                    {% if feature.ftype == 0 %}<input type="text" size="80" name="data[features][{{feature.id}}]" value="{% if not(feature.value) and (entries.mode == 'add') %}{{feature.fdefault}}{% else %}{{feature.value}}{% endif %}" >
+                    {% elseif feature.ftype == 1 %}<input type="checkbox" name="data[features][{{feature.id}}]" value="1" {% if (entries.mode == 'add') %}{% if(feature.fdefault) %}checked{% endif %}{% else %}{{feature.value}}{% endif %}>
+                    {% elseif feature.ftype == 2 %}
+                    <select name="data[features][{{feature.id}}]">
+                            <option value="" style="background-color: #E0E0E0;"></option>
+                        {% for k,v in feature.foptions %}
+                            <option value="{{k}}" {% if (entries.mode == 'add') %}{% if (feature.fdefault == k) %}selected {% endif %}{% else %}{% if (feature.value == k) %}selected {% endif %}{% endif %}>{{v}}</option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+                </td>
             </tr>
         {% endfor %}
     {% endif %}

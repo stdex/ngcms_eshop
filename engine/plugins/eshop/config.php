@@ -232,7 +232,15 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         $SQL['date'] = time() + ($config['date_adjust'] * 60);
         $SQL['editdate'] = $SQL['date'];
         
-        $features = $_REQUEST['data']['features'];
+        var_dump($_REQUEST['data']['features']);
+        
+        if(!empty($_REQUEST['data']['features'])) {
+            $features = $_REQUEST['data']['features'];
+        }
+        else {
+            $features = NULL;
+        }
+        
         $images = $_REQUEST['data']['images'];
         
         if($_REQUEST['linked-products'] != "") {
@@ -331,14 +339,9 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     
     foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $frow)
     {
-        $features_array[] = 
-            array(
-                'id' => $frow['id'],
-                'name' => $frow['name'],
-                'position' => $frow['position'],
-                'in_filter' => $frow['in_filter'],
-                'value' => ''
-                );
+        $frow['value'] = '';
+        $frow['foptions'] = json_decode($frow['foptions'], true);
+        $features_array[] = $frow;
     }
 
     $tEntry['catz'] = getTree($cats);
@@ -386,14 +389,9 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     
     foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $frow)
     {
-        $features_array[] = 
-            array(
-                'id' => $frow['id'],
-                'name' => $frow['name'],
-                'position' => $frow['position'],
-                'in_filter' => $frow['in_filter'],
-                'value' => $options_array[$frow['id']]
-                );
+        $frow['value'] = $options_array[$frow['id']];
+        $frow['foptions'] = json_decode($frow['foptions'], true);
+        $features_array[] = $frow;
     }
     
     $positions_img = array();
@@ -1348,6 +1346,7 @@ global $tpl, $mysql, $twig;
     {
         $row['edit_link'] = "?mod=extra-config&plugin=eshop&action=edit_feature&id=".$row['id'];
         $row['del_link'] = "?mod=extra-config&plugin=eshop&action=del_feature&id=".$row['id'];
+        $row['foptions'] = json_decode($row['foptions'],true);
         $tEntry[] = $row;
     }
  
@@ -1399,7 +1398,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
             $SQL['in_filter'] = 0;
         }
         
-        $ftype = input_filter_com(convert($_REQUEST['type']));
+        $ftype = input_filter_com(convert($_REQUEST['ftype']));
         switch ($ftype) {
             case 'text':
                 $SQL['ftype'] = '0';
@@ -1424,7 +1423,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
                         }
                     }
                 }
-                $SQL['foptions'] = serialize($optlist);
+                $SQL['foptions'] = json_encode($optlist);
                 break;
         }
 
@@ -1467,16 +1466,12 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
     $cats = getCats($res);
 
-    $tEntry = array (
-        'name' => $name,
-       
-        'position' => $position,
-
-        'in_filter' => $in_filter,
-        
-        'error' => $error_input,
-        'catz' => getTree($cats),
-    );
+    foreach ($SQL as $k => $v) { 
+        $tEntry[$k] = $v;
+    }
+    
+    $tEntry['error'] = $error_input;
+    $tEntry['catz'] = getTree($cats);
 
     $xt = $twig->loadTemplate($tpath['config/add_feature'].'config/'.'add_feature.tpl');
     
@@ -1511,30 +1506,60 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     if (isset($_REQUEST['submit']))
     {
 
-        $name = input_filter_com(convert($_REQUEST['name']));
-        if(empty($name))
+        $SQL['name'] = input_filter_com(convert($_REQUEST['name']));
+        if(empty($SQL['name']))
         {
             $error_text[] = 'Название свойства не задано';
         }
                   
-        $position = intval($_REQUEST['position']);
-        if(empty($position))
+        $SQL['position'] = intval($_REQUEST['position']);
+        if(empty($SQL['position']))
         {
-            $position = 0;
+            $SQL['position'] = 0;
         }
 
-        $in_filter = "1";
+        $SQL['in_filter'] = intval($_REQUEST['in_filter']);
+        if(empty($SQL['in_filter']))
+        {
+            $SQL['in_filter'] = 0;
+        }
+        
+        $ftype = input_filter_com(convert($_REQUEST['ftype']));
+        switch ($ftype) {
+            case 'text':
+                $SQL['ftype'] = '0';
+                $SQL['fdefault'] = input_filter_com(convert($_REQUEST['text_default']));
+                break;
+            case 'checkbox':
+                $SQL['ftype'] = '1';
+                $SQL['fdefault'] = intval($_REQUEST['checkbox_default']);
+                break;
+            case 'select':
+                $SQL['ftype'] = '2';
+                $SQL['fdefault'] = input_filter_com(convert($_REQUEST['select_default']));
+                $optlist = array();
+                if (isset($_REQUEST['so_data']) && is_array($_REQUEST['so_data'])) {
+                    foreach ($_REQUEST['so_data'] as $k => $v) {
+                        if (is_array($v) && isset($v[0]) && isset($v[1]) && (($v[0] != '') || ($v[1] != ''))) {
+                            if ($v[0] != '') {
+                                $optlist[$v[0]] = $v[1];
+                            } else {
+                                $optlist[] = $v[1];
+                            }
+                        }
+                    }
+                }
+                $SQL['foptions'] = json_encode($optlist);
+                break;
+        }
 
         if(empty($error_text))
         {
 
-            $mysql->query('UPDATE '.prefix.'_eshop_features SET  
-                name = '.db_squote($name).',
-                position = '.db_squote($position).', 
-                in_filter = '.intval($in_filter).'
-                WHERE id = '.$id.'
-            ');
-            
+            $vnames = array();
+            foreach ($SQL as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
+            $mysql->query('UPDATE '.prefix.'_eshop_features SET '.implode(', ',$vnames).' WHERE id = \''.intval($id).'\' ');
+
             $mysql->query("delete from ".prefix."_eshop_categories_features where feature_id in ({$id})");
             $ids = $_REQUEST['feature_categories'];
 
@@ -1573,13 +1598,29 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
         $cat_ids[] = $frow['category_id'];
     }
 
-    $tEntry = array (
-        'name' => $row['name'],
-        'position' => $row['position'],
-        'in_filter' => $row['in_filter'],
-        'error' => $error_input,
-        'catz' => getMultiTree($cats, $cat_ids, 0),
-    );
+    foreach ($row as $k => $v) { 
+        $tEntry[$k] = $v;
+    }
+    
+    $tEntry['error'] = $error_input;
+    $tEntry['catz'] = getMultiTree($cats, $cat_ids, 0);
+    $tEntry['foptions'] = json_decode($tEntry['foptions'], true);
+
+    $sOpts = array();
+    $fNum = 1;
+    if ($tEntry['ftype'] == '2') {
+        if (is_array($tEntry['foptions']))
+            foreach ($tEntry['foptions'] as $k => $v) {
+                array_push($sOpts, '<tr><td><input size="12" name="so_data['.($fNum).'][0]" type="text" value="'.($tEntry['foptions']?htmlspecialchars($k, ENT_COMPAT | ENT_HTML401, 'cp1251'):'').'"/></td><td><input type="text" size="55" name="so_data['.($fNum).'][1]" value="'.htmlspecialchars($v, ENT_COMPAT | ENT_HTML401, 'cp1251').'"/></td><td><a href="#" onclick="return false;"><img src="'.skins_url.'/images/delete.gif" alt="DEL" width="12" height="12" /></a></td></tr>');
+                $fNum++;
+            }
+    }
+    if (!count($sOpts)) {
+        array_push($sOpts, '<tr><td><input size="12" name="so_data[1][0]" type="text" value=""/></td><td><input type="text" size="55" name="so_data[1][1]" value=""/></td><td><a href="#" onclick="return false;"><img src="'.skins_url.'/images/delete.gif" alt="DEL" width="12" height="12" /></a></td></tr>');
+    }
+    
+    $tEntry['sOpts'] = implode("\n", $sOpts);
+
 
     $xt = $twig->loadTemplate($tpath['config/add_feature'].'config/'.'add_feature.tpl');
     
@@ -1642,6 +1683,7 @@ global $mysql;
     {
         $mysql->query("delete from ".prefix."_eshop_features where id in ({$id})");
         $mysql->query("delete from ".prefix."_eshop_categories_features where feature_id in ({$id})");
+        $mysql->query("delete from ".prefix."_eshop_options where feature_id in ({$id})");
         msg(array("type" => "info", "info" => "Записи с ID${id} удалены!"));
     }
 }
@@ -2319,9 +2361,18 @@ function automation()
         $info = "Валюты обновлены<br/><br/>".$rates_str;
         
         msg(array("type" => "info", "info" => $info));
-    }    
-
-
+    }
+    
+    if (isset($_REQUEST['change_price']))
+    {
+        $change_price_type = intval($_REQUEST['change_price_type']);
+        $change_price_qnt = intval($_REQUEST['change_price_qnt']);
+        
+        update_prices($change_price_type, $change_price_qnt);
+        $info = "Цены обновлены<br/>";
+        msg(array("type" => "info", "info" => $info));
+    }
+    
     $xt = $twig->loadTemplate($tpath['config/automation'].'config/'.'automation.tpl');
     
     $yml_export_link = checkLinkAvailable('eshop', 'yml_export')?

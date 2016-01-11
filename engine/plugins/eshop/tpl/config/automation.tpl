@@ -65,6 +65,8 @@
 <tr>
     
     <td width="50%" valign="top" class="contentEntry1">
+        <form action="" method="post">
+        <input type="hidden" name="change_price" value="1">
         <table border="0" cellspacing="0" cellpadding="0" class="content" align="center">
             <tbody>
                 <tr>
@@ -72,11 +74,31 @@
                 </tr>
                 <tr>
                     <td>
-                        
+                    <table>
+                        <tbody>
+                            <tr id="row">
+                                <br/>
+                                <td>Изменение цены:</td>
+                                <td>
+                                    <select name="change_price_type">
+                                            <option value="1">Увеличить</option>
+                                            <option value="0">Уменьшить</option>
+                                    </select>
+                                    <input type="text" size="2" name="change_price_qnt"> %
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table><br/>
                     </td>
+                </tr>
+                <tr align="center">
+                <td width="100%" class="contentEdit" align="center" valign="top">
+                    <input type="submit" value="Изменить!" class="button">
+                </td>
                 </tr>
             </tbody>
         </table>
+        </form>
     </td>
 
     <td width="50%" class="contentEntry1" valign="top">

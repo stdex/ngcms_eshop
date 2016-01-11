@@ -1,4 +1,5 @@
 {{entries.error}}
+
 <form method="post" action="">
 <table border="0" width="100%" cellspacing="0" cellpadding="0">
     <tr>
@@ -19,10 +20,10 @@
     <tr>
         <td width="50%" class="contentEntry1">Тип поля<br /><small></small></td>
         <td width="50%" class="contentEntry2">
-            <select name="type" size="5" id="xfSelectType" name="type" onclick="clx(this.value);" onchange="clx(this.value);">
-                <option value="text" {% if (mode == "add") %}selected{% endif %}>Текстовый</option>
-                <option value="checkbox">Флажок (checkbox)</option>
-                <option value="select">Выбор значения</option>
+            <select size="5" id="xfSelectType" name="ftype" onclick="clx(this.value);" onchange="clx(this.value);">
+                <option value="text" {% if (entries.ftype == 0) %}selected{% endif %}>Текстовый</option>
+                <option value="checkbox" {% if (entries.ftype == 1) %}selected{% endif %}>Флажок (checkbox)</option>
+                <option value="select" {% if (entries.ftype == 2) %}selected{% endif %}>Выбор значения</option>
             </select>
         </td>
     </tr>
@@ -34,7 +35,7 @@
  <tr class="contRow1">
   <td width="5%" style="background-color: #EAF0F7; border-left: 1px solid #D1DFEF;">текст</td>
   <td width="45%">Значение по умолчанию:</td>
-  <td><input type="text" name="text_default" value="{{ entries.text_default }}" size=40></td>
+  <td><input type="text" name="text_default" value="{% if (entries.ftype == 0) %}{{ entries.fdefault }}{% endif %}" size=40></td>
  </tr>
 </table>
 </div>
@@ -45,7 +46,7 @@
  <tr class="contRow1">
   <td width="5%" style="background-color: #EAF0F7; border-left: 1px solid #D1DFEF;">флаг</td>
   <td width="45%">Значение по умолчанию:</td>
-  <td><input type="checkbox" name="checkbox_default" value="{{ entries.checkbox_default }}" ></td>
+  <td><input type="checkbox" name="checkbox_default" value="1" {% if (entries.fdefault == 1) and (entries.ftype == 1) %}checked{% endif %} ></td>
  </tr>
 </table>
 </div>
@@ -80,7 +81,7 @@
  </tr>
  <tr class="contRow1">
   <td width="5%" style="background-color: #EAF0F7; border-left: 1px solid #D1DFEF;">выбор</td>
-  <td>Значение по умолчанию: <br /><small><i>При сохранении кодов</i>: код</td><td><input type="text" name="select_default" value="" size=40></td>
+  <td>Значение по умолчанию: <br /><small><i>При сохранении кодов</i>: код</td><td><input type="text" name="select_default" value="{% if (entries.ftype == 2) %}{{ entries.fdefault }}{% endif %}" size=40></td>
  </tr>
 </table>
 </div>
@@ -113,7 +114,9 @@ function clx(mode) {
     document.getElementById('type_select').style.display    = (mode == 'select')?   'block':'none';
 }
 
-clx('text');
+clx('{% if (entries.ftype == 0) %}text{% elseif(entries.ftype == 1) %}checkbox{% elseif(entries.ftype == 2) %}select{% endif %}');
+
+
 
 var soMaxNum = $('#xfSelectTable >tbody >tr').length+1;
 

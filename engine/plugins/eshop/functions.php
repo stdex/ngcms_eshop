@@ -602,3 +602,18 @@ function update_currency()
     return $rates_str;
     
 }
+
+function update_prices($change_price_type, $change_price_qnt)
+{global $tpl, $mysql, $twig, $parse, $SYSTEM_FLAGS;
+
+    if($change_price_type == 1) {
+        $newprice = ((100+$change_price_qnt) / 100);
+    }
+    else {
+        $newprice = ((100-$change_price_qnt) / 100);
+    }
+    
+    $mysql->query('UPDATE '.prefix.'_eshop_variants SET price = price*'.$newprice.', compare_price = compare_price*'.$newprice.' ');
+    generate_catz_cache(true);
+    
+}

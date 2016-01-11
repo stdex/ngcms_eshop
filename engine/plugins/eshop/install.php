@@ -420,12 +420,14 @@ function plugin_eshop_install($action) {
                 $rewrite_filepath_dst = $rootpath."/engine/conf/rewrite.php";
                 $urlconf_filepath_dst = $rootpath."/engine/conf/urlconf.php";
                 
-                if (!file_exists($rootpath."/engine/plugins/eshop/install_tmp/backup")) {
-                    mkdir($rootpath."/engine/plugins/eshop/install_tmp/backup", 0777, true);
+                
+                $now_datetime = date("Y-m-d_H:i:s");
+                if (!file_exists($rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime)) {
+                    mkdir($rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime, 0777, true);
                 }
                 
-                copy($rewrite_filepath_dst, $rootpath."/engine/plugins/eshop/install_tmp/backup/rewrite.php");
-                copy($urlconf_filepath_dst, $rootpath."/engine/plugins/eshop/install_tmp/backup/urlconf.php");
+                copy($rewrite_filepath_dst, $rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime."rewrite.php");
+                copy($urlconf_filepath_dst, $rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime."urlconf.php");
                 
                 copy($rewrite_filepath_src, $rewrite_filepath_dst);
                 copy($urlconf_filepath_src, $urlconf_filepath_dst);

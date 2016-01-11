@@ -2,8 +2,10 @@
 <table border="0" cellspacing="0" cellpadding="0" class="content" align="center">
 <tr  class="contHead" align="left">
 <td width="5%">ID</td>
-<td width="50%">Название</td>
+<td width="20%">Название</td>
 <td width="10%">Тип поля</td>
+<td width="10%">Возможные значения</td>
+<td width="10%">По умолчанию</td>
 <td width="10%">В фильтре?</td>
 <td width="10%">Позиция</td>
 <td width="5%"><input class="check" type="checkbox" name="master_box" onclick="javascript:check_uncheck_all(check_feature)" /></td>
@@ -11,8 +13,10 @@
 {% for entry in entries %}
 <tr align="left">
 <td width="5%" class="contentEntry1">{{ entry.id }}</td>
-<td width="50%" class="contentEntry1"><a href="{{ entry.edit_link }}" >{{ entry.name }}</a></td>
-<td width="10%" class="contentEntry1">{% if (entry.type == 0) %}Текстовое{% elseif (entry.type == 1) %}Флажок (checkbox){% elseif (entry.type == 2) %}Выбор значения{% endif %}</td>
+<td width="20%" class="contentEntry1"><a href="{{ entry.edit_link }}" >{{ entry.name }}</a></td>
+<td width="10%" class="contentEntry1">{% if (entry.ftype == 0) %}Текстовое{% elseif (entry.ftype == 1) %}Флажок (checkbox){% elseif (entry.ftype == 2) %}Выбор значения{% endif %}</td>
+<td width="10%" class="contentEntry1">{% if not (entry.foptions == '') %}{% for k,v in entry.foptions %} {{ k }} => {{ v }}<br/> {% endfor %}{% endif %}</td>
+<td width="10%" class="contentEntry1">{% if (entry.fdefault == '') %}<font color="red">не задано</font>{% else %}{{ entry.fdefault }}{% endif %}</td>
 <td width="10%" class="contentEntry1"><img src="{{home}}/engine/skins/default/images/{% if (entry.in_filter == 1) %}yes.png{% else %}no.png{% endif %}" alt=""></td>
 <td width="10%" class="contentEntry1">{{ entry.position }}</td>
 <td width="5%" class="contentEntry1"><input name="selected_feature[]" value="{{ entry.id }}" class="check" type="checkbox" /></td>
