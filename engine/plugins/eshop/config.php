@@ -232,8 +232,6 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         $SQL['date'] = time() + ($config['date_adjust'] * 60);
         $SQL['editdate'] = $SQL['date'];
         
-        var_dump($_REQUEST['data']['features']);
-        
         if(!empty($_REQUEST['data']['features'])) {
             $features = $_REQUEST['data']['features'];
         }
