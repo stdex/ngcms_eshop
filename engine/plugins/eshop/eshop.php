@@ -923,20 +923,18 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
             $options_array = array();
             foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_options LEFT JOIN ".prefix."_eshop_features ON ".prefix."_eshop_features.id=".prefix."_eshop_options.feature_id WHERE ".prefix."_eshop_options.product_id = '$qid' ORDER BY position, id") as $orow)
             {
+                if($orow['ftype'] == 2) {
+                    $foptions = json_decode($orow['foptions'],true);
+                    $orow['value'] = $foptions[$orow['value']];
+                }
                 $options_array[$orow['id']] = $orow['value'];
             }
             
             $features_array = array();
             foreach ($features_list as $frow)
             {
-                $features_array[] = 
-                    array(
-                        'id' => $frow['id'],
-                        'name' => $frow['name'],
-                        'position' => $frow['position'],
-                        'in_filter' => $frow['in_filter'],
-                        'value' => $options_array[$frow['id']]
-                        );
+                $frow['value'] = $options_array[$frow['id']];
+                $features_array[] = $frow;
             }
 
             $entries[$row['id']] = array (
@@ -1142,15 +1140,11 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
         $features_array = array();
         foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_options LEFT JOIN '.prefix.'_eshop_features ON '.prefix.'_eshop_features.id='.prefix.'_eshop_options.feature_id WHERE '.prefix.'_eshop_options.product_id = '.$row['id'].' ORDER BY position, id') as $orow)
         {
-            
-            $features_array[] = 
-                array(
-                    'id' => $orow['id'],
-                    'name' => $orow['name'],
-                    'position' => $orow['position'],
-                    'in_filter' => $orow['in_filter'],
-                    'value' => $orow['value']
-                    );
+            if($orow['ftype'] == 2) {
+                $foptions = json_decode($orow['foptions'],true);
+                $orow['value'] = $foptions[$orow['value']];
+            }
+            $features_array[] = $orow;
         }
         
         foreach ($mysql->select('SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views FROM '.prefix.'_eshop_related_products rp LEFT JOIN '.prefix.'_eshop_products p ON p.id=rp.related_id WHERE rp.product_id = '.$row['id'].' AND p.active = 1 ORDER BY rp.position') as $rrow)
@@ -1356,14 +1350,11 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
         $features_array = array();
         foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_options LEFT JOIN '.prefix.'_eshop_features ON '.prefix.'_eshop_features.id='.prefix.'_eshop_options.feature_id WHERE '.prefix.'_eshop_options.product_id = '.$row['id'].' ORDER BY position, id') as $orow)
         {
-            $features_array[] = 
-                array(
-                    'id' => $orow['id'],
-                    'name' => $orow['name'],
-                    'position' => $orow['position'],
-                    'in_filter' => $orow['in_filter'],
-                    'value' => $orow['value']
-                    );
+            if($orow['ftype'] == 2) {
+                $foptions = json_decode($orow['foptions'],true);
+                $orow['value'] = $foptions[$orow['value']];
+            }
+            $features_array[] = $orow;
         }
         
         $fulllink = checkLinkAvailable('eshop', 'show')?

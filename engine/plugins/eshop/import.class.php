@@ -122,7 +122,7 @@ class YMLOffer extends YMLCategory {
         $PROP['name'] = $name;
         $PROP['url'] = $url;
         $PROP['meta_title'] = $name;
-        $PROP['annotation'] = $description;
+        $PROP['annotation'] = str_replace('&nbsp;',' ',$description);
         $PROP['date'] = time() + ($config['date_adjust'] * 60);
         $PROP['editdate'] = $PROP['date'];
 

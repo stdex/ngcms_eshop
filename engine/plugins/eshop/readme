@@ -192,3 +192,11 @@ rpcEshopRequest('eshop_comments_show', {'product_id' : {{id}}}, function (resTX)
     $(".error_text").html("");
     $(".product-comment").html(""+resTX['data']['eshop_comments_show']+"");
 });
+
+
+# =========================================================================== #
+
+Отблагодарить меня можно по следующим реквизитам:
+
+WebMoney: Z182737149666 и R406852171246
+Яндекс.Деньги: 41001972962081

@@ -280,8 +280,9 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
             
             if($features != NULL) {
                 foreach ($features as $f_key => $f_value) {
-                    
-                    $mysql->query("INSERT INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')");
+                    if($f_value != '') {
+                        $mysql->query("INSERT INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')");
+                    }
                 }
             }
             
@@ -508,15 +509,13 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                     $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$pos')");
                 }
             }
-            
-            
+
             if($features != NULL) {
+                $mysql->query("DELETE FROM ".prefix."_eshop_options WHERE product_id='$qid'");
                 foreach ($features as $f_key => $f_value) {
                     
                     if($f_value != '')
                         $mysql->query("REPLACE INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value') ");
-                    else
-                        $mysql->query("DELETE FROM ".prefix."_eshop_options WHERE feature_id='$f_key' AND product_id='$qid'");
                 }
             }
 

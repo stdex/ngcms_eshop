@@ -203,7 +203,7 @@
                 <td width="50%" class="contentEntry1">{{feature.name}}<br /><small></small></td>
                 <td width="50%" class="contentEntry2">
                     {% if feature.ftype == 0 %}<input type="text" size="80" name="data[features][{{feature.id}}]" value="{% if not(feature.value) and (entries.mode == 'add') %}{{feature.fdefault}}{% else %}{{feature.value}}{% endif %}" >
-                    {% elseif feature.ftype == 1 %}<input type="checkbox" name="data[features][{{feature.id}}]" value="1" {% if (entries.mode == 'add') %}{% if(feature.fdefault) %}checked{% endif %}{% else %}{{feature.value}}{% endif %}>
+                    {% elseif feature.ftype == 1 %}<input type="checkbox" name="data[features][{{feature.id}}]" value="1" {% if (entries.mode == 'add') %}{% if(feature.fdefault) %}checked{% endif %}{% else %}{% if(feature.value) %}checked{% endif %}{% endif %}>
                     {% elseif feature.ftype == 2 %}
                     <select name="data[features][{{feature.id}}]">
                             <option value="" style="background-color: #E0E0E0;"></option>
