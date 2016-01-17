@@ -22,6 +22,7 @@
     <link href="{{ tpl_url }}/css/jquery.dropdown.min.css" rel="stylesheet" type="text/css" />
 
     <script type="text/javascript" src="{{ tpl_url }}/js/cusel_original.js"></script>
+    <script type="text/javascript" src="{{ tpl_url }}/js/nstcheck.js"></script>
 
     <!-- <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js" type="text/javascript"></script> -->
 

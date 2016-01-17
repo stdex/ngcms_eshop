@@ -1,6 +1,13 @@
+<!--
+{{ debugValue(system_flags.eshop.features) }}
+-->
+{% for ftr in system_flags.eshop.features %}
+    {% if ftr.ftype == 0 %]
+    {% endif %}
+{% endfor %}
 <div class="frame-inside page-category">
         <div class="container">
-            <!--
+            <!---->
             <div class="filter left-catalog">
                 <div id="small-filter-btn" class="btn-additional-s_c2 mq-w-320 mq-block m-b_0  is-open">
                     <button type="button">
@@ -12,10 +19,17 @@
                 </div>
                 <div class="filter-slide  open-filter">
 
+<script>
+$(document).ready(function() {
+    //$('.frame-filter').nStCheck();
+    $('.frame-group-checks').find('.niceCheck').click(function(e){
+        console.log("123");
+    });
+});
 
-<form method="get" id="catalogForm">
-    <input type="hidden" name="order" value="action">
-    <input type="hidden" name="user_per_page" value="12">
+</script>
+<form method="post">
+    <input type="hidden" name="filter" value="1">
     <div class="frame-filter p_r">
 <script type="text/javascript">
     totalProducts = parseInt('20');
@@ -57,7 +71,7 @@
             </div>
         </div>
     </div>
-            <div class="frame-group-checks">
+    <div class="frame-group-checks">
             <div class="inside-padd">
                 <div class="title">
                     <span class="f-s_0">
@@ -103,296 +117,56 @@
                         </li>
                                     </ul>
             </div>
-        </div>
-    
-                                                                                <div class="frame-group-checks">
-                    <div class="inside-padd">
-                        <div class="title">
-                            <span class="f-s_0">
-                                <span class="icon-arrow"></span>
-                                <span class="d_b">
-                                    <span class="text-el">Диагональ экрана</span>
-                                </span>
-                            </span>
-                        </div>
-                                                    <div class="filters-content">
-                                <ul>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_141_47740">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[141][]" value="1.6" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">1.6</span>
-                                                    <span class="count">(1)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_141_47841">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[141][]" value="1.7" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">1.7</span>
-                                                    <span class="count">(2)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_141_47729">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[141][]" value="1.8" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">1.8</span>
-                                                    <span class="count">(1)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_141_47734">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[141][]" value="2.2" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">2.2</span>
-                                                    <span class="count">(1)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_141_47846">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[141][]" value="2.4" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">2.4</span>
-                                                    <span class="count">(3)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_141_25400">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[141][]" value="2.8" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">2.8</span>
-                                                    <span class="count">(3)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_141_47875">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[141][]" value="3.2" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">3.2</span>
-                                                    <span class="count">(3)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_141_47762">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[141][]" value="3.5" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">3.5</span>
-                                                    <span class="count">(1)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                    </ul>
-                            </div>
-                                            </div>
+    </div>
+
+    <div class="frame-group-checks">
+            <div class="inside-padd">
+                <div class="title">
+                    <span class="f-s_0">
+                        <span class="icon-arrow"></span>
+                        <span class="d_b">
+                            <span class="text-el">Производитель</span>
+                        </span>
+                    </span>
                 </div>
-                                                                                <div class="frame-group-checks">
-                    <div class="inside-padd">
-                        <div class="title">
-                            <span class="f-s_0">
-                                <span class="icon-arrow"></span>
-                                <span class="d_b">
-                                    <span class="text-el">Разрешение экрана</span>
-                                </span>
-                            </span>
-                        </div>
-                                                    <div class="filters-content">
-                                <ul>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_142_47739">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[142][]" value="128x64" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">128x64</span>
-                                                    <span class="count">(1)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_142_47728">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[142][]" value="160х128" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">160х128</span>
-                                                    <span class="count">(3)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_142_47733">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[142][]" value="220х176" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">220х176</span>
-                                                    <span class="count">(1)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_142_47845">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[142][]" value="320х240" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">320х240</span>
-                                                    <span class="count">(9)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_142_47874">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[142][]" value="400x240" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">400x240</span>
-                                                    <span class="count">(2)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_142_47761">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[142][]" value="480х320" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">480х320</span>
-                                                    <span class="count">(3)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                    </ul>
+                <form method="post">
+                <div class="lineForm">
+                    <div class="cusel sort" style="width:153px" tabindex="0">
+                        <div class="cuselFrameRight"></div>
+                        <div class="cuselText">По дате</div>
+                        <div class="cusel-scroll-wrap" style="display: none; visibility: visible;">
+                            <div class="cusel-scroll-pane">
+                                <span val="date_desc" class="cuselActive">По дате</span>
+                                <span val="name_asc">По названию (А-Я)</span>
+                                <span val="price_asc">От дешевых к дорогим</span>
+                                <span val="price_desc">От дорогих к дешевым</span>
+                                <span val="stock_desc">По наличию</span>
+                                <span val="likes_desc">По популярности</span>
                             </div>
-                                            </div>
-                </div>
-                                                                                <div class="frame-group-checks">
-                    <div class="inside-padd">
-                        <div class="title">
-                            <span class="f-s_0">
-                                <span class="icon-arrow"></span>
-                                <span class="d_b">
-                                    <span class="text-el">Питание Li-Ion</span>
-                                </span>
-                            </span>
                         </div>
-                                                    <div class="filters-content">
-                                <ul>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_127_47730">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[127][]" value="от 400 до 800 mAh" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">от 400 до 800 mAh</span>
-                                                    <span class="count">(1)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_127_47842">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[127][]" value="от 800 до 1000 mAh" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">от 800 до 1000 mAh</span>
-                                                    <span class="count">(11)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_127_47876">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[127][]" value="от 1000 до 1500 mAh" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">от 1000 до 1500 mAh</span>
-                                                    <span class="count">(7)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                    </ul>
-                            </div>
-                                            </div>
+                    </div>
                 </div>
-                                                                                <div class="frame-group-checks">
-                    <div class="inside-padd">
-                        <div class="title">
-                            <span class="f-s_0">
-                                <span class="icon-arrow"></span>
-                                <span class="d_b">
-                                    <span class="text-el">Поддержка нескольких sim-карт</span>
-                                </span>
-                            </span>
-                        </div>
-                                                    <div class="filters-content">
-                                <ul>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_41_47821">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[41][]" value="1" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">1</span>
-                                                    <span class="count">(3)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                                                                                                                                                                                                                                                                                    <li>
-                                            <div class="frame-label" id="p_41_47731">
-                                                <span class="niceCheck nstcheck">
-                                                    <input name="p[41][]" value="2" type="checkbox">
-                                                </span>
-                                                <div class="name-count">
-                                                    <span class="text-el">2</span>
-                                                    <span class="count">(17)</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                                                    </ul>
-                            </div>
-                                            </div>
-                </div>
-                        </div>
-<input disabled="disabled" type="hidden" name="requestUri" value="http://fluid.imagecmsdemo.net/shop/category/telefoniia-pleery-gps/telefony/mobilnye-telefony">    </div>
+                </form>
+            </div>
+    </div>
+
+
+
+</div>
+</div>
 </form>
 <script>
 </script>                </div>
             
             </div>
-            -->
+            
             {% if (info) %}
                 <div class="feed-me">
                 {{info}}
                 </div>
             {% endif %}
             
-            <div class="right-catalog" style="width:100% !important;margin-left: 0;">
+            <div class="right-catalog" > <!--style="width:100% !important;margin-left: 0;"-->
                 <!-- Start. Category name and count products in category-->
                 <div class="f-s_0 title-category">
                     <div class="frame-title">

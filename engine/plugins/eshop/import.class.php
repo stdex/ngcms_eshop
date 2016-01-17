@@ -253,9 +253,7 @@ class YMLOffer extends YMLCategory {
                 $f_name = iconv('utf-8','windows-1251', $el['name']);
                 $feature_row = $mysql->record("select * from ".prefix."_eshop_features where name = ".db_squote($f_name)." limit 1");
                 if ( !is_array($feature_row) ) {
-                    $mysql->query('INSERT INTO '.prefix.'_eshop_features (name) 
-                        VALUES ('.db_squote($f_name).')
-                    ');
+                    $mysql->query('INSERT INTO '.prefix.'_eshop_features (name) VALUES ('.db_squote($f_name).')');
                     $rowID = $mysql->lastid('eshop_features');
                     $f_key = $rowID;
                 }

@@ -574,6 +574,7 @@ function import_yml($yml_url)
     }
     
     generate_catz_cache(true);
+    generate_features_cache(true);
     
 }
 

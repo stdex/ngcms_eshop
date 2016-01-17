@@ -136,6 +136,35 @@ function generate_currency_cache($load = false)
     
 }
 
+function generate_features_cache($load = false)
+{global $mysql, $config;
+
+    $eshop_dir = get_plugcfg_dir('eshop');
+    
+    if(!file_exists($eshop_dir.'/cache_features.php') or $load){
+        
+        /*
+        $ftext_values = array();
+        foreach ($mysql->select("SELECT DISTINCT o.feature_id, o.value FROM ".prefix."_eshop_options o LEFT JOIN ng_eshop_features f ON o.feature_id  = f.id WHERE f.ftype = 0 ORDER BY feature_id") as $row)
+        {
+            $ftext_values[$row['feature_id']][] = $row['value'];
+        }
+        */
+        
+        $features_tEntry = array();
+        foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $row)
+        {
+            $foptions = array();
+            $foptions = json_decode($row['foptions'],true);
+            $row['foptions'] = $foptions;
+            $features_tEntry[] = $row;
+        }
+        
+        file_put_contents($eshop_dir.'/cache_features.php', serialize($features_tEntry));
+    }
+    
+}
+
 function reCategory($arr, $flg){
     global $cat_tt;
     foreach($arr as $k=>$v){

@@ -72,7 +72,6 @@ global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang, $mysql, $twig, $userROW
     
     $SYSTEM_FLAGS["eshop"]["current_currency"] = $current_currency;
     
-    
     generate_catz_cache();
     
     if(file_exists($eshop_dir.'/cache_catz.php')){
@@ -82,6 +81,16 @@ global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang, $mysql, $twig, $userROW
     }
 
     $SYSTEM_FLAGS["eshop"]["catz"] = $catz_tEntry;
+    
+    generate_features_cache();
+    
+    if(file_exists($eshop_dir.'/cache_features.php')){
+        $features_tEntry = unserialize(file_get_contents($eshop_dir.'/cache_features.php'));
+    } else {
+        $features_tEntry = array();
+    }
+    
+    $SYSTEM_FLAGS["eshop"]["features"] = $features_tEntry;
 
     $filter = array();
     if (is_array($userROW)) {
@@ -91,48 +100,63 @@ global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang, $mysql, $twig, $userROW
     if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {
         $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';
     }
-
-    $tCount = 0;
-    $tEntries = array();
-    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_compare WHERE ".join(" or ", $filter)."") as $row)
-    {
-        $tEntries[] = $row;
-        $tCount += 1;
-    }
     
     $compare_link = checkLinkAvailable('eshop', 'compare')?
         generateLink('eshop', 'compare', array()):
         generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'compare'), array());
-
-    $compare_tVars = array(
-        'count' => $tCount,
-        'link'  => $compare_link,
-        'entries' => $tEntries,
-    );
-
-    $SYSTEM_FLAGS["eshop"]["compare"] = $compare_tVars;
-
-    $tCount = 0;
-    $tPrice = 0;
-    $tEntries = array();
-    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_ebasket WHERE ".join(" or ", $filter)."") as $row)
-    {
-        $tEntries[] = $row;
-        $tCount += 1;
-        $tPrice += $row['price']*$row['count'];
-    }
-
+    
     $basket_link = checkLinkAvailable('eshop', 'ebasket_list')?
-            generateLink('eshop', 'ebasket_list', array()):
-            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'ebasket_list'), array());
+        generateLink('eshop', 'ebasket_list', array()):
+        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'ebasket_list'), array());
 
-    $basket_tVars = array(
-        'count' => $tCount,
-        'price' => $tPrice,
-        'entries' => $tEntries,
-        'basket_link' => $basket_link,
-    );
+    if(count($filter) > 0) {
+        $tCount = 0;
+        $tEntries = array();
+        foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_compare WHERE ".join(" or ", $filter)."") as $row)
+        {
+            $tEntries[] = $row;
+            $tCount += 1;
+        }
 
+        $compare_tVars = array(
+            'count' => $tCount,
+            'link'  => $compare_link,
+            'entries' => $tEntries,
+        );
+
+        $tCount = 0;
+        $tPrice = 0;
+        $tEntries = array();
+        foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_ebasket WHERE ".join(" or ", $filter)."") as $row)
+        {
+            $tEntries[] = $row;
+            $tCount += 1;
+            $tPrice += $row['price']*$row['count'];
+        }
+
+        $basket_tVars = array(
+            'count' => $tCount,
+            'price' => $tPrice,
+            'entries' => $tEntries,
+            'basket_link' => $basket_link,
+        );
+    }
+    else {
+        $compare_tVars = array(
+            'count' => 0,
+            'link'  => $compare_link,
+            'entries' => array(),
+        );
+        
+        $basket_tVars = array(
+            'count' => 0,
+            'price' => 0,
+            'entries' => array(),
+            'basket_link' => $basket_link,
+        );
+    }
+    
+    $SYSTEM_FLAGS["eshop"]["compare"] = $compare_tVars;
     $SYSTEM_FLAGS["eshop"]["basket"] = $basket_tVars;
     
 }

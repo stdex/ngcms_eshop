@@ -1444,7 +1444,9 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
                 )
                ');
             }
-
+            
+            generate_features_cache(true);
+            
             redirect_eshop('?mod=extra-config&plugin=eshop&action=list_feature');
         }
 
@@ -1569,7 +1571,9 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
                 )
                ');
             }
-
+            
+            generate_features_cache(true);
+            
             redirect_eshop('?mod=extra-config&plugin=eshop&action=list_feature');
         }
 
@@ -1669,7 +1673,7 @@ global $mysql;
     
     if( empty($id) )
     {
-        return msg(array("type" => "error", "text" => "Вы выбран ID!"));
+        return msg(array("type" => "error", "text" => "Не выбран ID!"));
     }
     
     switch($subaction) {
@@ -1683,6 +1687,8 @@ global $mysql;
         $mysql->query("delete from ".prefix."_eshop_options where feature_id in ({$id})");
         msg(array("type" => "info", "info" => "Записи с ID${id} удалены!"));
     }
+    
+    generate_features_cache(true);
 }
 
 
