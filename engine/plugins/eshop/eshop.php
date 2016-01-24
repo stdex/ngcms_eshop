@@ -490,6 +490,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
     $tVars = array(
         'filter' => $fltr,
         'current_filter' => $current_filter['filter'],
+        'errors' => $errors,
         'cat_info' => $cat_array,
         'info' => isset($info)?$info:'',
         'entries' => isset($entries)?$entries:'',
