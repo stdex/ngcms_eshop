@@ -1,10 +1,3 @@
-<!--
-{{ debugValue(system_flags.eshop.features) }}
--->
-{% for ftr in system_flags.eshop.features %}
-    {% if ftr.ftype == 0 %]
-    {% endif %}
-{% endfor %}
 <div class="frame-inside page-category">
         <div class="container">
             <!---->
@@ -23,7 +16,7 @@
 $(document).ready(function() {
     //$('.frame-filter').nStCheck();
     $('.frame-group-checks').find('.niceCheck').click(function(e){
-        console.log("123");
+        //console.log("123");
     });
 });
 
@@ -49,6 +42,7 @@ $(document).ready(function() {
 <div class="preloader wo-i" style="display: none;"></div>
 <div id="slider-range"></div>
 <div class="frames-checks-sliders">
+    <!--
     <div class="frame-slider" data-rel="sliders.slider1">
         <div class="inside-padd">
             <div class="title">Цена</div>
@@ -71,86 +65,108 @@ $(document).ready(function() {
             </div>
         </div>
     </div>
-    <div class="frame-group-checks">
-            <div class="inside-padd">
-                <div class="title">
-                    <span class="f-s_0">
-                        <span class="icon-arrow"></span>
-                        <span class="d_b">
-                            <span class="text-el">Производитель</span>
-                        </span>
-                    </span>
-                </div>
-                <ul class="filters-content">
-                                                                                                                                                                                                    <li>
-                            <div class="frame-label" id="brand_132">
-                                <span class="niceCheck nstcheck">
-                                    <input class="brand132" name="brand[]" value="132" type="checkbox">
-                                </span>
-                                <div class="name-count">
-                                    <span class="text-el">Alcatel</span>
-                                    <span class="count">(1)</span>
-                                </div>
-                            </div>
-                        </li>
-                                                                                                                                                                                                    <li>
-                            <div class="frame-label" id="brand_119">
-                                <span class="niceCheck nstcheck">
-                                    <input class="brand119" name="brand[]" value="119" type="checkbox">
-                                </span>
-                                <div class="name-count">
-                                    <span class="text-el">Fly</span>
-                                    <span class="count">(18)</span>
-                                </div>
-                            </div>
-                        </li>
-                                                                                                                                                                                                    <li>
-                            <div class="frame-label" id="brand_42">
-                                <span class="niceCheck nstcheck">
-                                    <input class="brand42" name="brand[]" value="42" type="checkbox">
-                                </span>
-                                <div class="name-count">
-                                    <span class="text-el">Nokia</span>
-                                    <span class="count">(1)</span>
-                                </div>
-                            </div>
-                        </li>
-                                    </ul>
-            </div>
-    </div>
+    -->
+    <!--
+    {{ debugValue(system_flags.eshop.features) }}
+    -->
 
-    <div class="frame-group-checks">
-            <div class="inside-padd">
-                <div class="title">
-                    <span class="f-s_0">
-                        <span class="icon-arrow"></span>
-                        <span class="d_b">
-                            <span class="text-el">Производитель</span>
+    {% for ftr in system_flags.eshop.features %}
+        {% if ftr.in_filter == 1 %}
+            {% if ftr.ftype == 0 %}
+            <div class="frame-group-checks">
+                <div class="inside-padd">
+                    <div class="title">
+                        <span class="f-s_0">
+                            <span class="icon-arrow"></span>
+                            <span class="d_b">
+                                <span class="text-el">{{ ftr.name }}</span>
+                            </span>
                         </span>
-                    </span>
-                </div>
-                <form method="post">
-                <div class="lineForm">
-                    <div class="cusel sort" style="width:153px" tabindex="0">
-                        <div class="cuselFrameRight"></div>
-                        <div class="cuselText">По дате</div>
-                        <div class="cusel-scroll-wrap" style="display: none; visibility: visible;">
-                            <div class="cusel-scroll-pane">
-                                <span val="date_desc" class="cuselActive">По дате</span>
-                                <span val="name_asc">По названию (А-Я)</span>
-                                <span val="price_asc">От дешевых к дорогим</span>
-                                <span val="price_desc">От дорогих к дешевым</span>
-                                <span val="stock_desc">По наличию</span>
-                                <span val="likes_desc">По популярности</span>
-                            </div>
-                        </div>
+                    </div>
+                    <div class="lineForm">
+                        <input type="text" value="{{current_filter[ftr.id]}}" name="filters[{{ ftr.id }}]">
                     </div>
                 </div>
-                </form>
             </div>
-    </div>
+            {% elseif ftr.ftype == 1 %}
+            <div class="frame-group-checks">
+                    <div class="inside-padd">
+                        <div class="title">
+                            <span class="f-s_0">
+                                <span class="icon-arrow"></span>
+                                <span class="d_b">
+                                    <span class="text-el">{{ ftr.name }}</span>
+                                </span>
+                            </span>
+                        </div>
+                        <input name="filters[{{ ftr.id }}]" value="1" type="checkbox" {% if (current_filter[ftr.id] is defined) %} checked {% endif %}>
+                        <ul class="filters-content">
+                                 <li>
+                                    <div class="frame-label" id="brand_132">
+                                        <span class="niceCheck nstcheck">
+                                            <input name="filters[{{ ftr.id }}]" value="1" type="checkbox">
+                                        </span>
+                                        <div class="name-count">
+                                            <span class="text-el">Выбрать</span>
+                                            <span class="count"></span>
+                                        </div>
+                                    </div>
+                                </li>
+                        </ul>
+                    </div>
+            </div>
+            {% elseif ftr.ftype == 2 %}
+            <div class="frame-group-checks">
+                    <div class="inside-padd">
+                        <div class="title">
+                            <span class="f-s_0">
+                                <span class="icon-arrow"></span>
+                                <span class="d_b">
+                                    <span class="text-el">{{ ftr.name }}</span>
+                                </span>
+                            </span>
+                        </div>
+                        <div class="lineForm">
+                            <select name="filters[{{ ftr.id }}]">
+                                <option value=""></option>
+                                {% for fkopt, fvopt in ftr.foptions %}
+                                <option value="{{ fkopt }}" {% if (current_filter[ftr.id] is defined) %} selected {% endif %}>{{ fvopt }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+            </div>
+            {% endif %}
+        {% endif %} 
 
+    {% endfor %}
 
+        <div class="frame-group-checks">
+            <div class="inside-padd">
+                <div class="title">
+                    <span class="f-s_0">
+                        <span class="icon-arrow"></span>
+                        <span class="d_b">
+                            <span class="text-el">{{ ftr.name }}</span>
+                        </span>
+                    </span>
+                </div>
+                <div class="lineForm">
+                    
+                    <div class="frame-label">
+                        <span class="title">&nbsp;</span>
+                        <span class="frame-form-field">
+                            <div class="btn-buy">
+                                <button type="submit" id="submitFilter">
+                                    <span class="text-el">Применить</span>
+                                </button>
+                            </div>
+                        </span>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
 
 </div>
 </div>

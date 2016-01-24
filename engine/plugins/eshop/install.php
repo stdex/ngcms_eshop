@@ -423,6 +423,7 @@ function plugin_eshop_install($action) {
                 
                 $now_datetime = date("Y-m-d_H:i:s");
                 if (!file_exists($rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime)) {
+                    mkdir($rootpath."/engine/plugins/eshop/install_tmp/backup", 0777, true);
                     mkdir($rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime, 0777, true);
                 }
                 

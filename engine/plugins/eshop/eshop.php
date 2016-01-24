@@ -147,6 +147,89 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
         $fOrder = " ORDER BY p.id DESC";
         //$x_sort['order'] = "";
     }
+    
+    $current_filter = array();
+    $filter_conditions = array();
+    $filter_req = filter_var( $_REQUEST['filter'], FILTER_SANITIZE_STRING );
+    $filters_req = filter_var_array( $_REQUEST['filters'], FILTER_SANITIZE_STRING );
+    if($filter_req == 1) {
+        
+        foreach ($filters_req as $f_k => $f_v)
+        {
+            if($f_v != "") {
+                array_push($filter_conditions, " (o.feature_id = ".db_squote($f_k)." AND o.value = ".db_squote($f_v).") ");
+                $current_filter['filter'][$f_k] = $f_v;
+                $x_sort['filter_'.$f_k] = $f_v;
+            }
+        }
+        
+    }
+    else {
+        $filters_req = filter_var_array( $_REQUEST, FILTER_SANITIZE_STRING );
+        foreach ($filters_req as $f_k => $f_v)
+        {
+            if (strpos($f_k, 'filter_') !== false) {
+                $filter_id = str_replace('filter_', '', $f_k);
+                array_push($filter_conditions, " (o.feature_id = ".db_squote($filter_id)." AND o.value = ".db_squote($f_v).") ");
+                $current_filter['filter'][$filter_id] = $f_v;
+                $x_sort['filter_'.$filter_id] = $f_v;
+            }
+        }
+        
+    }
+    /*
+    TODO:
+    SELECT 
+    * 
+    FROM
+    (SELECT product_id FROM ng_eshop_options WHERE (feature_id = '2' AND value = '1')) AS t1
+    INNER JOIN
+    (SELECT product_id FROM ng_eshop_options WHERE (feature_id = '3' AND value = '2')) AS t2
+    ON t1.product_id = t2.product_id
+    */
+    if(!empty($filter_conditions)) {
+        
+        $ids_cond_list = array();
+        
+        foreach ($filter_conditions as $cond)
+        {
+            $fsqlQ = "SELECT o.product_id AS product_id FROM ".prefix."_eshop_options o WHERE ".$cond." GROUP BY o.product_id";
+            foreach ($mysql->select($fsqlQ) as $frow)
+            {
+                $one_filter_ids[] = $frow['product_id'];
+            }
+            $ids_cond_list[] = $one_filter_ids;
+        }
+        
+        
+        if(count($ids_cond_list) == 1) {
+            $filter_ids = $ids_cond_list[0];
+        }
+        elseif(count($ids_cond_list) > 1) {
+            $filter_ids = call_user_func_array('array_intersect',$ids_cond_list);
+        }
+        else{
+            $filter_ids = null;
+        }
+        
+        /*
+        $fsqlQ = "SELECT o.product_id AS product_id FROM ".prefix."_eshop_options o ".(count($filter_conditions)?"WHERE ".implode(" AND ", $filter_conditions):'')." GROUP BY o.product_id";
+
+        $filter_ids = array();
+        foreach ($mysql->select($fsqlQ) as $frow)
+        {
+            $filter_ids[] = $frow['product_id'];
+        }
+        */
+        
+        if(!empty($filter_ids)) {
+            array_push($conditions, "p.id IN (".implode(",", $filter_ids).") ");
+        }
+        else {
+            array_push($conditions, "p.id IS NULL ");
+        }
+        
+    }
 
     $url = pluginGetVariable('eshop', 'url');
 
@@ -305,15 +388,20 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
 
     $count = $mysql->result($sqlQCount);
 
-    if($count == 0)
-        return msg(array("type" => "error", "text" => "В данной категории пока что нету продукции"));
-
+    $errors = array();
+    if($count == 0) {
+        $errors[] = array("type" => "error", "text" => "В данной категории пока что нету продукции");
+        goto prepere_vars;
+        //return msg(array("type" => "error", "text" => "В данной категории пока что нету продукции"));
+    }
 
     $countPages = ceil($count / $limitCount);
 
-    if($countPages < $pageNo)
-        return msg(array("type" => "error", "text" => "Подстраницы не существует"));
-
+    if($countPages < $pageNo) {
+        $errors[] = array("type" => "error", "text" => "Подстраницы не существует");
+        goto prepere_vars;
+        //return msg(array("type" => "error", "text" => "Подстраницы не существует"));
+    }
 
     if ($countPages > 1 && $countPages >= $pageNo)
     {
@@ -394,47 +482,50 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
         }
         
     }
-        
-        $fltr['order'] = $order;
+    
+    prepere_vars:
+    
+    $fltr['order'] = $order;
 
-        $tVars = array(
-            'filter' => $fltr,
-            'cat_info' => $cat_array,
-            'info' => isset($info)?$info:'',
-            'entries' => isset($entries)?$entries:'',
-            'pages' => array(
-            'true' => (isset($pages) && $pages)?1:0,
-            'print' => isset($pages)?$pages:''
+    $tVars = array(
+        'filter' => $fltr,
+        'current_filter' => $current_filter['filter'],
+        'cat_info' => $cat_array,
+        'info' => isset($info)?$info:'',
+        'entries' => isset($entries)?$entries:'',
+        'pages' => array(
+        'true' => (isset($pages) && $pages)?1:0,
+        'print' => isset($pages)?$pages:''
+                        ),
+        'prevlink' => array(
+                'true' => !empty($limitStart)?1:0,
+                'link' => str_replace('%page%',
+                                        "$1",
+                                        str_replace('%link%',
+                                            checkLinkAvailable('eshop', '')?
+            generatePageLink(array('pluginName' => 'eshop', 'pluginHandler' => '', 'params' => $sort, 'xparams' => $x_sort, 'paginator' => array('page', 0, false)), $prev = floor($limitStart / $limitCount)):
+            generatePageLink(array('pluginName' => 'core', 'pluginHandler' => 'plugin', 'params' => array('plugin' => 'eshop'), 'xparams' => $x_sort, 'paginator' => array('page', 1, false)), $prev = floor($limitStart / $limitCount)),
+                                            isset($navigations['prevlink'])?$navigations['prevlink']:''
+                                        )
+                ),
                             ),
-            'prevlink' => array(
-                    'true' => !empty($limitStart)?1:0,
-                    'link' => str_replace('%page%',
-                                            "$1",
-                                            str_replace('%link%',
-                                                checkLinkAvailable('eshop', '')?
-                generatePageLink(array('pluginName' => 'eshop', 'pluginHandler' => '', 'params' => $sort, 'xparams' => $x_sort, 'paginator' => array('page', 0, false)), $prev = floor($limitStart / $limitCount)):
-                generatePageLink(array('pluginName' => 'core', 'pluginHandler' => 'plugin', 'params' => array('plugin' => 'eshop'), 'xparams' => $x_sort, 'paginator' => array('page', 1, false)), $prev = floor($limitStart / $limitCount)),
-                                                isset($navigations['prevlink'])?$navigations['prevlink']:''
-                                            )
-                    ),
-                                ),
-            'nextlink' => array(
-                    'true' => ($prev + 2 <= $countPages)?1:0,
-                    'link' => str_replace('%page%',
-                                            "$1",
-                                            str_replace('%link%',
-                                                checkLinkAvailable('eshop', '')?
-                generatePageLink(array('pluginName' => 'eshop', 'pluginHandler' => '', 'params' => $sort, 'xparams' => $x_sort, 'paginator' => array('page', 0, false)), $prev+2):
-                generatePageLink(array('pluginName' => 'core', 'pluginHandler' => 'plugin', 'params' => array('plugin' => 'eshop'), 'xparams' => $x_sort, 'paginator' => array('page', 1, false)), $prev+2),
-                                                isset($navigations['nextlink'])?$navigations['nextlink']:''
-                                            )
-                    ),
-                                ),
-            'tpl_url' => home.'/templates/'.$config['theme'],
-            'tpl_home' => admin_url,
-        );
+        'nextlink' => array(
+                'true' => ($prev + 2 <= $countPages)?1:0,
+                'link' => str_replace('%page%',
+                                        "$1",
+                                        str_replace('%link%',
+                                            checkLinkAvailable('eshop', '')?
+            generatePageLink(array('pluginName' => 'eshop', 'pluginHandler' => '', 'params' => $sort, 'xparams' => $x_sort, 'paginator' => array('page', 0, false)), $prev+2):
+            generatePageLink(array('pluginName' => 'core', 'pluginHandler' => 'plugin', 'params' => array('plugin' => 'eshop'), 'xparams' => $x_sort, 'paginator' => array('page', 1, false)), $prev+2),
+                                            isset($navigations['nextlink'])?$navigations['nextlink']:''
+                                        )
+                ),
+                            ),
+        'tpl_url' => home.'/templates/'.$config['theme'],
+        'tpl_home' => admin_url,
+    );
 
-            $template['vars']['mainblock'] .= $xt->render($tVars);
+    $template['vars']['mainblock'] .= $xt->render($tVars);
             
             
 }
