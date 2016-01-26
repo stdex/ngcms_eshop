@@ -247,6 +247,13 @@ class YMLOffer extends YMLCategory {
                             ['value' => (string) $element], $this->getElementAttributes($element)
                     );
                 }
+                
+                if (mb_strtolower($element->getName()) == 'url') {
+                    $returnArr[] = array_merge(
+                            ['value' => (string) $element], array('name' => 'source_url')
+                    );
+                }
+                
             }
             
             foreach ($returnArr as $el) {

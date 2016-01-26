@@ -43,6 +43,9 @@ switch ($_REQUEST['action']) {
     case 'urls':            urls();                                break;
     case 'automation':      automation();                          break;
     
+    case 'list_payment':    list_payment();                        break;
+    case 'edit_payment':    edit_payment();                        break;
+    
     default:                list_product();
 }
 
@@ -2293,6 +2296,65 @@ global $tpl, $mysql, $twig;
     
     print $xg->render($tVars);
 
+}
+
+function list_payment($params)
+{
+global $tpl, $mysql, $twig;
+
+    $tpath = locatePluginTemplates(array('config/main', 'config/list_payment'), 'eshop', 1);
+    
+    $tVars = array();
+
+    if ($handle = opendir(dirname(__FILE__).'/payment')) {
+        $blacklist = array('.', '..');
+        while (false !== ($file = readdir($handle))) {
+            if (!in_array($file, $blacklist)) {
+                $row['name'] = $file;
+                $row['edit_link'] = "?mod=extra-config&plugin=eshop&action=edit_payment&id=".$file."";
+                $tEntry[] = $row;
+            }
+        }
+        closedir($handle);
+    }
+
+    $xt = $twig->loadTemplate($tpath['config/list_payment'].'config/'.'list_payment.tpl');
+    
+    $tVars = array( 
+        'entries' => isset($tEntry)?$tEntry:'' 
+    );
+    
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries'       =>  $xt->render($tVars),
+        'php_self'      =>  $PHP_SELF,
+        'plugin_url'    =>  admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url'     =>  skins_url,
+        'admin_url'     =>  admin_url,
+        'home'          =>  home,
+        'current_title' => 'Системы оплаты',
+    );
+    
+    print $xg->render($tVars);
+
+}
+
+function edit_payment($params)
+{
+global $tpl, $template, $config, $mysql, $lang, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_currencies'), 'eshop', 1);
+    
+    $id = $_REQUEST['id'];
+    $config_filename = dirname(__FILE__).'/payment/'.$id.'/config.php';
+
+    if (file_exists($config_filename)) {
+        include_once($config_filename);
+        payment_config($id);
+    } else {
+        $error =  "Файл $config_filename не существует";
+        msg(array("type" => "error", "text" => $error));
+    }
 }
 
 function urls()

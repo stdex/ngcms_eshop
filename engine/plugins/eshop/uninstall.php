@@ -88,6 +88,10 @@ $db_update = array(
         'table'     =>  'eshop_ebasket',
         'action'    =>  'drop',
     ),
+    array(
+        'table'     =>  'eshop_payment',
+        'action'    =>  'drop',
+    ),
 
 );
 

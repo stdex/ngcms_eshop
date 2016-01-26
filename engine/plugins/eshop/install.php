@@ -260,6 +260,17 @@ function plugin_eshop_install($action) {
             */
         )
     ),
+    
+    array(
+        'table'     => 'eshop_payment',
+        'action'    => 'cmodify',
+        'engine'    => 'MyISAM',
+        'key'       => 'UNIQUE `name` (`name`)',
+        'fields'    => array(
+            array('action'  => 'cmodify', 'name' => 'name', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
+            array('action'  => 'cmodify', 'name' => 'options', 'type' => 'text', 'params' => 'NOT NULL default \'\''),
+        )
+    ),
 
     array(
         'table'     => 'eshop_orders',
@@ -427,8 +438,8 @@ function plugin_eshop_install($action) {
                     mkdir($rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime, 0777, true);
                 }
                 
-                copy($rewrite_filepath_dst, $rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime."rewrite.php");
-                copy($urlconf_filepath_dst, $rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime."urlconf.php");
+                copy($rewrite_filepath_dst, $rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime."/rewrite.php");
+                copy($urlconf_filepath_dst, $rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime."/urlconf.php");
                 
                 copy($rewrite_filepath_src, $rewrite_filepath_dst);
                 copy($urlconf_filepath_src, $urlconf_filepath_dst);
