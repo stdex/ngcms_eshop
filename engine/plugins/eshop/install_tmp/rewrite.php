@@ -544,6 +544,37 @@ $handlerList = array (
   12 => 
   array (
     'pluginName' => 'eshop',
+    'handlerName' => 'payment',
+    'flagPrimary' => true,
+    'flagFailContinue' => false,
+    'flagDisabled' => false,
+    'rstyle' => 
+    array (
+      'rcmd' => '/eshop/payment/',
+      'regex' => '#^/eshop/payment/$#',
+      'regexMap' => 
+      array (
+      ),
+      'reqCheck' => 
+      array (
+      ),
+      'setVars' => 
+      array (
+      ),
+      'genrMAP' => 
+      array (
+        0 => 
+        array (
+          0 => 0,
+          1 => '/eshop/payment/',
+          2 => 0,
+        ),
+      ),
+    ),
+  ),
+  13 => 
+  array (
+    'pluginName' => 'eshop',
     'handlerName' => 'ebasket_list',
     'flagPrimary' => true,
     'flagFailContinue' => false,
@@ -572,7 +603,7 @@ $handlerList = array (
       ),
     ),
   ),
-  13 => 
+  14 => 
   array (
     'pluginName' => 'eshop',
     'handlerName' => 'yml_export',
@@ -603,7 +634,7 @@ $handlerList = array (
       ),
     ),
   ),
-  14 => 
+  15 => 
   array (
     'pluginName' => 'eshop',
     'handlerName' => 'currency',
@@ -634,7 +665,7 @@ $handlerList = array (
       ),
     ),
   ),
-  15 => 
+  16 => 
   array (
     'pluginName' => 'eshop',
     'handlerName' => 'compare',
@@ -665,7 +696,7 @@ $handlerList = array (
       ),
     ),
   ),
-  16 => 
+  17 => 
   array (
     'pluginName' => 'eshop',
     'handlerName' => 'stocks',
@@ -715,7 +746,7 @@ $handlerList = array (
       ),
     ),
   ),
-  17 => 
+  18 => 
   array (
     'pluginName' => 'news',
     'handlerName' => 'main',
@@ -765,7 +796,7 @@ $handlerList = array (
       ),
     ),
   ),
-  18 => 
+  19 => 
   array (
     'pluginName' => 'eshop',
     'handlerName' => 'search',
@@ -815,7 +846,7 @@ $handlerList = array (
       ),
     ),
   ),
-  19 => 
+  20 => 
   array (
     'pluginName' => 'eshop',
     'handlerName' => 'show',
@@ -859,7 +890,7 @@ $handlerList = array (
       ),
     ),
   ),
-  20 => 
+  21 => 
   array (
     'pluginName' => 'eshop',
     'handlerName' => '',
@@ -979,7 +1010,7 @@ $handlerPrimary = array (
     ),
     'main' => 
     array (
-      0 => 17,
+      0 => 18,
       1 => true,
     ),
   ),
@@ -998,44 +1029,49 @@ $handlerPrimary = array (
       0 => 11,
       1 => true,
     ),
-    'ebasket_list' => 
+    'payment' => 
     array (
       0 => 12,
       1 => true,
     ),
-    'yml_export' => 
+    'ebasket_list' => 
     array (
       0 => 13,
       1 => true,
     ),
-    'currency' => 
+    'yml_export' => 
     array (
       0 => 14,
       1 => true,
     ),
-    'compare' => 
+    'currency' => 
     array (
       0 => 15,
       1 => true,
     ),
-    'stocks' => 
+    'compare' => 
     array (
       0 => 16,
       1 => true,
     ),
-    'search' => 
+    'stocks' => 
     array (
-      0 => 18,
+      0 => 17,
       1 => true,
     ),
-    'show' => 
+    'search' => 
     array (
       0 => 19,
       1 => true,
     ),
-    '' => 
+    'show' => 
     array (
       0 => 20,
+      1 => true,
+    ),
+    '' => 
+    array (
+      0 => 21,
       1 => true,
     ),
   ),

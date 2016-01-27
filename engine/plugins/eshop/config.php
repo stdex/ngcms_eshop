@@ -1789,7 +1789,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     $tpath = locatePluginTemplates(array('config/main', 'config/add_order'), 'eshop', 1);
     
     $id = intval($_REQUEST['id']);
-    $row = $mysql->record('SELECT *, o.id as id, o.ip as ip, o.name as name, u.name as author FROM '.prefix.'_eshop_orders o LEFT JOIN '.prefix.'_users u ON o.author_id = u.id WHERE o.id = '.db_squote($id).' LIMIT 1');
+    $row = $mysql->record('SELECT *, o.id as id, o.ip as ip, o.name as name, u.name as author, o.paid as paid FROM '.prefix.'_eshop_orders o LEFT JOIN '.prefix.'_users u ON o.author_id = u.id WHERE o.id = '.db_squote($id).' LIMIT 1');
     
     if (isset($_REQUEST['submit']))
     {
@@ -1835,8 +1835,8 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     if ($id) {
         $filter []= '(order_id = '.db_squote($id).')';
     }
-
-
+    
+    $basket = array();
     foreach ($mysql->select("select * from ".prefix."_eshop_order_basket where ".join(" or ", $filter), 1) as $rec) {
                 $total += round($rec['price'] * $rec['count'], 2);
 
@@ -1847,6 +1847,15 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
                 $basket []= $rec;
     }
     
+    $purchases = array();
+    foreach ($mysql->select("select * from ".prefix."_eshop_purchases where ".join(" or ", $filter), 1) as $prow) {
+                $prow['info'] = json_decode($prow['info'], true);
+                foreach($prow['info'] as $k_info => $v_info) {
+                    $prow['info_string'] .= $k_info." => ".$v_info."<br/>";
+                }
+                $purchases []= $prow;
+    }
+    
     $row['profile_link'] = checkLinkAvailable('uprofile', 'show')?
                     generateLink('uprofile', 'show', array('name' => $row['author'], 'id' => $row['author_id'])):
                     generateLink('core', 'plugin', array('plugin' => 'uprofile', 'handler' => 'show'), array('id' => $row['author_id']));
@@ -1854,6 +1863,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     $tEntry = $row;
     $tEntry['error'] = $error_input;
     $tEntry['basket'] = $basket;
+    $tEntry['purchases'] = $purchases;
     $tEntry['basket_total'] = $total;
 
     $xt = $twig->loadTemplate($tpath['config/add_order'].'config/'.'add_order.tpl');

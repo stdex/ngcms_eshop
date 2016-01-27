@@ -19,6 +19,7 @@ register_plugin_page('eshop','ebasket_list','plugin_ebasket_list');
 register_plugin_page('eshop','ebasket_update','plugin_ebasket_update');
 
 register_plugin_page('eshop','order','order_eshop');
+register_plugin_page('eshop','payment','payment_eshop');
 
 include_once(dirname(__FILE__).'/cache.php');
 
@@ -1790,6 +1791,25 @@ function order_eshop(){
     $tFormEntry['error'] = $error_text;
     $tFormEntry['id'] = $qid;
     
+    $payment = array();
+    if ($handle = opendir(dirname(__FILE__).'/payment')) {
+        $blacklist = array('.', '..');
+        while (false !== ($file = readdir($handle))) {
+            if (!in_array($file, $blacklist)) {
+                $row['name'] = $file;
+                $systems[] = $row;
+            }
+        }
+        closedir($handle);
+    }
+    
+    $payment_link = checkLinkAvailable('eshop', 'payment')?
+            generateLink('eshop', 'payment', array()):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'payment'), array());
+    
+    $payment['systems'] = $systems;
+    $payment['link'] = $payment_link;
+    
     $basket_link = checkLinkAvailable('eshop', 'ebasket_list')?
             generateLink('eshop', 'ebasket_list', array()):
             generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'ebasket_list'), array());
@@ -1798,6 +1818,7 @@ function order_eshop(){
         'formEntry' => $tFormEntry,
         'recs'      => count($basket),
         'entries'   => $basket,
+        'payment'   => $payment,
         'total'     => sprintf('%9.2f', $total),
         'basket_link' => $basket_link,
     );
@@ -1814,6 +1835,72 @@ function order_eshop(){
     $SYSTEM_FLAGS['meta']['keywords']       = "";
 }
 
+function payment_eshop(){
+    global $mysql, $twig, $userROW, $template, $ip, $SYSTEM_FLAGS, $lang;
+
+    $filter = array();
+    $SQL = array();
+    $payment_name = "";
+    $payment_options = array();
+    
+    $SQL['payment_id'] = filter_var( $_REQUEST['payment_id'], FILTER_SANITIZE_STRING );
+    if(empty($SQL['payment_id']))
+    {
+        $error_text[] = 'ID платежной системы не задано';
+    }
+    else {
+        $filter []= '(name = '.db_squote($SQL['payment_id']).')';
+        $sqlQ = "SELECT * FROM ".prefix."_eshop_payment ".(count($filter)?"WHERE ".implode(" AND ", $filter):'')." LIMIT 1";
+        $row = $mysql->record($sqlQ);
+        if(empty($row)) {
+            $error_text[] = 'Платежной системы с таким ID не существует или не заданы настройки';
+        }
+        else{
+            $payment_name = $row['name'];
+            $payment_options = json_decode($row['options'], true);
+        }
+    }
+
+    if(empty($error_text))
+    {
+        $payment_filename = dirname(__FILE__).'/payment/'.$payment_name.'/payment.php';
+
+        if (file_exists($payment_filename)) {
+            include_once($payment_filename);
+            payment_action($payment_name, $payment_options, $_REQUEST);
+        } else {
+            $error_text[] = "Файл $payment_filename не существует";
+        }
+
+    }
+    
+    if(!empty($error_text))
+    {
+        foreach($error_text as $error)
+        {
+            //$error_input .= msg(array("type" => "error", "text" => $error));
+            $error_input .= "<p>".$error."</p>";
+        }
+    } else {
+        $error_input ='';
+    }
+
+    $tVars = array(
+        'errors'    => $error_text,
+        'errors_text' => $error_input,
+    );
+
+    $tpath = locatePluginTemplates(array('payment_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'));
+
+    $xt = $twig->loadTemplate($tpath['payment_eshop'].'payment_eshop.tpl');
+
+    $template['vars']['mainblock'] = $xt->render($tVars);
+    
+    $SYSTEM_FLAGS['info']['title']['others'] = "";
+    $SYSTEM_FLAGS['info']['title']['group'] = $lang['eshop']['name_payment'];
+    $SYSTEM_FLAGS['meta']['description']    = "";
+    $SYSTEM_FLAGS['meta']['keywords']       = "";
+}
 
 function build_tree($cats,$parent_id,$only_parent = false){
     if(is_array($cats) and isset($cats[$parent_id])){

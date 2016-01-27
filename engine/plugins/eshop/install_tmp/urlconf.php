@@ -761,5 +761,12 @@ $urlLibrary = array (
         'russian' => 'Заказы',
       ),
     ),
+    'payment' => 
+    array (
+      'descr' => 
+      array (
+        'russian' => 'Оплата',
+      ),
+    ),
   ),
 );

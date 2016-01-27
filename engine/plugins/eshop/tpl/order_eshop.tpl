@@ -79,17 +79,18 @@
                         <div class="d_i-b v-a_m" style="margin-right:10px;">
                             <span class="status-pay not-paid">{% if (formEntry.paid == 0) %}Не оплачен{% else %}Оплачен{% endif %}</span>
                         </div>
-<!--
+<!---->
                     <div class="d_i-b v-a_m">
-                        <form method="get" action="" target="_blank">
-                            <input type="hidden" value="3" name="pm">
-                            <input type="hidden" value="true" name="getPdf">
+                        <form method="get" action="{{ payment.link }}" target="_blank">
+                            <input type="hidden" value="{{ formEntry.id }}" name="order_id">
+                            <input type="hidden" value="{{ formEntry.uniqid }}" name="order_uniqid">
+                            <input type="hidden" value="{{ payment.systems[0].name }}" name="payment_id">
                             <div class="btn-cart btn-cart-p">
                                 <button type="submit"><span class="text-el">Оплатить</span></button>
                             </div>
                         </form>
                     </div>
--->
+
 <!--
         <div class="d_i-b v-a_m">
             <form method="get" action="" target="_blank">

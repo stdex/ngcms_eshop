@@ -28,7 +28,9 @@
                 <description>{{ entry.annotation }}</description>
                 {% if (entry.features) %}
                     {% for feature in entry.features %}
-                    <param name="{{feature.name}}">{{feature.value}}</param>
+                    {% if not (feature.name == 'source_url') %}
+                        <param name="{{feature.name}}">{{feature.value|replace({"&": "&amp;"})}}</param>
+                    {% endif %}
                     {% endfor %}
                 {% endif %}
             </offer>

@@ -73,6 +73,12 @@ function create_urls()
                 'descr' => array ('russian' => 'Заказы'),
         )
     );
+    
+    $ULIB->registerCommand('eshop', 'payment',
+        array (
+                'descr' => array ('russian' => 'Оплата'),
+        )
+    );
 
     $ULIB->saveConfig();
     
@@ -464,6 +470,40 @@ function create_urls()
       )
     );
 
+   $UHANDLER->registerHandler(0,
+        array (
+        'pluginName' => 'eshop',
+        'handlerName' => 'payment',
+        'flagPrimary' => true,
+        'flagFailContinue' => false,
+        'flagDisabled' => false,
+        'rstyle' => 
+        array (
+          'rcmd' => '/eshop/payment/',
+          'regex' => '#^/eshop/payment/$#',
+          'regexMap' => 
+          array (
+            1 => 'page',
+          ),
+          'reqCheck' => 
+          array (
+          ),
+          'setVars' => 
+          array (
+          ),
+          'genrMAP' => 
+          array (
+            0 => 
+            array (
+              0 => 0,
+              1 => '/eshop/payment/',
+              2 => 0,
+            ),
+          ),
+        ),
+      )
+    );
+
     $UHANDLER->saveConfig();
 }
 
@@ -481,6 +521,7 @@ function remove_urls()
     $ULIB->removeCommand('eshop', 'yml_export');
     $ULIB->removeCommand('eshop', 'ebasket_list');
     $ULIB->removeCommand('eshop', 'order');
+    $ULIB->removeCommand('eshop', 'payment');
     $ULIB->saveConfig();
 
     $UHANDLER = new urlHandler();
@@ -494,6 +535,7 @@ function remove_urls()
     $UHANDLER->removePluginHandlers('eshop', 'yml_export');
     $UHANDLER->removePluginHandlers('eshop', 'ebasket_list');
     $UHANDLER->removePluginHandlers('eshop', 'order');
+    $UHANDLER->removePluginHandlers('eshop', 'payment');
     $UHANDLER->saveConfig();
 
 }

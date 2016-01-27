@@ -232,32 +232,12 @@ function plugin_eshop_install($action) {
         'table'     => 'eshop_purchases',
         'action'    => 'cmodify',
         'engine'    => 'MyISAM',
-        'key'       => 'primary key(id), KEY `order_id` (`order_id`), KEY `product_id` (`product_id`), KEY `variant_id` (`variant_id`)',
+        'key'       => 'primary key(id), KEY `order_id` (`order_id`)',
         'fields'    => array(
             array('action'  => 'cmodify', 'name' => 'id', 'type' => 'int(11)', 'params' => 'NOT NULL AUTO_INCREMENT'),
             array('action'  => 'cmodify', 'name' => 'dt', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
             array('action'  => 'cmodify', 'name' => 'order_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
-            array('action'  => 'cmodify', 'name' => 'product_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
-            array('action'  => 'cmodify', 'name' => 'variant_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
-
-            array('action'  => 'cmodify', 'name' => 'product_name', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
-            array('action'  => 'cmodify', 'name' => 'variant_name', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
-            array('action'  => 'cmodify', 'name' => 'price', 'type' => 'decimal(14,2)', 'params' => 'NOT NULL default \'0.00\''),
-
-            array('action'  => 'cmodify', 'name' => 'amount', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
-            array('action'  => 'cmodify', 'name' => 'sku', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
-            /*
-            array('action'  => 'cmodify', 'name' => 'merchant_id', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
-            array('action'  => 'cmodify', 'name' => 'order_id', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
-            array('action'  => 'cmodify', 'name' => 'amount', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
-            array('action'  => 'cmodify', 'name' => 'currency', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
-            array('action'  => 'cmodify', 'name' => 'description', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
-            array('action'  => 'cmodify', 'name' => 'paymode', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
-            array('action'  => 'cmodify', 'name' => 'trans_id', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
-            array('action'  => 'cmodify', 'name' => 'status', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
-            array('action'  => 'cmodify', 'name' => 'error_msg', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
-            array('action'  => 'cmodify', 'name' => 'test_mode', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
-            */
+            array('action'  => 'cmodify', 'name' => 'info', 'type' => 'text', 'params' => 'NOT NULL default \'\''),
         )
     ),
     

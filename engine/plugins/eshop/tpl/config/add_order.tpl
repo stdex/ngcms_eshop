@@ -65,7 +65,7 @@
 
     <tr>
         
-        <table border="0" cellspacing="0" cellpadding="0" class="content" align="center">
+        <table border="0" cellspacing="0" width="1000" cellpadding="0" align="center">
             <tr  class="contHead" align="left">
             <td width="5%">ID</td>
             <td width="15%">Изображение</td>
@@ -97,9 +97,34 @@
         </table>
 
     </tr>
+    {% if (entries.purchases) %}
+    <tr>
+        
+        <table border="0" cellspacing="0" width="1000" cellpadding="0" align="center" style ="
+    MARGIN-TOP: 10PX;
+    MARGIN-BOTTOM: 10PX;">
+            <tr  class="contHead" align="left">
+            <td width="10%">ID оплаты</td>
+            <td width="15%">Дата оплаты</td>
+            <td width="75%">Информация</td>
+            </tr>
+            {% for purchase in entries.purchases %}
+            <tr align="left">
+            <td width="5%" class="contentEntry1">{{ purchase.id }}</td>
+            <td width="15%" class="contentEntry1">{{ purchase.dt|date('d.m.Y H:i') }}</td>
+            <td width="80%" class="contentEntry1">{{ purchase.info_string }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+            <td width="100%" colspan="8">&nbsp;</td>
+            </tr>
+        </table>
+
+    </tr>
+    {% endif %}
     
 </table>
-<table border="0" width="100%" cellspacing="0" cellpadding="0">
+<table border="0" width="1000" cellspacing="0" cellpadding="0" align="center">
 <tr><td width="100%" colspan="2">&nbsp;</td></tr>
 <tr>
 <td width="100%" colspan="2" class="contentEdit" align="center">

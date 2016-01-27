@@ -24,6 +24,14 @@
 
 # =========================================================================== #
 
+Работа с системами оплаты:
+PAY2PAY:
+Fail URL: http://testsite000.ru/eshop/payment/?result=1&payment_id=pay2pay
+Result URL: http://testsite000.ru/eshop/payment/?result=2&payment_id=pay2pay
+Success URL: http://testsite000.ru/eshop/payment/?result=3&payment_id=pay2pay
+
+# =========================================================================== #
+
 После установки плагина и активации и настройки ЧПУ станут доступны страницы:
 /[{alt}/][page/{page}/] - страницы категорий. (Шаблон вывода plugins/eshop/tpl/eshop.tpl)
 /{alt}.html - страницы продукции. (Шаблон вывода plugins/eshop/tpl/show_eshop.tpl)
@@ -34,6 +42,7 @@
 /eshop/ebasket_list/ - страница вывода корзины и формы заказа. (Шаблон вывода plugins/eshop/tpl/ebasket/list.tpl)
 /eshop/order/?id={id}&uniqid={uniqid} - страница существуюшего заказа. (Шаблон вывода plugins/eshop/tpl/order_eshop.tpl)
 /eshop/currency/?id={id} - страница смены валюты.
+/eshop/payment/?payment_id={payment_id}&order_id={order_id}&order_uniqid={order_uniqid} - страница отправки запроса на оплату и приема результата оплаты. (Шаблон вывода plugins/eshop/tpl/payment_eshop.tpl)
 
 plugins/eshop/tpl/variables.ini - отвечает за переменные для постраничной навигации.
 plugins/eshop/tpl/comments.form_eshop.tpl - шаблон вывода формы для добавления отзывов на странице продукта.
