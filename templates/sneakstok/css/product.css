@@ -1,0 +1,46 @@
+header{background: #fff !important; opacity: 0.99}
+header:hover{opacity: 1; background: #fafafa !important; transition:500ms;}
+
+#product{margin-top: 1em}
+.breadcrumb { margin-top: 1em !important}
+.breadcrumb > a.section {color: #888 !important}
+
+
+
+aside[id*="-control"].border .slidr-control.right, aside[id*="-control"].border .slidr-control.left{
+    height: 80px !important;
+    width: 40px !important;
+    top: 30% !important;
+    opacity: 0.5
+}
+aside[id*="-control"].border .slidr-control.right:hover, aside[id*="-control"].border .slidr-control.left:hover{
+	opacity: 1;
+	-webkit-transition: opacity 1s easy-out;
+	-o-transition: opacity 1s easy-out;
+	-moz-transition: opacity 1s easy-out ;
+}
+aside[id*="-control"].border .slidr-control.right:after, aside[id*="-control"].border .slidr-control.left:after {
+	border-color: transparent !important;
+}
+
+aside[id*="-control"].border .slidr-control.left {
+    background: url(slider_arrows.png) left center no-repeat;
+}
+
+aside[id*="-control"].border .slidr-control.right {
+    background: url(slider_arrows.png) right center no-repeat;
+}
+
+aside[id*="-control"].border .slidr-control.up{display: none}
+aside[id*="-control"].border .slidr-control.down{display: none}
+
+.prices{ display: block; margin-top: 2.5em !important;}
+.prices > .current_price{font-size: 1.2em; color: #A35151}
+.prices > .old_price{font-size: 1.1em; text-decoration: line-through; color: #999}
+
+.params > .item { padding: 0.4em 0 !important; }
+.params > .item > span { color:#777;margin-left:0.5em}
+
+.prev-descripion { color: #555; margin-top: 1.5em !important}
+.button.buy{background: #408140 !important; color: #fff !important; opacity: 0.9}
+.button.buy:hover{opacity: 1}

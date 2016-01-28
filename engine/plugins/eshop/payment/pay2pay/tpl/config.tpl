@@ -1,4 +1,4 @@
-<form method="post" action="admin.php?mod=extra-config&plugin=eshop&action=edit_payment&id=pay2pay">
+<form method="post" action="admin.php?mod=extra-config&plugin=eshop&action=edit_payment&id={{entries.name}}">
 <fieldset class="admGroup">
 <legend class="title">Настройки Pay2Pay</legend>
 <table width="100%" border="0" class="content">

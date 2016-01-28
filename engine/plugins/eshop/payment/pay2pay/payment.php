@@ -46,17 +46,17 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $SUPRESS_TEMPLATE_SHOW, $
                         
                         $a_or_id = explode("_", $xml_vars->order_id);
                         $zid = $a_or_id[1];
-                        $merchant_id = $xml_vars->merchant_id;
-                        $order_id = $xml_vars->order_id;
-                        $amount = $xml_vars->amount;
-                        $currency = $xml_vars->currency;
-                        $description = $xml_vars->description;
+                        $merchant_id = (string) $xml_vars->merchant_id;
+                        $order_id = (string) $xml_vars->order_id;
+                        $amount = (string) $xml_vars->amount;
+                        $currency = (string) $xml_vars->currency;
+                        $description = (string) $xml_vars->description;
                         $description = iconv("utf-8", "windows-1251", $description);
-                        $paymode = $xml_vars->paymode;
-                        $trans_id = $xml_vars->trans_id;
-                        $status = $xml_vars->status;
-                        $error_msg = $xml_vars->error_msg;
-                        $test_mode = $xml_vars->test_mode;
+                        $paymode = (string) $xml_vars->paymode;
+                        $trans_id = (string) $xml_vars->trans_id;
+                        $status = (string) $xml_vars->status;
+                        $error_msg = (string) $xml_vars->error_msg;
+                        $test_mode = (string) $xml_vars->test_mode;
                         
                         $info = array('merchant_id' => $merchant_id, 'amount' => $amount, 'currency' => $currency, 'description' => $description, 'paymode' => $paymode, 'trans_id' => $trans_id, 'status' => $status, 'error_msg' => $error_msg, 'test_mode' => $test_mode);
                         

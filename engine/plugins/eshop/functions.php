@@ -660,3 +660,101 @@ function update_prices($change_price_type, $change_price_qnt)
     generate_catz_cache(true);
     
 }
+
+// Generate page list for admin panel
+// * current - number of current page
+// * count   - total count of pages
+// * url     - URL of page, %page% will be replaced by page number
+// * maxNavigations - max number of navigation links
+function generateLP($param){
+    global $tpl, $TemplateCache;
+
+    if ($param['count'] < 2) return '';
+
+    //templateLoadVariables(true, 1);
+    
+    //var_dump($TemplateCache['admin']['#variables']['navigation']);
+    
+    $nav = array(
+        "prevlink" => "<a class='item' style='cursor:pointer;' data-page='%page%' class='prev' data-page='prev'>%page%</a> ",
+        "nextlink" => "<a class='item' style='cursor:pointer;' data-page='%page%' class='next' data-page='next'>%page%</a> ",
+        "current_page" => "<a style='cursor:pointer;' class='item active current' data-page='%page%'>%page%</a> ",
+        "link_page" => "<a class='item' style='cursor:pointer;' data-page='%page%'>%page%</a> ",
+        "dots" => "<a class='item'>...</a> "
+    );
+    //$nav = $TemplateCache['admin']['#variables']['navigation'];
+    
+    $tpl_name = $param['tpl'];
+
+    $tpath = locatePluginTemplates(array($tpl_name), 'eshop', pluginGetVariable('eshop', 'localsource'));
+    $tpl -> template($tpl_name, $tpath[$tpl_name]);
+
+    // Prev page link
+    if ($param['current'] > 1) {
+        $prev = $param['current'] - 1;
+        $tvars['regx']["'\[prev-link\](.*?)\[/prev-link\]'si"] = str_replace('%page%',"$1",str_replace('%link%',str_replace('%page%', $prev, $param['url']), $nav['prevlink']));
+    } else {
+        $tvars['regx']["'\[prev-link\](.*?)\[/prev-link\]'si"] = "";
+        $no_prev = true;
+    }
+
+    // ===[ TO PUT INTO CONFIG ]===
+    $pages = '';
+    if (isset($param['maxNavigations']) && ($param['maxNavigations'] > 3) && ($param['maxNavigations'] < 500)) {
+        $maxNavigations     = intval($param['maxNavigations']);
+    } else {
+        $maxNavigations         = 10;
+    }
+
+    $sectionSize    = floor($maxNavigations / 3);
+    if ($param['count'] > $maxNavigations) {
+        // We have more than 10 pages. Let's generate 3 parts
+        // Situation #1: 1,2,3,4,[5],6 ... 128
+        if ($param['current'] < ($sectionSize * 2)) {
+            $pages .= generateNavi($param['current'], 1, $sectionSize * 2, $param['url'], $nav);
+            $pages .= " ... ";
+            $pages .= generateNavi($param['current'], $param['count']-$sectionSize, $param['count'], $param['url'], $nav);
+        } elseif ($param['current'] > ($param['count'] - $sectionSize * 2 + 1)) {
+            $pages .= generateNavi($param['current'], 1, $sectionSize, $param['url'], $nav);
+            $pages .= " ... ";
+            $pages .= generateNavi($param['current'], $param['count']-$sectionSize*2 + 1, $param['count'], $param['url'], $nav);
+        } else {
+            $pages .= generateNavi($param['current'], 1, $sectionSize, $param['url'], $nav);
+            $pages .= " ... ";
+            $pages .= generateNavi($param['current'], $param['current']-1, $param['current']+1, $param['url'], $nav);
+            $pages .= " ... ";
+            $pages .= generateNavi($param['current'], $param['count']-$sectionSize, $param['count'], $param['url'], $nav);
+        }
+    } else {
+        // If we have less then 10 pages
+        $pages .= generateNavi($param['current'], 1, $param['count'], $param['url'], $nav);
+    }
+
+    $tvars['vars']['pages'] = $pages;
+    if ($prev + 2 <= $param['count']) {
+        $next = $prev + 2;
+        $tvars['regx']["'\[next-link\](.*?)\[/next-link\]'si"] = str_replace('%page%',"$1",str_replace('%link%',str_replace('%page%', $next, $param['url']), $nav['nextlink']));
+    } else {
+        $tvars['regx']["'\[next-link\](.*?)\[/next-link\]'si"] = "";
+        $no_next = true;
+    }
+
+    
+    $tpl -> vars($tpl_name, $tvars);
+    return $tpl -> show($tpl_name);
+}
+
+function generateNavi($current, $start, $stop, $link, $navigations){
+    $result = '';
+    //print "call generateAdminNavigations(current=".$current.", start=".$start.", stop=".$stop.")<br>\n";
+    //print "Navigations: <pre>"; var_dump($navigations); print "</pre>";
+    for ($j=$start; $j<=$stop; $j++) {
+        if ($j == $current) {
+            $result .= str_replace('%page%',$j,$navigations['current_page']);
+        } else {
+            $row['page'] = $j;
+            $result .= str_replace('%page%',$j,str_replace('%link%',str_replace('%page%', $j, $link), $navigations['link_page']));
+        }
+    }
+    return $result;
+}

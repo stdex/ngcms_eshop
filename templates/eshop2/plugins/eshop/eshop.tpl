@@ -69,7 +69,14 @@ $(document).ready(function() {
     <!--
     {{ debugValue(system_flags.eshop.features) }}
     -->
+    {% set cnt_in_filter = 0 %}
+    {% for ftr in system_flags.eshop.features %}
+        {% if ftr.in_filter == 1 %}
+            {% set cnt_in_filter = cnt_in_filter + 1 %}
+        {% endif %}
+    {% endfor %}
 
+    {% if (system_flags.eshop.features) and (cnt_in_filter) %}
     {% for ftr in system_flags.eshop.features %}
         {% if ftr.in_filter == 1 %}
             {% if ftr.ftype == 0 %}
@@ -100,19 +107,6 @@ $(document).ready(function() {
                             </span>
                         </div>
                         <input name="filters[{{ ftr.id }}]" value="1" type="checkbox" {% if (current_filter[ftr.id] is defined) %} checked {% endif %}>
-                        <ul class="filters-content">
-                                 <li>
-                                    <div class="frame-label" id="brand_132">
-                                        <span class="niceCheck nstcheck">
-                                            <input name="filters[{{ ftr.id }}]" value="1" type="checkbox">
-                                        </span>
-                                        <div class="name-count">
-                                            <span class="text-el">Выбрать</span>
-                                            <span class="count"></span>
-                                        </div>
-                                    </div>
-                                </li>
-                        </ul>
                     </div>
             </div>
             {% elseif ftr.ftype == 2 %}
@@ -167,6 +161,8 @@ $(document).ready(function() {
                 </div>
             </div>
         </div>
+    
+    {% endif %}
 
 </div>
 </div>

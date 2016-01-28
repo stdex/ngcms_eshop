@@ -5,6 +5,8 @@ if(!defined('NGCMS'))
     exit('HAL');
 }
 
+include_once(dirname(__FILE__).'/functions.php');
+
 rpcRegisterFunction('eshop_linked_products', 'linked_prd');
 rpcRegisterFunction('eshop_change_img_pos', 'change_img_pos');
 rpcRegisterFunction('eshop_change_price', 'change_price');
@@ -18,6 +20,8 @@ rpcRegisterFunction('eshop_comments_add', 'comments_add');
 rpcRegisterFunction('eshop_comments_show', 'comments_show');
 
 rpcRegisterFunction('eshop_ebasket_manage', 'ebasket_rpc_manage');
+
+rpcRegisterFunction('eshop_amain', 'main_prd');
 
 function linked_prd($params){
     global $userROW, $mysql;
@@ -857,5 +861,190 @@ function ebasket_rpc_manage($params){
             break;
     }
     return array('status' => 1, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
+
+}
+
+function main_prd($params){
+    global $tpl, $template, $twig, $SYSTEM_FLAGS, $config, $userROW, $mysql, $twigLoader;
+
+    $results = array();
+    $params = arrayCharsetConvert(1, $params);
+    
+    $number = $params['number'];
+    $mode = $params['mode'];
+    $cat = $params['cat'];
+    $overrideTemplateName = $params['template'];
+    $prd_per_page          = $number;
+    $page = $params['page'];
+
+    switch ($params['action']) {
+        // **** ADD NEW ITEM INTO compare ****
+        case 'show':
+
+                $conditions = array();
+                if(isset($cat) && !empty($cat))
+                {
+                    array_push($conditions, "c.id IN (".$cat.") ");
+                }
+                
+                array_push($conditions, "p.active = 1");
+
+                if (($number < 1) || ($number > 100))
+                    $number = 5;
+                   
+                switch ($mode) {
+                    case 'view':
+                        $orderby = " ORDER BY p.view DESC ";
+                        break;
+                    case 'last':
+                        $orderby = " ORDER BY p.editdate DESC ";
+                        break;
+                    case 'stocked':
+                        array_push($conditions, "p.stocked = 1");
+                        $orderby = " ORDER BY p.editdate DESC ";
+                        break;
+                    case 'featured':
+                        array_push($conditions, "p.featured = 1");
+                        $orderby = " ORDER BY p.editdate DESC ";
+                        break;
+                    case 'rnd': 
+                        $cacheDisabled = true;
+                        $orderby = " ORDER BY RAND() DESC ";
+                        break;
+                    default:
+                        $mode = 'last';
+                        $orderby = " ORDER BY p.editdate DESC ";
+                        break;
+                }
+
+                $fSort = " ".$orderby;
+                $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+                $sqlQCount = "SELECT COUNT(p.id) ".$sqlQPart;
+                $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.stocked AS stocked, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url as curl, c.name AS category ".$sqlQPart;
+
+                $entries = array();
+        
+                $pageNo     = intval($page)?$page:0;
+                if ($pageNo < 1)    $pageNo = 1;
+                if (!$start_from)   $start_from = ($pageNo - 1)* $prd_per_page;
+                
+                $count = $mysql->result($sqlQCount);
+                $countPages = ceil($count / $prd_per_page);
+
+                $cmp_array = array();
+                foreach ($SYSTEM_FLAGS["eshop"]["compare"]["entries"] as $cmp_row)
+                {
+                    $cmp_array[] = $cmp_row['linked_fld'];
+                }
+                
+                foreach ($mysql->select($sqlQ.' LIMIT '.$start_from.', '.$prd_per_page) as $row)
+                {
+                    $fulllink = checkLinkAvailable('eshop', 'show')?
+                        generateLink('eshop', 'show', array('alt' => $row['url'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
+                    $catlink = checkLinkAvailable('eshop', '')?
+                        generateLink('eshop', '', array('alt' => $row['curl'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop'), array('alt' => $row['curl']));
+                        
+                    $cmp_flag = in_array($row['id'], $cmp_array);
+
+                    $entries[$row['id']] = array (
+                        'id' => $row['id'],
+                        'code' => $row['code'],
+                        'name' => $row['name'],
+                        
+                        'annotation' => $row['annotation'],
+                        'body' => $row['body'],
+                        
+                        'active' => $row['active'],
+                        'featured' => $row['featured'],
+
+                        'meta_title' => $row['meta_title'],
+                        'meta_keywords' => $row['meta_keywords'],
+                        'meta_description' => $row['meta_description'],
+                        
+                        'fulllink' => $fulllink,
+
+                        'date' => (empty($row['date']))?'':$row['date'],
+                        'editdate' => (empty($row['editdate']))?'':$row['editdate'],
+                        
+                        'views'     =>  $row['views'],
+                        
+                        'cat_name' => $row['category'],
+                        'cid' => $row['cid'],
+                        'catlink' => $catlink,
+                        
+                        'compare' => $cmp_flag,
+                        
+                        'home' => home,
+                        'tpl_url' => home.'/templates/'.$config['theme'],
+                    );
+
+                }
+
+            $entries_array_ids = array_keys($entries);
+            
+            if(isset($entries_array_ids) && !empty($entries_array_ids)) {
+                
+                $entries_string_ids = implode(',', $entries_array_ids);
+            
+                foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_images i WHERE i.product_id IN ('.$entries_string_ids.') ORDER BY i.position, i.id') as $irow)
+                {
+                    $entries[$irow['product_id']]['images'][] = $irow;
+                }
+                
+                foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_variants v WHERE v.product_id IN ('.$entries_string_ids.') ORDER BY v.position, v.id') as $vrow)
+                {
+                    $entries[$vrow['product_id']]['variants'][] = $vrow;
+                }
+                
+            }
+            
+            $tVars = array(
+                'info' =>   isset($info)?$info:'',
+                'entries' => isset($entries)?$entries:'',
+                'tpl_url' => home.'/templates/'.$config['theme'],
+                'tpl_home' => admin_url,
+            );
+            
+            if ($overrideTemplateName) {
+                $templateName = 'block/'.$overrideTemplateName;
+            } else {
+                $templateName = 'block/main_block_eshop';
+            }
+
+            // Determine paths for all template files
+            $tpath = locatePluginTemplates(array($templateName), 'eshop', pluginGetVariable('eshop', 'localsource'));
+            // Preload template configuration variables
+            @templateLoadVariables();
+
+            $tVars['mode']       = $mode;
+            $tVars['number']     = $number;
+            $tVars['tpl_url']    = tpl_url;
+            $tVars['home']       = home;
+            $tVars['pagesss']    = generateLP( array('current' => $pageNo, 'count' => $countPages, 'url' => '#', 'tpl' => $templateName.'_pages'));
+
+            $xt = $twig->loadTemplate($tpath[$templateName].$templateName.'.tpl');
+
+            if(empty($row)) {
+                $results = array(
+                    'prd_main' => 2,
+                    'prd_main_text' => iconv('Windows-1251', 'UTF-8','Нет продукции!'),
+                    'prd_main_pages_text' => iconv('Windows-1251', 'UTF-8','')
+                );
+            }
+            else {
+                $results = array(
+                    'prd_main'  => 100,
+                    'prd_main_text' => iconv('Windows-1251', 'UTF-8', $xt->render($tVars)),
+                    'prd_main_pages_text' => iconv('Windows-1251', 'UTF-8', $tVars['pagesss'])
+                );
+            
+            }
+            
+            break;
+    }
+    
+    return array('status' => 1, 'errorCode' => 0, 'data' => $results);
 
 }

@@ -46,7 +46,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
     $xt = $twig->loadTemplate($payment_config_tpl);
     
     $tVars = array( 
-        'entries' => isset($tEntry)?$tEntry:'' 
+        'entries' => isset($tEntry)?$tEntry:''
     );
     
     $tpath = locatePluginTemplates(array('config/main'), 'eshop', 1);

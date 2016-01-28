@@ -25,32 +25,31 @@
 # =========================================================================== #
 
 Работа с системами оплаты:
-PAY2PAY:
-Fail URL: http://testsite000.ru/eshop/payment/?result=1&payment_id=pay2pay
-Result URL: http://testsite000.ru/eshop/payment/?result=2&payment_id=pay2pay
-Success URL: http://testsite000.ru/eshop/payment/?result=3&payment_id=pay2pay
+Fail URL: http://sitename.ru/eshop/payment/?result=1&payment_id={payment_id}
+Result URL: http://sitename.ru/eshop/payment/?result=2&payment_id={payment_id}
+Success URL: http://sitename.ru/eshop/payment/?result=3&payment_id={payment_id}
 
 # =========================================================================== #
 
 После установки плагина и активации и настройки ЧПУ станут доступны страницы:
-/[{alt}/][page/{page}/] - страницы категорий. (Шаблон вывода plugins/eshop/tpl/eshop.tpl)
-/{alt}.html - страницы продукции. (Шаблон вывода plugins/eshop/tpl/show_eshop.tpl)
-/eshop/search/[page/{page}/] - поиск по продукции. (Шаблон вывода plugins/eshop/tpl/search_eshop.tpl)
-/eshop/stocks/[page/{page}/] - страница акциионной продукции. (Шаблон вывода plugins/eshop/tpl/stocks_eshop.tpl)
-/eshop/compare/ - страница сравнения продукции. (Шаблон вывода plugins/eshop/tpl/compare_eshop.tpl)
-/eshop/yml_export/ - страница вывода продукции в XML. (Шаблон вывода plugins/eshop/tpl/yml_export_eshop.tpl)
-/eshop/ebasket_list/ - страница вывода корзины и формы заказа. (Шаблон вывода plugins/eshop/tpl/ebasket/list.tpl)
-/eshop/order/?id={id}&uniqid={uniqid} - страница существуюшего заказа. (Шаблон вывода plugins/eshop/tpl/order_eshop.tpl)
+/[{alt}/][page/{page}/] - страницы категорий. (Шаблон вывода eshop.tpl)
+/{alt}.html - страницы продукции. (Шаблон вывода show_eshop.tpl)
+/eshop/search/[page/{page}/] - поиск по продукции. (Шаблон вывода search_eshop.tpl)
+/eshop/stocks/[page/{page}/] - страница акциионной продукции. (Шаблон вывода stocks_eshop.tpl)
+/eshop/compare/ - страница сравнения продукции. (Шаблон вывода compare_eshop.tpl)
+/eshop/yml_export/ - страница вывода продукции в XML. (Шаблон вывода yml_export_eshop.tpl)
+/eshop/ebasket_list/ - страница вывода корзины и формы заказа. (Шаблон вывода ebasket/list.tpl)
+/eshop/order/?id={id}&uniqid={uniqid} - страница существуюшего заказа. (Шаблон вывода order_eshop.tpl)
 /eshop/currency/?id={id} - страница смены валюты.
-/eshop/payment/?payment_id={payment_id}&order_id={order_id}&order_uniqid={order_uniqid} - страница отправки запроса на оплату и приема результата оплаты. (Шаблон вывода plugins/eshop/tpl/payment_eshop.tpl)
+/eshop/payment/?payment_id={payment_id}&order_id={order_id}&order_uniqid={order_uniqid} - страница отправки запроса на оплату и приема результата оплаты. (Шаблон вывода payment_eshop.tpl)
 
-plugins/eshop/tpl/variables.ini - отвечает за переменные для постраничной навигации.
-plugins/eshop/tpl/comments.form_eshop.tpl - шаблон вывода формы для добавления отзывов на странице продукта.
-plugins/eshop/tpl/comments.show_eshop.tpl - о шаблон вывода списка отзывов на странице продукта.
-plugins/eshop/tpl/viewed_block_eshop.tpl -  шаблон вывода просмотренных товаров.
-plugins/eshop/tpl/likes_eshop.tpl -  шаблон вывода блока кнопки - лайк (+1).
-plugins/eshop/tpl/mail/lfeedback.tpl -  шаблон вывода письма о добавлении нового заказа.
-plugins/eshop/tpl/mail/lfeedback_comment.tpl -  шаблон вывода письма о добавлении нового отзыва.
+variables.ini - отвечает за переменные для постраничной навигации.
+comments.form_eshop.tpl - шаблон вывода формы для добавления отзывов на странице продукта.
+comments.show_eshop.tpl - о шаблон вывода списка отзывов на странице продукта.
+viewed_block_eshop.tpl -  шаблон вывода просмотренных товаров.
+likes_eshop.tpl -  шаблон вывода блока кнопки - лайк (+1).
+mail/lfeedback.tpl -  шаблон вывода письма о добавлении нового заказа.
+mail/lfeedback_comment.tpl -  шаблон вывода письма о добавлении нового отзыва.
 
 Наличие той или иной переменной в шаблоне всегда можно посмотреть через {{ debugContext(0) }}, {{ debugValue(varName) }}
 
@@ -61,19 +60,19 @@ plugins/eshop/tpl/mail/lfeedback_comment.tpl -  шаблон вывода пис
 Доступные параметры:
 - number - число товаров для отображения
 - mode - режим вывода, доступны (last - самые новые, stocked - те что отмечены "Акционный", featured - те что отмечены "Рекомендованный")
-- template - шаблон вывода, например если block_eshop, то это plugins/eshop/tpl/block/block_eshop.tpl (если не используется, то по-умолчанию block_eshop)
+- template - шаблон вывода, например если block_eshop, то это block/block_eshop.tpl (если не используется, то по-умолчанию block_eshop)
 - cat - категории из которых выводить товары (если не используется, то по-умолчанию все категории).
 - cacheExpire - время жизни кеша в секундах (если не используется, то по-умолчанию без кеша).
 
 2. {{ callPlugin('eshop.show_catz_tree', {'template': 'block_cats_tree'}) }} - выводит дерево категорий. Шаблон вывода: plugins/eshop/tpl/cats_tree.tpl
 Доступные параметры:
-- template - шаблон вывода, например если block_cats_tree, то это plugins/eshop/tpl/block/block_cats_tree.tpl (если не используется, то по-умолчанию block_cats_tree)
+- template - шаблон вывода, например если block_cats_tree, то это block/block_cats_tree.tpl (если не используется, то по-умолчанию block_cats_tree)
 
-3. {{ eshop_ebasket }} - выводит блок корзины с количеством и ценой. Шаблон вывода: plugins/eshop/tpl/ebasket/total.tpl
+3. {{ eshop_ebasket }} - выводит блок корзины с количеством и ценой. Шаблон вывода: ebasket/total.tpl
 
-4. {{ eshop_ebasket_notify }} - выводит блоки, связанные с добавлением заказов (добавление в корзину, заказ в один клик, и.т.д).  Шаблон вывода: plugins/eshop/tpl/ebasket/notify.tpl
+4. {{ eshop_ebasket_notify }} - выводит блоки, связанные с добавлением заказов (добавление в корзину, заказ в один клик, и.т.д).  Шаблон вывода: ebasket/notify.tpl
 
-5. {{ eshop_compare }} - выводит блок количества добавленных к сравнению продуктов. Шаблон вывода: plugins/eshop/tpl/compare_block_eshop.tpl
+5. {{ eshop_compare }} - выводит блок количества добавленных к сравнению продуктов. Шаблон вывода: compare_block_eshop.tpl
 
 6. Также в main.tpl поддерживаются страндартные TWIG блоки, которые позволяют выводить/скрывать определенные блоки в зависимости от страницы на которой находится посетитель.
 - {% if pluginIsActive('eshop') %}XXX{% endif %} - выводится если плагин eshop активирован.
@@ -180,7 +179,7 @@ if(page_stack != null) {
     });
 }
 
-На странице продукции (Шаблон вывода plugins/eshop/tpl/show_eshop.tpl) должено быть объявлено добавление ID продукции в localStorage:
+На странице продукции (Шаблон вывода show_eshop.tpl) должено быть объявлено добавление ID продукции в localStorage:
 br.storage.prependUnique('page_stack', {{ id }}, 25);
 
 
@@ -204,8 +203,6 @@ rpcEshopRequest('eshop_comments_show', {'product_id' : {{id}}}, function (resTX)
 
 
 # =========================================================================== #
-
 Отблагодарить меня можно по следующим реквизитам:
-
 WebMoney: Z182737149666 и R406852171246
 Яндекс.Деньги: 41001972962081
