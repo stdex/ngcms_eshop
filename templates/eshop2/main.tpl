@@ -201,7 +201,7 @@
           
         </li>
         <li class="compare-button">
-            {{ eshop_compare }}
+            {{ callPlugin('eshop.compare') }}
         </li>
         <!--Start. Top menu and authentication data block-->
         <li class="btn-personal-area">
@@ -308,7 +308,7 @@
           <!-- Start. Include cart data template-->
           <div id="tinyBask" class="frame-cleaner">
             
-            {{ eshop_ebasket }}
+            {{ callPlugin('eshop.total') }}
 
           </div>
           <!-- End. Include cart data template-->
@@ -1052,8 +1052,8 @@
               </div>
             </div>
           </div>
-                    
-          {{ eshop_ebasket_notify }}
+        
+          {{ callPlugin('eshop.notify') }}
 
         <div id="jq-dropdown-1" class="jq-dropdown jq-dropdown-tip">
             <ul class="jq-dropdown-menu">

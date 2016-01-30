@@ -1,6 +1,6 @@
-[prev-link]<a class="item"><i class="icon arrow left"></i></a>[/prev-link]
-{pages}
-[next-link]<a class="item"><i class="icon arrow right"></i></a>[/next-link]
+{{ prev_link }}
+{{pages}}
+{{ next_link }}
 
 <script>
 $(document).ready(function(){
@@ -22,12 +22,17 @@ $(document).ready(function(){
                    }
             });
         }
+        else if (page == '') {
+            return false;
+        }
         
         rpcEshopRequest('eshop_amain', {'action': 'show', 'number':8, 'mode':'last', 'page':page }, function (resTX) {
             if ((resTX['data']['prd_main']>0)&&(resTX['data']['prd_main'] < 100)) {
                 $("div#mainProductsPreview").html(""+resTX['data']['prd_main_text']+"");
+                $("div#mainPagesPreview").html(""+resTX['data']['prd_main_pages_text']+"");
             } else {
                 $("div#mainProductsPreview").html(""+resTX['data']['prd_main_text']+"");
+                $("div#mainPagesPreview").html(""+resTX['data']['prd_main_pages_text']+"");
             }
         });
 

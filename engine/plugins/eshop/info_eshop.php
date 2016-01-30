@@ -163,27 +163,27 @@ global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang, $mysql, $twig, $userROW
 
 //
 // Отображение общей информации о сравнеии продукции
-function plugin_eshop_compare() {
+function plugin_eshop_compare($params) {
     global $mysql, $twig, $userROW, $template, $SYSTEM_FLAGS;
 
     $tpath = locatePluginTemplates(array('compare_block_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'));
     $xt = $twig->loadTemplate($tpath['compare_block_eshop'].'compare_block_eshop.tpl');
-    $template['vars']['eshop_compare'] = $xt->render($SYSTEM_FLAGS["eshop"]["compare"]);
+    return $xt->render($SYSTEM_FLAGS["eshop"]["compare"]);
 }
 
 //
 // Отображение общей информации/остатков в корзине
-function plugin_ebasket_total() {
+function plugin_ebasket_total($params) {
     global $mysql, $twig, $userROW, $template, $SYSTEM_FLAGS;
 
     $tpath = locatePluginTemplates(array('ebasket/total'), 'eshop', pluginGetVariable('eshop', 'localsource'));
     $xt = $twig->loadTemplate($tpath['ebasket/total'].'ebasket/'.'total.tpl');
-    $template['vars']['eshop_ebasket'] = $xt->render($SYSTEM_FLAGS["eshop"]["basket"]);
+    return $xt->render($SYSTEM_FLAGS["eshop"]["basket"]);
 }
 
 //
 // Отображение блока нотификации при добавлении продукта в корзину
-function plugin_ebasket_notify() {
+function plugin_ebasket_notify($params) {
     global $mysql, $twig, $userROW, $template;
 
     // Выводим шаблон
@@ -199,8 +199,12 @@ function plugin_ebasket_notify() {
     );
 
     $xt = $twig->loadTemplate($tpath['ebasket/notify'].'ebasket/'.'notify.tpl');
-    $template['vars']['eshop_ebasket_notify'] = $xt->render($tVars);
+    return $xt->render($tVars);
 }
+
+twigRegisterFunction('eshop', 'compare', plugin_eshop_compare);
+twigRegisterFunction('eshop', 'notify', plugin_ebasket_notify);
+twigRegisterFunction('eshop', 'total', plugin_ebasket_total);
 
 if (class_exists('p_uprofileFilter')) {
     class uOrderFilter extends p_uprofileFilter {

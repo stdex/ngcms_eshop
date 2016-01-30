@@ -87,3 +87,7 @@ footer .socials a .instagram:hover{color: #964B00}
     display: none;
     text-align: center;
 }
+
+.mini-cart{padding:0; display: block; z-index: 1;border:2px solid #fafafa;}
+.mini-cart div:nth-child(1){background: #f4f4f4;display: inline-block;margin-right: -2px;padding: 0.5em;height: 33px;color:#A35151;}
+.mini-cart div:nth-child(2){background: #fff;display: inline-block;padding: 0.5em;height: 33px;}

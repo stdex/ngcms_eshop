@@ -667,14 +667,14 @@ function update_prices($change_price_type, $change_price_qnt)
 // * url     - URL of page, %page% will be replaced by page number
 // * maxNavigations - max number of navigation links
 function generateLP($param){
-    global $tpl, $TemplateCache;
+    global $tpl, $TemplateCache, $twig;
 
     if ($param['count'] < 2) return '';
 
-    //templateLoadVariables(true, 1);
-    
-    //var_dump($TemplateCache['admin']['#variables']['navigation']);
-    
+    templateLoadVariables(true, 1);
+    $nav = LoadVariables_eshop();
+    #$nav = $TemplateCache['site']['#variables']['navigation'];
+    /*
     $nav = array(
         "prevlink" => "<a class='item' style='cursor:pointer;' data-page='%page%' class='prev' data-page='prev'>%page%</a> ",
         "nextlink" => "<a class='item' style='cursor:pointer;' data-page='%page%' class='next' data-page='next'>%page%</a> ",
@@ -682,19 +682,13 @@ function generateLP($param){
         "link_page" => "<a class='item' style='cursor:pointer;' data-page='%page%'>%page%</a> ",
         "dots" => "<a class='item'>...</a> "
     );
-    //$nav = $TemplateCache['admin']['#variables']['navigation'];
-    
-    $tpl_name = $param['tpl'];
-
-    $tpath = locatePluginTemplates(array($tpl_name), 'eshop', pluginGetVariable('eshop', 'localsource'));
-    $tpl -> template($tpl_name, $tpath[$tpl_name]);
-
-    // Prev page link
+    */
+  
     if ($param['current'] > 1) {
         $prev = $param['current'] - 1;
-        $tvars['regx']["'\[prev-link\](.*?)\[/prev-link\]'si"] = str_replace('%page%',"$1",str_replace('%link%',str_replace('%page%', $prev, $param['url']), $nav['prevlink']));
+        $prev_link = str_replace('%page%',"$1",str_replace('%link%',str_replace('%page%', $prev, $param['url']), $nav['prevlink']));
     } else {
-        $tvars['regx']["'\[prev-link\](.*?)\[/prev-link\]'si"] = "";
+        $prev_link = "";
         $no_prev = true;
     }
 
@@ -712,17 +706,17 @@ function generateLP($param){
         // Situation #1: 1,2,3,4,[5],6 ... 128
         if ($param['current'] < ($sectionSize * 2)) {
             $pages .= generateNavi($param['current'], 1, $sectionSize * 2, $param['url'], $nav);
-            $pages .= " ... ";
+            $pages .= $nav['dots'];
             $pages .= generateNavi($param['current'], $param['count']-$sectionSize, $param['count'], $param['url'], $nav);
         } elseif ($param['current'] > ($param['count'] - $sectionSize * 2 + 1)) {
             $pages .= generateNavi($param['current'], 1, $sectionSize, $param['url'], $nav);
-            $pages .= " ... ";
+            $pages .= $nav['dots'];
             $pages .= generateNavi($param['current'], $param['count']-$sectionSize*2 + 1, $param['count'], $param['url'], $nav);
         } else {
             $pages .= generateNavi($param['current'], 1, $sectionSize, $param['url'], $nav);
-            $pages .= " ... ";
+            $pages .= $nav['dots'];
             $pages .= generateNavi($param['current'], $param['current']-1, $param['current']+1, $param['url'], $nav);
-            $pages .= " ... ";
+            $pages .= $nav['dots'];
             $pages .= generateNavi($param['current'], $param['count']-$sectionSize, $param['count'], $param['url'], $nav);
         }
     } else {
@@ -733,15 +727,29 @@ function generateLP($param){
     $tvars['vars']['pages'] = $pages;
     if ($prev + 2 <= $param['count']) {
         $next = $prev + 2;
-        $tvars['regx']["'\[next-link\](.*?)\[/next-link\]'si"] = str_replace('%page%',"$1",str_replace('%link%',str_replace('%page%', $next, $param['url']), $nav['nextlink']));
+        $next_link = str_replace('%page%',"$1",str_replace('%link%',str_replace('%page%', $next, $param['url']), $nav['nextlink']));
     } else {
-        $tvars['regx']["'\[next-link\](.*?)\[/next-link\]'si"] = "";
+        $next_link = "";
         $no_next = true;
     }
-
     
-    $tpl -> vars($tpl_name, $tvars);
-    return $tpl -> show($tpl_name);
+    $tpl_name = $param['tpl'];
+    $tpath = locatePluginTemplates(array($tpl_name), 'eshop', pluginGetVariable('eshop', 'localsource'));
+    $xt = $twig->loadTemplate($tpath[$tpl_name].$tpl_name.'.tpl');
+
+    $tpl -> template($tpl_name, $tpath[$tpl_name]);
+    $tVars = array(
+        'current' => $param['current'],
+        'prev' => $param['current'] - 1,
+        'prev_link' => $prev_link,
+        'pages' => $pages,
+        'next' => $prev + 2,
+        'next_link' => $next_link,
+        'no_prev' => $no_prev,
+        'no_next' => $no_next,
+    );
+
+    return $xt->render($tVars);
 }
 
 function generateNavi($current, $start, $stop, $link, $navigations){
@@ -757,4 +765,9 @@ function generateNavi($current, $start, $stop, $link, $navigations){
         }
     }
     return $result;
+}
+
+function LoadVariables_eshop(){
+    $tpath = locatePluginTemplates(array(':'), 'eshop', pluginGetVariable('eshop', 'localsource'));
+    return parse_ini_file($tpath[':'].'/main_variables.ini', true);
 }

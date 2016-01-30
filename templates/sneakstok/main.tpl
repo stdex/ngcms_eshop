@@ -24,7 +24,9 @@
 
     <script type="text/javascript" src="{{ scriptLibrary }}/functions.js"></script>
     <script type="text/javascript" src="{{ scriptLibrary }}/ajax.js"></script>
-    
+    <title>
+        {{ titles }}
+    </title>
 </head> 
 <body>
     
@@ -38,7 +40,9 @@
     <div class="ui stackable grid container" style="padding-top:1.8em">
         <div class="row">
             <div class="four wide column">
+                <a href="{{home}}">
                 <img src="{{ tpl_url }}/img/logo.png" alt="">
+                </a>
             </div>
             <div class="seven wide column right floated" style="text-align:right">
                  <span id="searchShow">Поиск<i class="icon search inline-block"></i></span>
@@ -57,32 +61,7 @@
         <ul id="mainMenu">
             <li>
                 <a class="dropdownItem" href="#">Категории <i class="angle down icon"></i></a>
-                    <div class="submenu hide">
-                        <div class="two wide column">
-                            <h4>Кроссовки</h4>
-                            <a href="/">Nike</a>
-                            <a href="/">New Balance</a>
-                            <a href="/">Addidas</a>
-                            <a href="/">Asics</a>
-                        </div>
-                        <div class="two wide column">
-                            <h4>Кеды</h4>
-                            <a href="/">Converse</a>
-                            <a href="/">Lacoste</a>
-                            <a href="/">Vans</a>
-                        </div>
-                        <div class="two wide column">
-                            <h4>Ботинки</h4>
-                            <a href="/">Timberland</a>       
-                        </div>
-                        <div class="three wide column">
-                            <h4>Другое</h4>
-                            <a href="/">Распродажа</a>
-                            <a href="/">Новые поступления</a>
-                            <a href="/">Предложение сезона</a>
-                            <a href="/">Показать все</a>
-                        </div>
-                    </div>                                           
+                {{ callPlugin('eshop.show_catz_tree') }}                                          
             </li>
             <li><a href="#" class="dropdownItem">Оплата и доставка <i class="angle down icon"></i></a>
                 <div class="submenu hide">
@@ -103,8 +82,16 @@
             <li><a href="#" style="color:#EF9A00">Скидки</a></li>
 
         </ul>
-        <div style="float:right;margin-top:-1.25em;text-align:center"> 
+        <style>
+
+        </style>
+        <div class="right item" style="text-align:right;text-align:right;padding-right:0;margin-right:0">
+        <div style="float:right;margin-top:-2.25em;text-align:center">
+                {{ callPlugin('eshop.total') }}
+                <!--
                 <span style="font-weight:bold;font-size:1em">КОРЗИНА (0)</span> <i  style="margin-left:0.2em;font-size:1.2em" class="icon cart"></i>
+                -->
+        </div>
         </div>
         <div class="dropdownMenu ui stackable grid" style="display:none"></div>
     </nav>
@@ -142,17 +129,19 @@
 <!-- Stop help panel-->
 
 <!-- Products -->
-<div class="ui stackable four column grid container" id="mainProductsPreview">
+<div class="ui stackable four column grid container" {% if isHandler('news:main') %}id="mainProductsPreview"{% endif %}>
     {% if not isHandler('news:main') %}
     {{ mainblock }}
     {% endif %}
 </div>
 <!-- End Products-->
+{% if isHandler('news:main') %}
 <div class="ui container">
     <div class="ui divider" style="margin-top:1.5em;border-color:#eee;border-bottom:0"></div>
     <div class="ui pagination menu floated right shadow-none radius-none" id="mainPagesPreview">
     </div>
 </div>
+{% endif %}
 
 <footer style="background:#fafafa;margin-top:8em; padding:2em">
     <div class="ui stackable three column grid container">
@@ -189,6 +178,7 @@
 <script>
 $(document).ready(function() {
 
+{% if isHandler('news:main') %}
     rpcEshopRequest('eshop_amain', {'action': 'show', 'number':8, 'mode':'last', 'page':0 }, function (resTX) {
         if ((resTX['data']['prd_main']>0)&&(resTX['data']['prd_main'] < 100)) {
             $("div#mainProductsPreview").html(""+resTX['data']['prd_main_text']+"");
@@ -198,6 +188,7 @@ $(document).ready(function() {
             $("div#mainPagesPreview").html(""+resTX['data']['prd_main_pages_text']+"");
         }
     });
+{% endif %}
     
 });    
 
