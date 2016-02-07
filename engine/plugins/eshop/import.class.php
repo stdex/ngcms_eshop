@@ -131,7 +131,6 @@ class YMLOffer extends YMLCategory {
         $result = $mysql->query('INSERT INTO '.prefix.'_eshop_products SET '.implode(', ',$vnames).' ');
         
         if($result) {
-            usleep(250000);
             $qid = $mysql->lastid('eshop_products');
 
             if(count($offer->picture) > 0) {
@@ -240,6 +239,9 @@ class YMLOffer extends YMLCategory {
             }
             
             $returnArr = array();
+            
+            $returnArr[] = array_merge(['value' => $PROP['id']], array('name' => 'source_id'));
+            
             foreach ($offer->children() as $element) {
 
                 if (mb_strtolower($element->getName()) == 'param') {

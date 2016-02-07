@@ -1,5 +1,1 @@
-<div class="pagination">
-	<ul>
-		[prev-link]Prev[/prev-link] {pages} [next-link]Next[/next-link]
-	</ul>
-</div>
+[prev-link]<i class="icon arrow left"></i>[/prev-link]{pages}[next-link]<i class="icon arrow right"></i>[/next-link]

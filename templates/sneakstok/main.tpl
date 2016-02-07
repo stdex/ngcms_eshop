@@ -15,12 +15,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ tpl_url }}/css/reset.css">
     <link rel="stylesheet" href="{{ tpl_url }}/css/main.css">
+    <link rel="stylesheet" href="{{ tpl_url }}/css/product.css">
     <link rel="stylesheet" href="{{ tpl_url }}/semantic/dist/semantic.min.css">
 
 
     <script src="{{ tpl_url }}/js/jquery-1.8.3.min.js"></script>
     <script src="{{ tpl_url }}/semantic/dist/semantic.js"></script>
     <script src="{{ tpl_url }}/js/main.js"></script>
+    <script src="{{ tpl_url }}/js/slidr.js"></script>
 
     <script type="text/javascript" src="{{ scriptLibrary }}/functions.js"></script>
     <script type="text/javascript" src="{{ scriptLibrary }}/ajax.js"></script>
@@ -48,7 +50,9 @@
                  <span id="searchShow">Поиск<i class="icon search inline-block"></i></span>
                  <div class="ui right aligned category search" style="display:none">
                   <div class="ui icon input">
-                    <input class="prompt" type="text" placeholder="Поиск по сайту..." style="border-radius:0">
+                  <form name="search" method="post" action="{{home}}/eshop/search/">
+                    <input name="keywords" class="prompt" type="text" placeholder="Поиск по сайту..." style="border-radius:0">
+                 </form>
                     <i class="icon search"></i>
                   </div>
                   <i class="icon remove" style="color:#000;font-size:1.1em;margin-left:0.2em"></i>
@@ -87,7 +91,9 @@
         </style>
         <div class="right item" style="text-align:right;text-align:right;padding-right:0;margin-right:0">
         <div style="float:right;margin-top:-2.25em;text-align:center">
+                <div id="tinyBask">
                 {{ callPlugin('eshop.total') }}
+                </div>
                 <!--
                 <span style="font-weight:bold;font-size:1em">КОРЗИНА (0)</span> <i  style="margin-left:0.2em;font-size:1.2em" class="icon cart"></i>
                 -->
@@ -99,41 +105,18 @@
 </header>
 <!-- Stop header -->
 
-<!-- Help Panel-->
-<!--
-<div class="ui container" id="helpPanel" style="margin-top:1em;">
-    <div class="ui stackable grid">
-        <div class="twelve wide column category_links">
-            <a href="/" class="link">Air Max 90</a>
-            <a href="/" class="link">Air Max Zero</a>
-            <a href="/" class="link">Air Force</a>
-            <a href="/" class="link">Cortez</a>
-            <a href="/" class="link">Cortez</a>
-            <a href="/" class="link active">Roshe Run</a>
-            <a href="/" class="link">Air Max 90</a>
-            <a href="/" class="link">Air Max Zero</a>
-
-        </div>      
-        <div class="four wide column" style="text-align:right">
-            <select class="dropdown" name="sort"  >
-                <option value="1">Подешевле</option>
-                <option value="2">Подороже</option>
-                <option value="3">Новые</option>
-                <option value="4">Старые</option>
-            </select>       
-        </div>
-    </div>
-    <div class="ui divider" style="margin-top:1.5em;border-color:#eee;border-bottom:0"></div>
-</div>
--->
-<!-- Stop help panel-->
-
 <!-- Products -->
-<div class="ui stackable four column grid container" {% if isHandler('news:main') %}id="mainProductsPreview"{% endif %}>
+{% if isHandler('eshop:show') %}
+{{ mainblock }}
+{% elseif (handler.pluginName == 'eshop') and (handler.handlerName == '') %}
+{{ mainblock }}
+{% else %}
+<div class="{% if isHandler('news:main') %}ui stackable four column grid container{% elseif isHandler('eshop:ebasket_list') %}ui container{% endif %}" {% if isHandler('news:main') %}id="mainProductsPreview"{% endif %}>
     {% if not isHandler('news:main') %}
     {{ mainblock }}
     {% endif %}
 </div>
+{% endif %}
 <!-- End Products-->
 {% if isHandler('news:main') %}
 <div class="ui container">

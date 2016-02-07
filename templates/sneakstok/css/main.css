@@ -49,7 +49,7 @@ ul#mainMenu > li:first-child > a{padding-left: 0 !important}
 #productsPreview{margin-top: 1em}
 .product-preview{height: 22em; position: relative;border:1px solid #fff;}
 .product-preview > .name{display:block;margin-top:1em;text-align:center;font-size:1em;color:#000 !important}
-.product-preview > .prices{display:block;margin-top:1em;text-align:center;font-size:1.1em;font-weight:bold;}
+.product-preview > .prices{display:block;margin-top:5px !important;text-align:center;font-size:1.1em;font-weight:bold;}
 .product-preview > .prices > .current, .product-preview > .prices > .old{display: inline-block;}
 .product-preview > .prices > .old {font-size: 0.95em; color: #999; text-decoration: line-through;}
 .product-preview > .prices > .current { color:#A35151;}
@@ -57,7 +57,7 @@ ul#mainMenu > li:first-child > a{padding-left: 0 !important}
 .product-preview > .image{height: 22em; height:70%;border: 1px solid #fff; display: block;}
 .product-preview:hover > .image{opacity: 0.5}
 
-.product-preview > .buttons { margin-top:4em; display: none;z-index: 1000; height: 22em; position: absolute; width: 100%}
+.product-preview > .buttons { margin-top:6em; display: none;z-index: 1000; height: 22em; position: absolute; width: 100%}
 .product-preview > .buttons > .buy, .product-preview > .buttons > .prev{
         display:block;
         width:150px;
@@ -91,3 +91,37 @@ footer .socials a .instagram:hover{color: #964B00}
 .mini-cart{padding:0; display: block; z-index: 1;border:2px solid #fafafa;}
 .mini-cart div:nth-child(1){background: #f4f4f4;display: inline-block;margin-right: -2px;padding: 0.5em;height: 33px;color:#A35151;}
 .mini-cart div:nth-child(2){background: #fff;display: inline-block;padding: 0.5em;height: 33px;}
+
+
+/* Cart*/
+.message-add-to-cart{min-width: 200px !important; text-align: center;z-index: 100}
+.cart .product-remove .remove {font-size: 1.8em; color:#000000;}
+.cart td {vertical-align: middle}
+.cart .quantity{width: 38px;margin: 5px;display: inline-block;}
+.coupon{margin-top: -0em}
+.coupon label{display: none;}
+#coupon_code{width: 150px !important;}
+.product-price{display: none}
+input[name=update_cart]{display: none;}
+.cart-collaterals{text-align: right}
+.totals-header{text-transform: uppercase;color: #888;margin-top: 1em}
+.totals-header  span{margin-left: 0.2em; color: #000}
+.mini-cart{padding:0; display: block; z-index: 1;border:2px solid #fafafa;}
+.mini-cart div:nth-child(1){background: #f4f4f4;display: inline-block;margin-right: -2px;padding: 0.5em;height: 33px;color:#A35151;}
+.mini-cart div:nth-child(2){background: #fff;display: inline-block;padding: 0.5em;height: 33px;}
+/*CHECKOUT*/
+.form-row{width: 100% !important;}
+.form-row-first,.form-row-last{float: none !important;}
+.woocommerce-checkout-payment{width: 100% !important}
+#place_order{float: none !important;}
+
+
+header.main{background: #fafafa; opacity: 0.99}
+header.main:hover{opacity: 1;}
+header.main #searchShow{color: #000; font-size: 1em}
+header.main #searchShow  i{margin-left: 0.4em; color: #333}
+header.main .search input{min-width: 250px; border-color:#f2f2f2 !important;}
+
+/*Main menu*/
+header.main{padding: 1em 0 0.5em 0}
+header nav{display: block; padding:2em 0 ;}

@@ -192,6 +192,57 @@
             <option {% if entries.prices[0].stock == '1' %}selected="selected"{% endif %}value="1">На заказ</option>
         </select></td>
     </tr>
+    
+    <script>
+        
+        var cat_features = {{ entries.cat_features }};
+        
+        $(function(){
+            $('select[name=parent]').change(function(){
+                var selected_cat_id = $(this).val();
+                var find = false;
+                $.each( cat_features, function( i, l ){
+                    if(i.toString() == selected_cat_id) {
+                        $('tr[class=features]').css('display','none');
+                        $.each( l, function( iv, lv ){
+                            $("tr[data-fid=" + lv + "]").css('display','table-row');
+                        });
+                        find = true;
+                    }
+                });
+                
+                if(!find) {
+                    $("tr[class=features]").css('display','table-row');
+                }
+
+            });
+        });
+        
+        {% if entries.mode == 'edit' %}
+        
+        $(function(){
+
+            var selected_cat_id = "{{ entries.category_id }}";
+            var find = false;
+            $.each( cat_features, function( i, l ){
+                if(i.toString() == selected_cat_id) {
+                    $('tr[class=features]').css('display','none');
+                    $.each( l, function( iv, lv ){
+                        $("tr[data-fid=" + lv + "]").css('display','table-row');
+                    });
+                    find = true;
+                }
+            });
+            
+            if(!find) {
+                $("tr[class=features]").css('display','table-row');
+            }
+
+        });
+        
+        {% endif %}
+
+    </script>
 
     {% if (entries.features) %}
         <tr>
@@ -199,7 +250,7 @@
             <td width="50%" class="contentEntry2"></td>
         </tr>
         {% for feature in entries.features %}
-            <tr>
+            <tr data-fid="{{feature.id}}" class="features">
                 <td width="50%" class="contentEntry1">{{feature.name}}<br /><small></small></td>
                 <td width="50%" class="contentEntry2">
                     {% if feature.ftype == 0 %}<input type="text" size="80" name="data[features][{{feature.id}}]" value="{% if not(feature.value) and (entries.mode == 'add') %}{{feature.fdefault}}{% else %}{{feature.value}}{% endif %}" >

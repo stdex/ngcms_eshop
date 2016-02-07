@@ -6,3 +6,4 @@
         <span class="cartTotalPrice" style="font-weight: bold;color:#555">{{ (price * system_flags.eshop.currency[0].rate_from / system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }} <i>{{ system_flags.eshop.current_currency.sign }}</i></span> 
     </div>
 </a>
+<div class="ui message-add-to-cart popup bottom center transition hidden" style="top: 130px; right: 55px;">Добавлено в корзину</div>

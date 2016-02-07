@@ -14,21 +14,21 @@ aside[id*="-control"].border .slidr-control.right, aside[id*="-control"].border 
     opacity: 0.5
 }
 aside[id*="-control"].border .slidr-control.right:hover, aside[id*="-control"].border .slidr-control.left:hover{
-	opacity: 1;
-	-webkit-transition: opacity 1s easy-out;
-	-o-transition: opacity 1s easy-out;
-	-moz-transition: opacity 1s easy-out ;
+    opacity: 1;
+    -webkit-transition: opacity 1s easy-out;
+    -o-transition: opacity 1s easy-out;
+    -moz-transition: opacity 1s easy-out ;
 }
 aside[id*="-control"].border .slidr-control.right:after, aside[id*="-control"].border .slidr-control.left:after {
-	border-color: transparent !important;
+    border-color: transparent !important;
 }
 
 aside[id*="-control"].border .slidr-control.left {
-    background: url(slider_arrows.png) left center no-repeat;
+    background: url(../img/slider_arrows.png) left center no-repeat;
 }
 
 aside[id*="-control"].border .slidr-control.right {
-    background: url(slider_arrows.png) right center no-repeat;
+    background: url(../img/slider_arrows.png) right center no-repeat;
 }
 
 aside[id*="-control"].border .slidr-control.up{display: none}

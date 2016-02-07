@@ -83,7 +83,7 @@ mail/lfeedback_comment.tpl -  шаблон вывода письма о добавлении нового отзыва.
 - {% if isHandler('eshop:compare') %}XXX{% endif %} - выводится только на на странице /compare/ плагина eshop.
 - {% if isHandler('eshop:ebasket_list') %}XXX{% endif %} - выводится только на на странице /ebasket_list/ плагина eshop.
 - {% if isHandler('eshop:order') %}XXX{% endif %} - выводится только на на странице /order/ плагина eshop.
-- {% if (handler.pluginName == 'eshop') and (handler.handlerName == '') %}XXX{% endif %} - выводится только на всех категорий.
+- {% if (handler.pluginName == 'eshop') and (handler.handlerName == '') %}XXX{% endif %} - выводится только на страницах всех категорий.
 - {% if (handler.pluginName == 'eshop') and (handler.handlerName == 'show') and (handler.params.alt == 'alt-name-product') %}XXX{% endif %} - выводится только на странице продукта с altname = alt-name-product.
 - {% if (handler.pluginName == 'eshop') and (handler.handlerName == '') and (handler.params.alt == 'alt-name-cat') %}XXX{% endif %} - выводится только на странице категории с altname = alt-name-cat.
 
@@ -122,11 +122,19 @@ rpcEshopRequest('eshop_ebasket_manage', {'action': 'add', 'ds':1, 'id':id, 'coun
     document.getElementById('tinyBask').innerHTML = resTX['update'];
 });
 
+Обновление блока корзины без внесения изменений:
+rpcEshopRequest('eshop_ebasket_manage', {'action': 'update' }, function (resTX) {
+    document.getElementById('tinyBask').innerHTML = resTX['update'];
+});
+
+По умолчанию используются шаблоны: ebasket/total.tpl
+
 
 2) Удаление продукции из заказа (корзины):
 rpcEshopRequest('eshop_ebasket_manage', {'action': 'delete', 'id':id, 'linked_ds':linked_ds, 'linked_id':linked_id }, function (resTX) {
     location.reload();
 });
+По умолчанию используются шаблоны: ebasket/list.tpl
 
 
 3) Обновление количества продукции в заказе (корзине):
@@ -142,6 +150,7 @@ rpcEshopRequest('eshop_ebasket_manage', {'action': 'update_count',  'id':id, 'li
     });
     $("#finalAmount").text(sum.toFixed(2));
 });
+По умолчанию используются шаблоны: ebasket/list.tpl
 
 
 4) Добавление быстрого заказа:
@@ -154,6 +163,8 @@ rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 
     $("div#fastprice-frame").html("<label><div align='center'>Спасибо. В ближайшее время вам перезвонит наш манеджер.</div></label>");
 });
 
+По умолчанию используются шаблоны: ebasket/total.tpl, ebasket/notify.tpl
+
 
 5) Добавление / удаление продукции к сравнению:
 rpcEshopRequest('eshop_compare', {'action': 'add', 'id':id }, function (resTX) {
@@ -164,10 +175,14 @@ rpcEshopRequest('eshop_compare', {'action': 'remove', 'id':id }, function (resTX
     $('.compare-button').html(resTX['update']);
 });
 
+По умолчанию используются шаблоны: compare_block_eshop.tpl
+
+
 6) Лайк продукции:
 rpcEshopRequest('eshop_likes_result', {'action': 'do_like', 'id' : id }, function (resTX) {
     $(".ratebox2").html(resTX['update']);
 });
+По умолчанию используются шаблоны: likes_eshop.tpl
 
 
 7) Вывод блока просмотренной продукции:
@@ -178,6 +193,7 @@ if(page_stack != null) {
         $('#ViewedProducts').html(resTX['update']);
     });
 }
+По умолчанию используются шаблоны: viewed_block_eshop.tpl
 
 На странице продукции (Шаблон вывода show_eshop.tpl) должено быть объявлено добавление ID продукции в localStorage:
 br.storage.prependUnique('page_stack', {{ id }}, 25);
@@ -194,15 +210,32 @@ rpcEshopRequest('eshop_comments_add', { 'comment_author' : $('#comment_author').
         $(".product-comment").html(""+resTX['data']['eshop_comments_show']+"");
     }
 });
+По умолчанию используются шаблоны: comments.form_eshop.tpl
+
 
 9) Вывод списка отзывов:
 rpcEshopRequest('eshop_comments_show', {'product_id' : {{id}}}, function (resTX) {
     $(".error_text").html("");
     $(".product-comment").html(""+resTX['data']['eshop_comments_show']+"");
 });
+По умолчанию используются шаблоны: comments.show_eshop.tpl
+
+
+10) Вывод блока с продукцией (аналог callPlugin('eshop.show'), с постраничной навигацией на AJAX):
+rpcEshopRequest('eshop_amain', {'action': 'show', 'number':8, 'mode':'last', 'page':0 }, function (resTX) {
+    if ((resTX['data']['prd_main']>0)&&(resTX['data']['prd_main'] < 100)) {
+        $("div#mainProductsPreview").html(""+resTX['data']['prd_main_text']+"");
+        $("div#mainPagesPreview").html(""+resTX['data']['prd_main_pages_text']+"");
+    } else {
+        $("div#mainProductsPreview").html(""+resTX['data']['prd_main_text']+"");
+        $("div#mainPagesPreview").html(""+resTX['data']['prd_main_pages_text']+"");
+    }
+});
+По умолчанию используются шаблоны: block/main_block_eshop.tpl, block/main_block_eshop_pages.tpl, main_variables.ini
 
 
 # =========================================================================== #
+
 Отблагодарить меня можно по следующим реквизитам:
 WebMoney: Z182737149666 и R406852171246
 Яндекс.Деньги: 41001972962081

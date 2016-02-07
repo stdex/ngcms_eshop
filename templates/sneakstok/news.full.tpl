@@ -1,21 +1,18 @@
 [TWIG]
-<div class="content">
-    <div class="frame-inside page-text">
-        <div class="container">
-            <div class="text-right">
-            <h1>{{ news.title }}</h1>
-                <div class="text">
-                    <p>{{ news.short }}{{ news.full }}</p>
-                    {% if (news.flags.hasPagination) %}
-                        <div class="pagination">
-                            <ul>
-                                {{ news.pagination }}
-                            </ul>
-                        </div>
-                    {% endif %}
-                </div>
+<div class="ui container" id="helpPanel" style="margin-top:1em;">
+    <div class="ui stackable grid">
+        <h3 class="ui header" style="margin-top:10px;">{{ news.title }}</h3>
+    </div>
+    <div class="ui divider" style="margin-top:1.5em;border-color:#eee;border-bottom:0"></div>
+    <div class="text">
+        <p>{{ news.short }}{{ news.full }}</p>
+        {% if (news.flags.hasPagination) %}
+            <div class="pagination">
+                <ul>
+                    {{ news.pagination }}
+                </ul>
             </div>
-        </div>
+        {% endif %}
     </div>
 </div>
 [/TWIG]

@@ -1,6 +1,6 @@
 ID: eshop
 Name: Интернет магазин
-Version: 0.2
+Version: 0.3
 Actions: ppages; eshop.php
 Actions: core; info_eshop.php
 Actions: index; block_eshop.php

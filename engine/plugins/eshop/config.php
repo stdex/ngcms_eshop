@@ -345,9 +345,15 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         $frow['foptions'] = json_decode($frow['foptions'], true);
         $features_array[] = $frow;
     }
+    
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories_features") as $cfrow)
+    {
+        $cat_features_array[$cfrow['category_id']][] = $cfrow['feature_id'];
+    }
 
     $tEntry['catz'] = getTree($cats);
     $tEntry['features'] = $features_array;
+    $tEntry['cat_features'] = json_encode($cat_features_array);
     $tEntry['error'] = $error_input;
     $tEntry['mode'] = "add";
 
@@ -596,7 +602,13 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         //unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/products/thumb/' . $imgPath);
         redirect_eshop('?mod=extra-config&plugin=eshop&action=edit_product&id='.$qid.'');
     }
+    
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories_features") as $cfrow)
+    {
+        $cat_features_array[$cfrow['category_id']][] = $cfrow['feature_id'];
+    }
 
+    $tEntry['cat_features'] = json_encode($cat_features_array);
     $tEntry['catz'] = getTree($cats, $row['category_id'], 0);
     $tEntry['features'] = $features_array;
     $tEntry['entriesImg'] = $images_array;

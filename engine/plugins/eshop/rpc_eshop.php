@@ -720,6 +720,39 @@ function basket_delete_item($id, $linked_ds, $linked_id) {
     return array('status' => 1, 'errorCode' => 0, 'data' => 'Item deleted');
 }
 
+function basket_update() {
+    global $mysql, $userROW, $twig;
+
+    // ======== Prepare update of totals informer ========
+    $filter = array();
+    if (is_array($userROW)) {                                               $filter []= '(user_id = '.db_squote($userROW['id']).')';        }
+    if (isset($_COOKIE['ngTrackID']) && ($_COOKIE['ngTrackID'] != '')) {    $filter []= '(cookie = '.db_squote($_COOKIE['ngTrackID']).')';  }
+
+    $tCount = 0;
+    $tPrice = 0;
+
+    if (count($filter) && is_array($res = $mysql->record("select count(*) as count, sum(price*count) as price from ".prefix."_eshop_ebasket where ".join(" or ", $filter), 1))) {
+        $tCount = $res['count'];
+        $tPrice = $res['price'];
+    }
+    
+    $basket_link = checkLinkAvailable('eshop', 'ebasket_list')?
+            generateLink('eshop', 'ebasket_list', array()):
+            generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'ebasket_list'), array());
+
+    $tVars = array(
+        'count'         => $tCount,
+        'price'         => $tPrice,
+        'basket_link'   => $basket_link,
+    );
+
+    $tpath = locatePluginTemplates(array('ebasket/total'), 'eshop', pluginGetVariable('eshop', 'localsource'));
+
+    $xt = $twig->loadTemplate($tpath['ebasket/total'].'ebasket/'.'total.tpl');
+    
+    return array('status' => 1, 'errorCode' => 0, 'data' => 'Update ebasket', 'update' => arrayCharsetConvert(0, $xt->render($tVars)));
+}
+
 function ebasket_rpc_manage($params){
     global $userROW, $DSlist, $mysql, $twig;
 
@@ -781,6 +814,9 @@ function ebasket_rpc_manage($params){
                     break;
                     
             }
+            break;
+        case 'update':
+            return basket_update();
             break;
         case 'update_count':
             $id = intval($params['id']);
