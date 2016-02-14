@@ -1,6 +1,82 @@
 <script type="text/javascript" src="{{home}}/engine/includes/js/ajax.js"></script>
 <script type="text/javascript" src="{{home}}/engine/includes/js/admin.js"></script>
 <script type="text/javascript" src="{{home}}/engine/includes/js/libsuggest.js"></script>
+<script>
+function eshop_indication(status, text) {
+
+    $('.message-error').remove();
+    $('.message-succes').remove();
+    var object = "";
+    switch (status) {
+    case 'success':
+    {
+      $('body').append('<div class="message-succes"></div>');
+      object = $('.message-succes');
+      break;
+    }
+    case 'error':
+    {
+      $('body').append('<div class="message-error"></div>');
+      object = $('.message-error');
+      break;
+    }
+    default:
+    {
+      $('body').append('<div class="message-error"></div>');
+      object = $('.message-error');
+      break;
+    }
+    }
+
+    object.slideDown("fast");
+    object.html(text);
+    setTimeout(function () {
+    object.remove();
+    }, 3000);
+}
+</script>
+<style>
+.message-succes{
+    display:none; 
+    padding:30px;
+    padding-bottom:50px;
+    border:1px solid green;
+    float:right;
+    border-radius:3px;
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+    margin:0;
+    color:#fff;
+    text-shadow:1px 1px 1px #444;
+    font-size: 16px;
+    position: fixed;bottom:0;right:0;z-index: 105;
+    background-color: #28BB1D;
+    opacity:0.9;
+    filter: alpha(opacity=90);
+}
+.message-error{
+    display:none;
+    padding:30px;
+    padding-bottom:50px;
+    border:1px solid #BA0A0A;
+    float:right;
+    border-radius:3px;
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+    margin:0;
+    color:#fff;
+    text-shadow:1px 1px 1px #444;
+    bottom:0;
+    right:0;
+    position: fixed;
+    z-index: 105;
+    font-size: 16px;
+    background-color: #BA0A0A;
+    opacity:0.9;
+    filter: alpha(opacity=90);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#EA3E3E', endColorstr='#FF1515',GradientType=0 );}
+</style>
+
 <div style="text-align : left;">
 <table class="content" border="0" cellspacing="0" cellpadding="0" align="center">
 <tr>

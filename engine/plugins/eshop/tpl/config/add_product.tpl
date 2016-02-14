@@ -132,6 +132,7 @@
 
                     var img_id = item.find('img').attr('data-id');
                     rpcEshopRequest('eshop_change_img_pos', {'img_id':img_id, 'position':position, 'prevPosition':prevPosition}, function (resTX) {
+                        eshop_indication('success','Порядок изображений изменен');
                     });
                     
                 }

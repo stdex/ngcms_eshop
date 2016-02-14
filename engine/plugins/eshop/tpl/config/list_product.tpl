@@ -137,14 +137,19 @@ $(document).ready(function(){
         var id = $(this).attr("data-id");
         var mode = "price";
         var price = $(this).val();
-        rpcEshopRequest('eshop_change_price', {'id':id, 'mode':mode, 'price':price}, function (resTX) {});
+        rpcEshopRequest('eshop_change_price', {'id':id, 'mode':mode, 'price':price}, function (resTX) {
+            eshop_indication('success','Товар сохранен');
+        });
     });
     
     $(document).on('change', '.compare_price_input',  function(e) {
         var id = $(this).attr("data-id");
         var mode = "compare_price";
         var price = $(this).val();
-        rpcEshopRequest('eshop_change_price', {'id':id, 'mode':mode, 'price':price}, function (resTX) {});
+        rpcEshopRequest('eshop_change_price', {'id':id, 'mode':mode, 'price':price}, function (resTX) {
+            eshop_indication('success','Товар сохранен');
+        });
     });
 });
+
 </script>
