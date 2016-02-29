@@ -31,6 +31,18 @@ Success URL: http://sitename.ru/eshop/payment/?result=3&payment_id={payment_id}
 
 # =========================================================================== #
 
+Экспорт:
+В CSV с ";" в качестве разделителя. Первая строка - заголовки.
+
+Импорт:
+Из CSV с ";" в качестве разделителя. Первая строка - заголовки. Порядок столбцов важен:
+id;code;url;name;price;compare_price;stock;annotation;body;active;featured;stocked;meta_title;meta_keywords;meta_description;date;editdate;cat_name;cid;images;xfields_source_id;xfields_source_url
+cat_name, images - не учитывается.
+Для загрузки дополнительных изображений создать директорию в /engine/plugins/eshop/import/images/, с именем равным ID продукта и положить туда изображения.
+(Например, для продукта с ID = 438 путь будет /engine/plugins/eshop/import/images/438/)
+
+# =========================================================================== #
+
 После установки плагина и активации и настройки ЧПУ станут доступны страницы:
 /[{alt}/][page/{page}/] - страницы категорий. (Шаблон вывода eshop.tpl)
 /{alt}.html - страницы продукции. (Шаблон вывода show_eshop.tpl)
@@ -59,9 +71,10 @@ mail/lfeedback_comment.tpl -  шаблон вывода письма о добавлении нового отзыва.
 1. {{ callPlugin('eshop.show', {'number' : 10, 'mode' : 'stocked', 'template': 'block_eshop'}) }} - выводит блок товаров на главной.
 Доступные параметры:
 - number - число товаров для отображения
-- mode - режим вывода, доступны (last - самые новые, stocked - те что отмечены "Акционный", featured - те что отмечены "Рекомендованный")
+- mode - режим вывода, доступны (last - самые новые, stocked - те что отмечены "Акционный", featured - те что отмечены "Рекомендованный", view - самые просматриваемые, rnd - рандом)
 - template - шаблон вывода, например если block_eshop, то это block/block_eshop.tpl (если не используется, то по-умолчанию block_eshop)
 - cat - категории из которых выводить товары (если не используется, то по-умолчанию все категории).
+- products - id продуктов, которые выводить (если не используется, то по-умолчанию все продукты).
 - cacheExpire - время жизни кеша в секундах (если не используется, то по-умолчанию без кеша).
 
 2. {{ callPlugin('eshop.show_catz_tree', {'template': 'block_cats_tree'}) }} - выводит дерево категорий. Шаблон вывода: plugins/eshop/tpl/cats_tree.tpl

@@ -5,7 +5,7 @@ if (!defined('NGCMS'))
 
 include_once(dirname(__FILE__).'/cache.php');
 
-function plugin_block_eshop($number, $mode, $cat, $overrideTemplateName, $cacheExpire) {
+function plugin_block_eshop($number, $mode, $cat, $products, $overrideTemplateName, $cacheExpire) {
     global $config, $mysql, $tpl, $template, $twig, $twigLoader, $langMonths, $lang, $TemplateCache;
 
     // Prepare keys for cacheing
@@ -16,6 +16,11 @@ function plugin_block_eshop($number, $mode, $cat, $overrideTemplateName, $cacheE
     if(isset($cat) && !empty($cat))
     {
         array_push($conditions, "c.id IN (".$cat.") ");
+    }
+    
+    if(isset($products) && !empty($products))
+    {
+        array_push($conditions, "p.id IN (".$products.") ");
     }
     
     array_push($conditions, "p.active = 1");
@@ -196,7 +201,7 @@ function plugin_m_eshop_catz_tree($overrideTemplateName) {
 function plugin_block_eshop_showTwig($params) {
     global $CurrentHandler, $config;
 
-    return  plugin_block_eshop($params['number'], $params['mode'], $params['cat'], $params['template'], isset($params['cacheExpire'])?$params['cacheExpire']:0);
+    return  plugin_block_eshop($params['number'], $params['mode'], $params['cat'], $params['products'], $params['template'], isset($params['cacheExpire'])?$params['cacheExpire']:0);
 }
 
 //

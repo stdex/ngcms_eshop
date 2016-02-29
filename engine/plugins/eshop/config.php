@@ -2380,7 +2380,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
 }
 
 function urls()
-{global $tpl, $mysql, $twig;
+{global $tpl, $mysql, $twig, $CurrentHandler, $SUPRESS_TEMPLATE_SHOW;
     $tpath = locatePluginTemplates(array('config/main', 'config/urls'), 'eshop', 1);
 
     $url = pluginGetVariable('eshop', 'url');
@@ -2459,7 +2459,296 @@ function automation()
         $info = "Цены обновлены<br/>";
         msg(array("type" => "info", "info" => $info));
     }
-    
+
+    if (isset($_REQUEST['export_csv']))
+    {
+        
+        $SUPRESS_TEMPLATE_SHOW = 1;
+        $SUPRESS_MAINBLOCK_SHOW = 1;
+
+        require_once dirname(__FILE__) . '/csv_lib/CsvImportInterface.php';
+        require_once dirname(__FILE__) . '/csv_lib/CsvImport.php';
+        require_once dirname(__FILE__) . '/csv_lib/CsvExportInterface.php';
+        require_once dirname(__FILE__) . '/csv_lib/CsvExport.php';
+
+        $export = new CsvExport();
+        
+        $cat_array = array();
+
+        foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_categories ORDER BY position ASC') as $cat_row)
+        {
+
+                $catlink = checkLinkAvailable('eshop', '')?
+                    generateLink('eshop', '', array('cat' => $cat_row['id'])):
+                    generateLink('core', 'plugin', array('plugin' => 'eshop'), array('cat' => $cat_row['id']));
+                
+                $cat_array[] = array (
+                    'id' => $cat_row['id'],
+                    'url' => $cat_row['url'],
+                    'image' => $cat_row['image'],
+                    
+                    'name' => $cat_row['name'],
+                    'description' => $cat_row['description'],
+                    
+                    'parent_id' => $cat_row['parent_id'],
+                    'position' => $cat_row['position'],
+                    
+                    'meta_title' => $cat_row['meta_title'],
+                    'meta_keywords' => $cat_row['meta_keywords'],
+                    'meta_description' => $cat_row['meta_description'],
+                    
+                    'link' => $catlink,
+
+                 );
+                 
+        }
+        
+        $conditions = array();
+        
+        array_push($conditions, "p.active = 1");
+
+        $tpath = locatePluginTemplates(array('yml_export_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'));
+        $xt = $twig->loadTemplate($tpath['yml_export_eshop'].'yml_export_eshop.tpl');
+
+        //$limitCount = "10000";
+
+        $fSort = " GROUP BY p.id ORDER BY p.id DESC ";
+        $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+        $sqlQ = "SELECT p.id AS id, p.url AS url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.stocked AS stocked, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.name AS category ".$sqlQPart;
+        
+         
+        $count = 0;
+        foreach ($mysql->select($sqlQ) as $row)
+        {
+            
+            $entriesImg = array();
+            foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_images i WHERE i.product_id = '.$row['id'].' ') as $row2)
+            {
+                $entriesImg[] = $row2['filepath'];
+            }
+            
+            $entriesVariants = array();
+            foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_variants v WHERE v.product_id = '.$row['id'].' ') as $vrow)
+            {
+                $entriesVariants[] = $vrow;
+            }
+
+            $options_array = array();
+            foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_options LEFT JOIN ".prefix."_eshop_features ON ".prefix."_eshop_features.id=".prefix."_eshop_options.feature_id WHERE ".prefix."_eshop_options.product_id = ".$row['id']." ORDER BY position, id") as $orow)
+            {
+                $options_array[$orow['id']] = $orow['value'];
+            }
+            
+            $xf_name_id = array();
+            $features_array = array();
+            foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $frow)
+            {
+                $frow['value'] = $options_array[$frow['id']];
+                $frow['foptions'] = json_decode($frow['foptions'], true);
+                $features_array["xfields_".$frow['name']] = $frow['value'];
+                $xf_name_id[$frow['name']] = $frow['id'];
+            }
+
+            $images_comma_separated = implode(",", $entriesImg);
+
+            $entry = array();
+            
+            $entry = array (
+                'id' => $row['id'],
+                'code' => $row['code'],
+                'url' => $row['url'],
+                'name' => $row['name'],
+                
+                'price' => $entriesVariants[0]['price'],
+                'compare_price' => $entriesVariants[0]['compare_price'],
+                'stock' => $entriesVariants[0]['stock'],
+                
+                'annotation' => $row['annotation'],
+                'body' => $row['body'],
+                
+                'active' => $row['active'],
+                'featured' => $row['featured'],
+                'stocked' => $row['stocked'],
+
+                'meta_title' => $row['meta_title'],
+                'meta_keywords' => $row['meta_keywords'],
+                'meta_description' => $row['meta_description'],
+                
+                'date' => (empty($row['date']))?'':$row['date'],
+                'editdate' => (empty($row['editdate']))?'':$row['editdate'],
+
+                'cat_name' => $row['category'],
+                'cid' => $row['cid'],
+                
+                'images' => $images_comma_separated,
+            );
+            
+            foreach ($features_array as $fk => $fv)
+            {
+                $entry[$fk] = $fv;
+            }
+            
+            if($count == 0) {
+                $export->setHeader(array_keys($entry));
+            }
+            $count += 1;
+            
+            $export->append(
+                array(
+                    $entry
+                )
+            );
+            
+        }
+
+        $export->export('products.csv', ';');
+        die();
+    }
+
+    if (isset($_REQUEST['import_csv']))
+    {
+        
+        $SUPRESS_TEMPLATE_SHOW = 1;
+        $SUPRESS_MAINBLOCK_SHOW = 1;
+        
+        if(is_uploaded_file($_FILES["filename"]["tmp_name"]))
+        {
+            
+            require_once dirname(__FILE__) . '/csv_lib/CsvImportInterface.php';
+            require_once dirname(__FILE__) . '/csv_lib/CsvImport.php';
+            require_once dirname(__FILE__) . '/csv_lib/CsvExportInterface.php';
+            require_once dirname(__FILE__) . '/csv_lib/CsvExport.php';
+
+            $import = new CsvImport();
+            
+            $filepath = dirname(__FILE__)."/import/".$_FILES["filename"]["name"];
+            move_uploaded_file($_FILES["filename"]["tmp_name"], $filepath);
+            $import->setFile($filepath,1000,";");
+            $items = $import->getRows();
+            
+            
+            $xf_name_id = array();
+            foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $frow)
+            {
+                $xf_name_id[$frow['name']] = $frow['id'];
+            }
+
+            foreach ($items as $iv)
+            {
+                
+                if($iv['id'] != "") {
+                    
+                    $product_row = $mysql->record("SELECT * FROM ".prefix."_eshop_products WHERE id=".db_squote($iv['id'])." ");
+                    
+                    $current_time = time();
+                    
+                    $id = $iv['id'];
+                    $code = empty($iv['code'])?"":$iv['code'];
+                    $url = empty($iv['url'])?"":$iv['url'];
+                    $name = empty($iv['name'])?"":$iv['name'];
+                    $price = empty($iv['price'])?"":$iv['price'];
+                    $compare_price = empty($iv['compare_price'])?"":$iv['compare_price'];
+                    $stock = empty($iv['stock'])?"":$iv['stock'];
+                    $annotation = empty($iv['annotation'])?"":$iv['annotation'];
+                    $body = empty($iv['body'])?"":$iv['body'];
+                    $active = empty($iv['active'])?"1":$iv['active'];
+                    $featured = empty($iv['featured'])?"0":$iv['featured'];
+                    $stocked = empty($iv['stocked'])?"0":$iv['stocked'];
+                    $meta_title = empty($iv['meta_title'])?"":$iv['meta_title'];
+                    $meta_keywords = empty($iv['meta_keywords'])?"":$iv['meta_keywords'];
+                    $meta_description = empty($iv['meta_description'])?"":$iv['meta_description'];
+                    $date = empty($iv['date'])?$current_time:$iv['date'];
+                    $editdate = empty($iv['editdate'])?$current_time:$iv['editdate'];
+                    $cat_name = empty($iv['cat_name'])?"":$iv['cat_name'];
+                    $cid = empty($iv['cid'])?"0":$iv['cid'];
+                    //$images = explode(',',$iv['images']);
+                    
+                    $xfields_items = array();
+                    foreach ($iv as $xfk => $xfv)
+                    {
+                        preg_match("/xfields_/",$xfk,$find_xf);
+                        if(isset($find_xf[0])) {
+                            $xf_name = str_replace('xfields_','',$xfk);
+                            $xf_id = $xf_name_id[$xf_name];
+                            $xfields_items[$xf_id] = $xfv;
+                        }
+                        
+                    }
+
+                    if(empty($product_row)) {
+                        if ($url != "") {
+                            if ( !is_array($mysql->record("select id from ".prefix."_eshop_products where url = ".db_squote($product_row["url"])." limit 1")) ) {
+                                $mysql->query("INSERT INTO ".prefix."_eshop_products (`id`, `code`, `url`, `name`, `annotation`, `body`, `active`, `featured`, `stocked`, `meta_title`, `meta_keywords`, `meta_description`, `date`, `editdate`) VALUES ('$id','$code','$url','$name','$annotation','$body','$active','$featured','$stocked','$meta_title','$meta_keywords','$meta_description','$date','$editdate')");
+                                
+                                $qid = $mysql->lastid('eshop_products');
+                                
+                                import_upload_images($qid);
+                                
+                                if(!empty($xfields_items)) {
+                                    foreach ($xfields_items as $f_key => $f_value) {
+                                        if($f_value != '') {
+                                            $mysql->query("INSERT INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')");
+                                        }
+                                    }
+                                }
+                                
+                                $category_id = intval($cid);
+                                
+                                if($category_id != 0) {
+                                    $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
+                                }
+
+                                $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `compare_price`, `stock`) VALUES ('$qid', '$price', '$compare_price', '$stock')");
+                                
+                            }
+                        }
+                    }
+                    else {
+                        if ($product_row["url"]) {
+                            if ( is_array($mysql->record("select id from ".prefix."_eshop_products where url = ".db_squote($url)." limit 1")) ) {
+                                $mysql->query("REPLACE INTO ".prefix."_eshop_products (`id`, `code`, `url`, `name`, `annotation`, `body`, `active`, `featured`, `stocked`, `meta_title`, `meta_keywords`, `meta_description`, `date`, `editdate`) VALUES ('$id','$code','$url','$name','$annotation','$body','$active','$featured','$stocked','$meta_title','$meta_keywords','$meta_description','$date','$editdate')");
+                                
+                                $qid = $product_row["id"];
+                                
+                                import_upload_images($qid);
+                                
+                                if(!empty($xfields_items)) {
+                                    $mysql->query("DELETE FROM ".prefix."_eshop_options WHERE product_id='$qid'");
+                                    foreach ($xfields_items as $f_key => $f_value) {
+                                        if($f_value != '') {
+                                            $mysql->query("REPLACE INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')");
+                                        }
+                                    }
+                                }
+                                
+                                $category_id = intval($cid);
+                                
+                                if($category_id != 0) {
+                                    $mysql->query("DELETE FROM ".prefix."_eshop_products_categories WHERE product_id='$qid'");
+                                    $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
+                                }
+                                else {
+                                    $mysql->query("DELETE FROM ".prefix."_eshop_products_categories WHERE product_id='$qid'");
+                                }
+                                
+                                $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id='$qid'");
+                                $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `compare_price`, `stock`) VALUES ('$qid', '$price', '$compare_price', '$stock')");
+                                
+                            }
+                        }
+                    }
+                }
+            }
+            
+            unlink($filepath);
+            die();
+            
+        } else {
+            echo("Ошибка загрузки файла");
+        }
+        
+    }
+
     $xt = $twig->loadTemplate($tpath['config/automation'].'config/'.'automation.tpl');
     
     $yml_export_link = checkLinkAvailable('eshop', 'yml_export')?
@@ -2487,6 +2776,100 @@ function automation()
 
 }
 
+
+function import_upload_images($qid) {
+global $tpl, $mysql, $cron, $twig;
+
+    $positions_img = array();
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_images WHERE product_id = '$qid' ORDER BY position, id") as $irow)
+    {
+        $positions_img[] = $irow['position'];
+    }
+
+    if(!empty($positions_img)) {
+        $max_img_pos = max($positions_img) + 1;
+    }
+    else {
+        $max_img_pos = 0;
+    }
+
+    $inx_img =  $max_img_pos;
+    
+    $rootpath = $_SERVER['DOCUMENT_ROOT'];
+    $img_dir = dirname(__FILE__)."/import/images/".$qid."/";
+    $images = array_map('basename', glob($img_dir."*.{jpg,png,gif}", GLOB_BRACE));
+    
+    if(!empty($images)) {
+        
+        foreach($images as $name) {
+            
+            $file_path = $rootpath."/uploads/eshop/products/temp/".$name;
+            rename($img_dir.$name, $file_path);
+            $fileParts = pathinfo ( $file_path );
+            $extension = $fileParts ['extension'];
+
+            $extensions = array_map('trim', explode(',', pluginGetVariable('eshop', 'ext_image')));
+
+            if(!in_array($extension, $extensions)) {
+                return "0";
+            }
+
+            // CREATE THUMBNAIL
+            if ($extension == "jpg" || $extension == "jpeg") {
+                $src = imagecreatefromjpeg ( $file_path );
+            } else if ($extension == "png") {
+                $src = imagecreatefrompng ( $file_path );
+            } else {
+                $src = imagecreatefromgif ( $file_path );
+            }
+
+            list ( $width, $height ) = getimagesize ( $file_path );
+
+            $newwidth = pluginGetVariable('eshop', 'width_thumb');
+
+            if($width > $newwidth) {
+                $newheight = ($height / $width) * $newwidth;
+                $tmp = imagecreatetruecolor ( $newwidth, $newheight );
+                
+                imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
+                
+                $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
+                
+                if (file_exists ( $thumbname )) {
+                    unlink ( $thumbname );
+                }
+                
+                imagejpeg ( $tmp, $thumbname, 100 );
+                
+                imagedestroy ( $src );
+                imagedestroy ( $tmp );
+            }
+            else {
+                $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
+                copy($file_path, $thumbname);
+            }
+
+            $img = $name;
+
+            $timestamp = time();
+            $iname = $timestamp."-".$img;
+
+            $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
+            $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$iname;
+            rename($temp_name, $current_name);
+
+            $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
+            $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/thumb/'.$iname;
+            rename($temp_name, $current_name);
+                                
+            $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')");
+
+            $inx_img += 1;
+        }
+        
+    }
+    
+}
 
 
 

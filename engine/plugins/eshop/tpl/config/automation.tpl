@@ -62,8 +62,68 @@
         </form>
     </td>
 </tr>
+
 <tr>
-    
+    <td width="50%" valign="top" class="contentEntry1">
+        <form action="" method="post">
+        <input type="hidden" name="export_csv" value="1">
+        <table border="0" cellspacing="0" cellpadding="0" class="content" align="center">
+            <tbody>
+            <tr>
+                <td class="contentHead"><img src="{{ admin_url }}/skins/default/images/nav.gif" hspace="8" alt="">Ёкспорт CSV</td>
+            </tr>
+            <tr>
+                <td>
+
+                <div class="list">
+                    Ёкспорт товаров позвол€ет сохранить товары в файл CSV, который вы сможете открыть в MS Excel / etc.
+                    «атем вы сможете отредактировать данные и сделать импорт этого файла обратно в магазин, таким образом автоматизировав, например, изменение цен или других параметров.
+                    ƒл€ того, чтобы файл нормально открылс€, в качестве разделител€ укажите точку с зап€той.
+                </div>
+                
+                </td>
+            </tr>
+            <tr align="center">
+            <td width="100%" class="contentEdit" align="center" valign="top">
+                <input type="submit" value="Ёкспортировать!" class="button">
+            </td>
+            </tr>
+            </tbody>
+        </table>
+        </form>
+    </td>
+
+    <td width="50%" class="contentEntry1" valign="top">
+        <form action="" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="import_csv" value="1">
+        <table border="0" cellspacing="0" cellpadding="0" class="content" align="center">
+            <tbody>
+            <tr>
+                <td class="contentHead"><img src="{{ admin_url }}/skins/default/images/nav.gif" hspace="8" alt="">»мпорт CSV</td>
+            </tr>
+            <tr>
+                <td>
+
+                <div class="list">
+                    <input type="file" name="filename">
+                </div>
+                
+                </td>
+
+            </tr>
+
+            <tr align="center">
+            <td width="100%" class="contentEdit" align="center" valign="top">
+                <input type="submit" value="»мпортировать!" class="button">
+            </td>
+            </tr>
+            </tbody>
+        </table>
+        </form>
+    </td>
+</tr>
+
+<tr>
     <td width="50%" valign="top" class="contentEntry1">
         <form action="" method="post">
         <input type="hidden" name="change_price" value="1">
