@@ -58,7 +58,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $SUPRESS_TEMPLATE_SHOW, $
                         $error_msg = (string) $xml_vars->error_msg;
                         $test_mode = (string) $xml_vars->test_mode;
                         
-                        $info = array('merchant_id' => $merchant_id, 'amount' => $amount, 'currency' => $currency, 'description' => $description, 'paymode' => $paymode, 'trans_id' => $trans_id, 'status' => $status, 'error_msg' => $error_msg, 'test_mode' => $test_mode);
+                        $info = array('payment_name' => $payment_name, 'merchant_id' => $merchant_id, 'amount' => $amount, 'currency' => $currency, 'description' => $description, 'paymode' => $paymode, 'trans_id' => $trans_id, 'status' => $status, 'error_msg' => $error_msg, 'test_mode' => $test_mode);
                         
                         if($sign_encode == $rData['sign']) {
        

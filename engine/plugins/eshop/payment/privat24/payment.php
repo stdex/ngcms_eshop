@@ -32,7 +32,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $SUPRESS_TEMPLATE_SHOW, $
                 if($rData['signature'] == $signature) {
                     if($response['state']=='test' || $response['state']=='ok'){
                         
-                        $info = array('merchant_purse' => $response, 'amount' => $amount, 'order_id' => $order_id);
+                        $info = array('payment_name' => $payment_name, 'merchant_purse' => $response, 'amount' => $amount, 'order_id' => $order_id);
                         $mysql->query('INSERT INTO '.prefix.'_eshop_purchases (dt, order_id, info)
                             VALUES
                             ('.db_squote($current_time).',
