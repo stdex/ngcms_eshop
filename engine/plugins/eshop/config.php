@@ -472,8 +472,8 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         $SQL['meta_keywords'] = input_filter_com(convert($_REQUEST['meta_keywords']));
         $SQL['meta_description'] = input_filter_com(convert($_REQUEST['meta_description']));
         
-        $SQL['annotation'] = input_filter_com(convert($_REQUEST['annotation']));
-        $SQL['body'] = input_filter_com(convert($_REQUEST['body']));
+        $SQL['annotation'] = $_REQUEST['annotation'];
+        $SQL['body'] = $_REQUEST['body'];
         
         $SQL['active'] = intval($_REQUEST['active']);
         $SQL['featured'] = intval($_REQUEST['featured']);
