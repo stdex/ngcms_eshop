@@ -13,10 +13,10 @@
         </categories>
         <offers>
             {% for entry in entries %}
-            <offer id="{{ entry.id }}" available="{% if (entry.variants[0].stock == 0) or (entry.variants[0].stock == 1) %}false{% elseif (entry.variants[0].stock == 5) %}true{% endif %}">
+            <offer id="{{ entry.id }}" available="{% if (entry.variants.stock == 0) or (entry.variants.stock == 1) %}false{% elseif (entry.variants.stock == 5) %}true{% endif %}">
                 <url>{{ home }}{{ entry.fulllink }}</url>
-                <price>{{ entry.variants[0].price }}</price>
-                <oldprice>{{ entry.variants[0].compare_price }}</oldprice>
+                <price>{{ entry.variants.price }}</price>
+                <oldprice>{{ entry.variants.compare_price }}</oldprice>
                 <currencyId>{{ system_flags.eshop.currency[0].code }}</currencyId>
                 <categoryId>{{ entry.cid }}</categoryId>
                 {% if (entry.images) %}

@@ -1423,8 +1423,9 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
     $fSort = " GROUP BY p.id ORDER BY p.id DESC ";
     $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
     $sqlQ = "SELECT p.id AS id, p.url AS url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.name AS category ".$sqlQPart;
-    
-     
+
+    $entries = array();
+
     foreach ($mysql->select($sqlQ) as $row)
     {
         
@@ -1492,10 +1493,22 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
         );
 
     }
+    
+    $entries_variants = array();
+
+    foreach ($entries as $entry)
+    {
+        $entry_id = $entry['id'];
+        foreach ($entry['variants'] as $variant) {
+            $entry['id'] = $entry_id.'-'.$variant['id'];
+            $entry['variants'] = $variant;
+            $entries_variants[] = $entry;
+        }
+    }
 
     $tVars = array(
         'cat_info' => $cat_array,
-        'entries' => isset($entries)?$entries:'',
+        'entries' => isset($entries_variants)?$entries_variants:'',
         'tpl_url' => home.'/templates/'.$config['theme'],
         'tpl_home' => admin_url,
     );
@@ -1576,6 +1589,35 @@ function plugin_ebasket_list(){
         
         $SQL['uniqid'] = substr(str_shuffle(MD5(microtime())), 0, 10);
 
+
+        foreach ($mysql->select("select * from ".prefix."_eshop_ebasket where ".join(" or ", $filter), 1) as $rec) {
+            $r_count = $rec['count'];
+            $linked_id = $rec['linked_id'];
+            $variant_id = $rec['linked_fld']['item']['v_id'];
+            $conditions = array();
+            if ($linked_id) {
+                array_push($conditions, "p.id = ".db_squote($linked_id));
+            }
+            
+            if ($variant_id != 0) {
+                array_push($conditions, "v.id = ".db_squote($variant_id));
+            }
+        
+            $fSort = " GROUP BY p.id ORDER BY p.id DESC";
+            $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN (SELECT * FROM ".prefix."_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
+            $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.id AS v_id, v.sku AS v_sku, v.name AS v_name, v.amount AS v_amount, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+        
+            // Retrieve news record
+            $item_rec = $mysql->record($sqlQ);
+            
+            if($item_rec['v_amount'] != NULL) {
+                if($r_count > $item_rec['v_amount']) {
+                    $error_text[] = 'Невозможно купить продукт: '.$item_rec["name"].'. Максимальное количество доступное для заказа: '.$item_rec['v_amount'];
+                }
+            }
+        }
+
+
         if(empty($error_text))
         {
             $vnames = array();
@@ -1597,6 +1639,20 @@ function plugin_ebasket_list(){
                 
                 if (count($filter)) {
                     $mysql->query("delete from ".prefix."_eshop_ebasket where ".join(" or ", $filter));
+                    foreach ($recs as $rec) {
+                        $v_id = $rec['xfields']['item']['v_id'];
+                        $variant = $mysql->record("SELECT amount FROM ".prefix."_eshop_variants where id = '".intval($v_id)."'");
+                        $current_amount = $variant['amount'];
+                        $r_count = $rec['count'];
+                        if($current_amount != NULL) {
+                            if($current_amount-$r_count > 0) {
+                                $mysql->query("update ".prefix."_eshop_variants set amount = amount - ".intval($r_count)." where id = ".intval($v_id));
+                            }
+                            else {
+                                $mysql->query("update ".prefix."_eshop_variants set amount = 0 where id = ".intval($v_id));
+                            }
+                        }
+                    }                    
                 }
 
                 // Определяем условия выборки

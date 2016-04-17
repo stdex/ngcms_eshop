@@ -294,11 +294,11 @@ function initPhotoTrEv() {
 $(document).ready(function() {
     initPhoto();
     cuselInit(body, '#variantSwitcher');
-    Product.changeVariant();
+    //Product.changeVariant();
 });
 
 $(document).on('scriptDefer', function () {
     initPhoto();
     cuselInit(body, '#variantSwitcher');
-    Product.changeVariant();
+    //Product.changeVariant();
 });

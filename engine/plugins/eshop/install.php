@@ -326,7 +326,7 @@ function plugin_eshop_install($action) {
             array('action'  => 'cmodify', 'name' => 'stock', 'type' => 'mediumint(9)', 'params' => 'NOT NULL default \'0\''),
             array('action'  => 'cmodify', 'name' => 'position', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
             
-            array('action'  => 'cmodify', 'name' => 'amount', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
+            array('action'  => 'cmodify', 'name' => 'amount', 'type' => 'int(11)', 'params' => 'DEFAULT NULL'),
             array('action'  => 'cmodify', 'name' => 'attachment', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
         )
     ),

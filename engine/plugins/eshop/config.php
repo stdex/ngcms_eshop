@@ -250,10 +250,11 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         else {
             $linked_products = NULL;
         }
- 
+        /*
         $price = $_REQUEST['price'];
         $compare_price = $_REQUEST['compare_price'];
         $stock = $_REQUEST['stock'];
+        */
 
         if(empty($error_text))
         {
@@ -310,10 +311,24 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                 }
             }
             
+            /*
             if(isset($stock)) {
                 $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id='$qid'");
                 $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `compare_price`, `stock`) VALUES ('$qid', '$price', '$compare_price', '$stock')");
             }
+            */
+            $optlist = array();
+            if (isset($_REQUEST['so_data']) && is_array($_REQUEST['so_data'])) {
+                $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id='$qid'");
+                foreach ($_REQUEST['so_data'] as $k => $v) {
+                    if (is_array($v)) {
+                        if($v[4] == '') {
+                            $v[4] = 'NULL';
+                        }
+                        $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `sku`, `name`, `price`, `compare_price`, `amount`, `stock`) VALUES ('$qid', '$v[0]', '$v[1]', '$v[2]', '$v[3]', $v[4], '$v[5]')");
+                    }
+                }
+            }            
             
             generate_catz_cache(true);
             
@@ -433,17 +448,78 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
                 'position' => $rrow['position']
                 );
     }
+
     
     foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_variants WHERE product_id = '$qid' ORDER BY position, id") as $vrow)
     {
-        $price_array[] = 
-            array(
-                'id' => $vrow['id'],
-                'price' => $vrow['price'],
-                'compare_price' => $vrow['compare_price'],
-                'stock' => $vrow['stock']
-                );
+        $price_array[] = $vrow;
     }
+
+    $sOpts = array();
+    $fNum = 1;
+    if (isset($price_array) && is_array($price_array)) {
+            foreach ($price_array as $k => $v) {
+                $check_stock_array = array();
+                $check_stock = $v['stock'];
+                switch($check_stock) {
+                    case '5':
+                        $check_stock_array[5] = 'selected="selected"';
+                        $check_stock_array[0] = '';
+                        $check_stock_array[1] = '';
+                        break;
+                    case '0':
+                        $check_stock_array[5] = '';
+                        $check_stock_array[0] = 'selected="selected"';
+                        $check_stock_array[1] = '';
+                        break;
+                    case '1':
+                        $check_stock_array[5] = '';
+                        $check_stock_array[0] = '';
+                        $check_stock_array[1] = 'selected="selected"';
+                        break;
+                    default:
+                        $check_stock_array[5] = 'selected="selected"';
+                        $check_stock_array[0] = '';
+                        $check_stock_array[1] = '';
+                        break;
+                }
+                array_push($sOpts, '<tr>
+                <td><input type="text" size="12" name="so_data['.($fNum).'][0]" value="'.htmlspecialchars($v['sku'], ENT_COMPAT | ENT_HTML401, 'cp1251').'"/></td>
+                <td><input type="text" size="45" name="so_data['.($fNum).'][1]" value="'.htmlspecialchars($v['name'], ENT_COMPAT | ENT_HTML401, 'cp1251').'"/></td>
+                <td><input type="text" size="12" name="so_data['.($fNum).'][2]" value="'.htmlspecialchars($v['price'], ENT_COMPAT | ENT_HTML401, 'cp1251').'"/></td>
+                <td><input type="text" size="12" name="so_data['.($fNum).'][3]" value="'.htmlspecialchars($v['compare_price'], ENT_COMPAT | ENT_HTML401, 'cp1251').'"/></td>
+                <td><input type="text" size="12" name="so_data['.($fNum).'][4]" value="'.htmlspecialchars($v['amount'], ENT_COMPAT | ENT_HTML401, 'cp1251').'"/></td>
+                <td>
+                    <select name="so_data['.($fNum).'][5]" style="width: 100px;">
+                        <option '.$check_stock_array[5].' value="5">Есть</option>
+                        <option '.$check_stock_array[0].' value="0">Нет</option>
+                        <option '.$check_stock_array[1].' value="1">На заказ</option>
+                    </select>
+                </td>
+                <td><a href="#" onclick="return false;"><img src="'.skins_url.'/images/delete.gif" alt="DEL" width="12" height="12" /></a></td>
+                </tr>');
+                $fNum++;
+            }
+    }
+    if (!count($sOpts)) {
+        array_push($sOpts, '<tr>
+            <td><input size="12" name="so_data[1][0]" type="text" value=""/></td>
+            <td><input size="45" name="so_data[1][1]" type="text" value=""/></td>
+            <td><input size="12" name="so_data[1][2]" type="text" value=""/></td>
+            <td><input size="12" name="so_data[1][3]" type="text" value=""/></td>
+            <td><input size="12" name="so_data[1][4]" type="text" value=""/></td>
+            <td>
+                <select name="so_data[1][5]" style="width: 100px;">
+                    <option selected="selected" value="5">Есть</option>
+                    <option value="0">Нет</option>
+                    <option value="1">На заказ</option>
+                </select>
+            </td>
+            <td><a href="#" onclick="return false;"><img src="'.skins_url.'/images/delete.gif" alt="DEL" width="12" height="12" /></a></td>
+        </tr>');
+    }
+    
+    $sOpts = implode("\n", $sOpts);
  
     if (isset($_REQUEST['handler']))
     {
@@ -490,9 +566,11 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
             $linked_products = NULL;
         }
 
+        /*
         $price = $_REQUEST['price'];
         $compare_price = $_REQUEST['compare_price'];
         $stock = $_REQUEST['stock'];
+        */
 
         if(empty($error_text))
         {
@@ -555,11 +633,25 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
             else {
                 $mysql->query("DELETE FROM ".prefix."_eshop_products_categories WHERE product_id='$qid'");
             }
-
+            
+            if (isset($_REQUEST['so_data']) && is_array($_REQUEST['so_data'])) {
+                $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id='$qid'");
+                foreach ($_REQUEST['so_data'] as $k => $v) {
+                    if (is_array($v)) {
+                        if($v[4] == '') {
+                            $v[4] = 'NULL';
+                        }
+                        $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `sku`, `name`, `price`, `compare_price`, `amount`, `stock`) VALUES ('$qid', '$v[0]', '$v[1]', '$v[2]', '$v[3]', $v[4], '$v[5]')");
+                    }
+                }
+            }
+            
+            /*
             if(isset($stock)) {
                 $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id='$qid'");
                 $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `compare_price`, `stock`) VALUES ('$qid', '$price', '$compare_price', '$stock')");
             }
+            */
             
             generate_catz_cache(true);
             
@@ -613,7 +705,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     $tEntry['features'] = $features_array;
     $tEntry['entriesImg'] = $images_array;
     $tEntry['related'] = $related_array;
-    $tEntry['prices'] = $price_array;
+    $tEntry['sOpts'] = $sOpts;
     
     $tEntry['error'] = $error_input;
     $tEntry['mode'] = "edit";
@@ -2507,17 +2599,14 @@ function automation()
         
         array_push($conditions, "p.active = 1");
 
-        $tpath = locatePluginTemplates(array('yml_export_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'));
-        $xt = $twig->loadTemplate($tpath['yml_export_eshop'].'yml_export_eshop.tpl');
-
         //$limitCount = "10000";
 
         $fSort = " GROUP BY p.id ORDER BY p.id DESC ";
         $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
         $sqlQ = "SELECT p.id AS id, p.url AS url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.stocked AS stocked, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.name AS category ".$sqlQPart;
         
+        $entries = array();
          
-        $count = 0;
         foreach ($mysql->select($sqlQ) as $row)
         {
             
@@ -2559,9 +2648,7 @@ function automation()
                 'url' => $row['url'],
                 'name' => $row['name'],
                 
-                'price' => $entriesVariants[0]['price'],
-                'compare_price' => $entriesVariants[0]['compare_price'],
-                'stock' => $entriesVariants[0]['stock'],
+                'variants' => $entriesVariants,
                 
                 'annotation' => $row['annotation'],
                 'body' => $row['body'],
@@ -2588,17 +2675,41 @@ function automation()
                 $entry[$fk] = $fv;
             }
             
-            if($count == 0) {
-                $export->setHeader(array_keys($entry));
+            $entries[] = $entry;
+            
+        }
+        
+        $count = 0;
+        foreach ($entries as $entry)
+        {
+            foreach ($entry['variants'] as $variant) {
+                
+                $entry_row = array();
+                $entry_row = $entry;
+                unset($entry_row['variants']);
+                
+                $entry_row['v_id'] = $variant['id'];
+                $entry_row['v_sku'] = $variant['sku'];
+                $entry_row['v_name'] = $variant['name'];
+                $entry_row['v_price'] = $variant['price'];
+                $entry_row['v_compare_price'] = $variant['compare_price'];
+                $entry_row['v_stock'] = $variant['stock'];
+                $entry_row['v_amount'] = $variant['amount'];
+                
+                if($count == 0) {
+                    $export->setHeader(array_keys($entry_row));
+                }
+                $count += 1;
+                
+                $export->append(
+                    array(
+                        $entry_row
+                    )
+                );
+                
+                unset($entry_row);
+                
             }
-            $count += 1;
-            
-            $export->append(
-                array(
-                    $entry
-                )
-            );
-            
         }
 
         $export->export('products.csv', ';');
@@ -2623,10 +2734,9 @@ function automation()
             
             $filepath = dirname(__FILE__)."/import/".$_FILES["filename"]["name"];
             move_uploaded_file($_FILES["filename"]["tmp_name"], $filepath);
-            $import->setFile($filepath,1000,";");
+            $import->setFile($filepath,10000,";");
             $items = $import->getRows();
-            
-            
+
             $xf_name_id = array();
             foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $frow)
             {
@@ -2636,44 +2746,50 @@ function automation()
             foreach ($items as $iv)
             {
                 
+                $current_time = time();
+                
+                $id = $iv['id'];
+                $code = empty($iv['code'])?"":$iv['code'];
+                $url = empty($iv['url'])?"":$iv['url'];
+                $name = empty($iv['name'])?"":$iv['name'];
+                
+                $v_id = empty($iv['v_id'])?"":$iv['v_id'];
+                $v_sku = empty($iv['v_sku'])?"":$iv['v_sku'];
+                $v_name = empty($iv['v_name'])?"":$iv['v_name'];
+                $v_price = empty($iv['v_price'])?"":$iv['v_price'];
+                $v_compare_price = empty($iv['v_compare_price'])?"":$iv['v_compare_price'];
+                $v_stock = empty($iv['v_stock'])?"":$iv['v_stock'];
+                $v_amount = empty($iv['v_amount'])?"":$iv['v_amount'];
+                
+                $annotation = empty($iv['annotation'])?"":$iv['annotation'];
+                $body = empty($iv['body'])?"":$iv['body'];
+                $active = empty($iv['active'])?"1":$iv['active'];
+                $featured = empty($iv['featured'])?"0":$iv['featured'];
+                $stocked = empty($iv['stocked'])?"0":$iv['stocked'];
+                $meta_title = empty($iv['meta_title'])?"":$iv['meta_title'];
+                $meta_keywords = empty($iv['meta_keywords'])?"":$iv['meta_keywords'];
+                $meta_description = empty($iv['meta_description'])?"":$iv['meta_description'];
+                $date = empty($iv['date'])?$current_time:$iv['date'];
+                $editdate = empty($iv['editdate'])?$current_time:$iv['editdate'];
+                $cat_name = empty($iv['cat_name'])?"":$iv['cat_name'];
+                $cid = empty($iv['cid'])?"0":$iv['cid'];
+                //$images = explode(',',$iv['images']);
+                
+                $xfields_items = array();
+                foreach ($iv as $xfk => $xfv)
+                {
+                    preg_match("/xfields_/",$xfk,$find_xf);
+                    if(isset($find_xf[0])) {
+                        $xf_name = str_replace('xfields_','',$xfk);
+                        $xf_id = $xf_name_id[$xf_name];
+                        $xfields_items[$xf_id] = $xfv;
+                    }
+                    
+                }
+                
                 if($iv['id'] != "") {
                     
                     $product_row = $mysql->record("SELECT * FROM ".prefix."_eshop_products WHERE id=".db_squote($iv['id'])." ");
-                    
-                    $current_time = time();
-                    
-                    $id = $iv['id'];
-                    $code = empty($iv['code'])?"":$iv['code'];
-                    $url = empty($iv['url'])?"":$iv['url'];
-                    $name = empty($iv['name'])?"":$iv['name'];
-                    $price = empty($iv['price'])?"":$iv['price'];
-                    $compare_price = empty($iv['compare_price'])?"":$iv['compare_price'];
-                    $stock = empty($iv['stock'])?"":$iv['stock'];
-                    $annotation = empty($iv['annotation'])?"":$iv['annotation'];
-                    $body = empty($iv['body'])?"":$iv['body'];
-                    $active = empty($iv['active'])?"1":$iv['active'];
-                    $featured = empty($iv['featured'])?"0":$iv['featured'];
-                    $stocked = empty($iv['stocked'])?"0":$iv['stocked'];
-                    $meta_title = empty($iv['meta_title'])?"":$iv['meta_title'];
-                    $meta_keywords = empty($iv['meta_keywords'])?"":$iv['meta_keywords'];
-                    $meta_description = empty($iv['meta_description'])?"":$iv['meta_description'];
-                    $date = empty($iv['date'])?$current_time:$iv['date'];
-                    $editdate = empty($iv['editdate'])?$current_time:$iv['editdate'];
-                    $cat_name = empty($iv['cat_name'])?"":$iv['cat_name'];
-                    $cid = empty($iv['cid'])?"0":$iv['cid'];
-                    //$images = explode(',',$iv['images']);
-                    
-                    $xfields_items = array();
-                    foreach ($iv as $xfk => $xfv)
-                    {
-                        preg_match("/xfields_/",$xfk,$find_xf);
-                        if(isset($find_xf[0])) {
-                            $xf_name = str_replace('xfields_','',$xfk);
-                            $xf_id = $xf_name_id[$xf_name];
-                            $xfields_items[$xf_id] = $xfv;
-                        }
-                        
-                    }
 
                     if(empty($product_row)) {
                         if ($url != "") {
@@ -2698,7 +2814,7 @@ function automation()
                                     $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
                                 }
 
-                                $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `compare_price`, `stock`) VALUES ('$qid', '$price', '$compare_price', '$stock')");
+                                $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `sku`, `name`, `price`, `compare_price`, `stock`, `amount`) VALUES ('$qid', '$v_sku', '$v_name', '$v_price', '$v_compare_price', '$v_stock', '$v_amount')");
                                 
                             }
                         }
@@ -2713,7 +2829,7 @@ function automation()
                                 import_upload_images($qid);
                                 
                                 if(!empty($xfields_items)) {
-                                    $mysql->query("DELETE FROM ".prefix."_eshop_options WHERE product_id='$qid'");
+                                    //$mysql->query("DELETE FROM ".prefix."_eshop_options WHERE product_id='$qid'");
                                     foreach ($xfields_items as $f_key => $f_value) {
                                         if($f_value != '') {
                                             $mysql->query("REPLACE INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')");
@@ -2724,27 +2840,74 @@ function automation()
                                 $category_id = intval($cid);
                                 
                                 if($category_id != 0) {
-                                    $mysql->query("DELETE FROM ".prefix."_eshop_products_categories WHERE product_id='$qid'");
-                                    $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
+                                    //$mysql->query("DELETE FROM ".prefix."_eshop_products_categories WHERE product_id='$qid'");
+                                    $mysql->query("REPLACE INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
                                 }
                                 else {
                                     $mysql->query("DELETE FROM ".prefix."_eshop_products_categories WHERE product_id='$qid'");
                                 }
                                 
-                                $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id='$qid'");
-                                $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `compare_price`, `stock`) VALUES ('$qid', '$price', '$compare_price', '$stock')");
+                                $SQLv = array();
+                                $SQLv['product_id'] = $qid;
+                                $SQLv['sku'] = $v_sku;
+                                $SQLv['name'] = $v_name;
+                                $SQLv['price'] = $v_price;
+                                $SQLv['compare_price'] = $v_compare_price;
+                                $SQLv['stock'] = $v_stock;
+                                $SQLv['amount'] = $v_amount;
+                                
+                                foreach ($SQLv as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
+                                
+                                if($v_id != "") {
+                                    $mysql->query('UPDATE '.prefix.'_eshop_variants SET '.implode(', ',$vnames).' WHERE id = \''.intval($v_id).'\'  ');
+                                }
+                                else {
+                                    $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `sku`, `name`, `price`, `compare_price`, `stock`, `amount`) VALUES ('$qid', '$v_sku', '$v_name', '$v_price', '$v_compare_price', '$v_stock', '$v_amount')");
+                                }
+                                
+                                //$mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id='$qid'");
+                                //$mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `compare_price`, `stock`) VALUES ('$qid', '$price', '$compare_price', '$stock')");
                                 
                             }
                         }
                     }
                 }
+                else {
+                    
+                    $mysql->query("INSERT INTO ".prefix."_eshop_products (`code`, `url`, `name`, `annotation`, `body`, `active`, `featured`, `stocked`, `meta_title`, `meta_keywords`, `meta_description`, `date`, `editdate`) VALUES ('$code','$url','$name','$annotation','$body','$active','$featured','$stocked','$meta_title','$meta_keywords','$meta_description','$date','$editdate')");
+                    
+                    $qid = $mysql->lastid('eshop_products');
+                    
+                    import_upload_images($qid);
+                    
+                    if(!empty($xfields_items)) {
+                        foreach ($xfields_items as $f_key => $f_value) {
+                            if($f_value != '') {
+                                $mysql->query("INSERT INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')");
+                            }
+                        }
+                    }
+                    
+                    $category_id = intval($cid);
+                    
+                    if($category_id != 0) {
+                        $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
+                    }
+
+                    $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `sku`, `name`, `price`, `compare_price`, `stock`, `amount`) VALUES ('$qid', '$v_sku', '$v_name', '$v_price', '$v_compare_price', '$v_stock', '$v_amount')");
+                        
+                }
             }
             
             unlink($filepath);
+            $info = "Импорт CSV завершен<br/>";
+            msg(array("type" => "info", "info" => $info));
             die();
             
         } else {
-            echo("Ошибка загрузки файла");
+            $info = "Ошибка загрузки файла<br/>";
+            msg(array("type" => "info", "info" => $info));
+            die();
         }
         
     }

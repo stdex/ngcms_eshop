@@ -1173,8 +1173,12 @@ $(document).ready(function() {
         if( count == undefined) {
             count = 1;
         }
+        
+        if(typeof variant_id != 'undefined') {
+            var variant_id = $(this).attr('data-variant');
+        }
 
-        rpcEshopRequest('eshop_ebasket_manage', {'action': 'add', 'ds':1,'id':id,'count':count }, function (resTX) {
+        rpcEshopRequest('eshop_ebasket_manage', {'action': 'add', 'ds':1,'id':id,'count':count, 'variant_id': variant_id }, function (resTX) {
             document.getElementById('tinyBask').innerHTML = resTX['update'];
             $(".forCenter").css("display", "block");
             $(".overlayDrop").css("display", "block");

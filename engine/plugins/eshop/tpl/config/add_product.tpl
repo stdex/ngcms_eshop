@@ -183,15 +183,40 @@
         <input type="text" id="linked-products" name="linked-products" />
     </td>
     </tr>
-    
-    <tr>
-        <td width="50%" class="contentEntry1">Цены<br /><small></small></td>
-        <td width="50%" class="contentEntry2"><input type="text" size="6" name="price" value="{{entries.prices[0].price}}" >&nbsp;{{ system_flags.eshop.currency[0].sign }} &nbsp;&nbsp;&nbsp;<input type="text" size="6" name="compare_price" value="{{entries.prices[0].compare_price}}" >&nbsp;{{ system_flags.eshop.currency[0].sign }}&nbsp;&nbsp;&nbsp;
-        <select name="stock" style="width: 200px;">
-            <option {% if entries.mode == 'add' %}selected="selected"{% else %}{% if entries.prices[0].stock == '5' %}selected="selected"{% endif %}{% endif %} value="5">Есть</option>
-            <option {% if entries.prices[0].stock == '0' %}selected="selected"{% endif %}value="0">Нет</option>
-            <option {% if entries.prices[0].stock == '1' %}selected="selected"{% endif %}value="1">На заказ</option>
-        </select></td>
+
+    <tr class="contRow1">
+        <td width="50%" class="contentEntry1">Варианты<br /><small></small></td>
+        <td width="50%" class="contentEntry2">
+        <table id="variantsTable" width="100%" cellspacing="0" cellpadding="0" border="0" class="content" style="padding: 0px;">
+           <thead>
+            <tr class="contRow1"><td>SKU</td><td>Название варианта</td><td>Текущая цена&nbsp;{{ system_flags.eshop.currency[0].sign }}</td><td>Старая цена&nbsp;{{ system_flags.eshop.currency[0].sign }}</td><td>Количество</td><td>Наличие</td><td>&nbsp;</td></tr>
+           </thead>
+           <tbody id="variantsRows">
+            {% if (entries.mode == "add") %}
+            <tr>
+                <td><input size="12" name="so_data[1][0]" type="text" value=""/></td>
+                <td><input size="45" name="so_data[1][1]" type="text" value=""/></td>
+                <td><input size="12" name="so_data[1][2]" type="text" value=""/></td>
+                <td><input size="12" name="so_data[1][3]" type="text" value=""/></td>
+                <td><input size="12" name="so_data[1][4]" type="text" value=""/></td>
+                <td>
+                    <select name="so_data[1][5]" style="width: 100px;">
+                        <option selected="selected" value="5">Есть</option>
+                        <option value="0">Нет</option>
+                        <option value="1">На заказ</option>
+                    </select>
+                </td>
+                <td><a href="#" onclick="return false;"><img src="{{ admin_url }}/skins/default/images/delete.gif" alt="DEL" width="12" height="12" /></a></td>
+            </tr>
+            {% else %}
+                {{ entries.sOpts }}
+            {% endif %}
+           </tbody>
+           <tfoot>
+            <tr><td colspan="3"><input type="button" id="variantsBtnAdd" style="width: 300px;" value=" + Добавить строку"/></td></tr>
+           </tfoot>
+       </table>
+        </td>
     </tr>
     
     <script>
@@ -298,6 +323,44 @@ $(document).ready(function() {
         {% endif %}
     });
 
+});
+
+</script>
+
+
+<script language="javascript">
+
+var soMaxNum = $('#variantsTable >tbody >tr').length+1;
+
+$('#variantsTable a').click(function(){
+    if ($('#variantsTable >tbody >tr').length > 1) {
+        $(this).parent().parent().remove();
+    } else {
+        $(this).parent().parent().find("input").val('');
+    }
+});
+
+// jQuery - INIT `select` configuration
+$("#variantsBtnAdd").click(function() {
+    var xl = $('#variantsTable tbody>tr:last').clone();
+    xl.find("input").val('');
+    xl.find("input").eq(0).attr("name", "so_data["+soMaxNum+"][0]");
+    //xl.find("span").eq(0).text(soMaxNum);
+    xl.find("input").eq(1).attr("name", "so_data["+soMaxNum+"][1]");
+    xl.find("input").eq(2).attr("name", "so_data["+soMaxNum+"][2]");
+    xl.find("input").eq(3).attr("name", "so_data["+soMaxNum+"][3]");
+    xl.find("input").eq(4).attr("name", "so_data["+soMaxNum+"][4]");
+    xl.find("select").eq(0).attr("name", "so_data["+soMaxNum+"][5]");
+    soMaxNum++;
+
+    xl.insertAfter('#variantsTable tbody>tr:last');
+    $('#variantsTable a').click(function(){
+        if ($('#variantsTable >tbody >tr').length > 1) {
+            $(this).parent().parent().remove();
+        } else {
+            $(this).parent().parent().find("input").val('');
+        }
+    });
 });
 
 </script>

@@ -215,8 +215,40 @@
 </div>
 
 <div class="f-s_0 buy-block">
+{% if entriesVariants|length > 1 %}
   <!-- Start. Check variant-->
-  <!-- End. Check variant-->
+    <div class="check-variant-product">
+    <div class="lineForm">
+     <select name="variant" id="variantSwitcher" onChange="change_variant(this)">
+         {% for variant in entriesVariants %}
+            <option value="{{ variant.id }}|{{ variant.price }}|{{ variant.compare_price }}|{{ variant.stock }}" data-variant="{{ variant.id }}" data-price="{{ variant.price }}" data-price="{{ variant.compare_price }}" data-stock="{{ variant.stock }}">
+                {{ variant.name }}
+            </option>
+        {% endfor %}
+      </select>
+  </div>
+</div>
+<!-- End. Check variant-->
+{% endif %}
+
+<script>
+var variant_id = {{ entriesVariants[0].id }};
+var variant_price = {{ entriesVariants[0].price }};
+var variant_compare_price = {{ entriesVariants[0].compare_price }};
+var variant_stock = {{ entriesVariants[0].stock }};
+
+function change_variant(el) {
+    variant = $(el).attr("value").split('|');
+    variant_id = variant[0];
+    variant_price = variant[1];
+    variant_compare_price = variant[2];
+    variant_stock = variant[3];
+    
+    $('.priceVariant').html(variant_price);
+    $('.addCurrPrice').html(variant_compare_price);
+}
+</script>
+
 <div class="frame-prices-buy-wish-compare">
  <div class="frame-for-photo-popup">
   <div class="frame-prices-buy f-s_0">
@@ -228,21 +260,26 @@
         <!-- End. Check old price-->
     <!-- Start. Product price-->
         <span class="current-prices f-s_0">
-      <span class="price-new">
-       <span>
-      {% if (entriesVariants[0]) %}
-        <span class="price priceVariant">{{ (entriesVariants[0].price * system_flags.eshop.currency[0].rate_from / system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.eshop.current_currency.sign }}
-      {% endif %}
-      </span>
-    </span>
+    {% for variant in entriesVariants %}
+        {% if (loop.index == 1) %}
+            <span class="price-new">
+               <span>
+              {% if (variant) %}
+                <span class="price priceVariant">{{ (variant.price * system_flags.eshop.currency[0].rate_from / system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.eshop.current_currency.sign }}
+                
+              {% endif %}
+              </span>
+            </span>
 
-    {% if (not (entriesVariants[0].compare_price == '0.00')) and (not (entriesVariants[0].compare_price == '')) %}
-        <span class="price-add">
-          <span>
-            <s>(<span class="price addCurrPrice">{{ (entriesVariants[0].compare_price * system_flags.eshop.currency[0].rate_from / system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.eshop.current_currency.sign }})</s>
-          </span>
-        </span>
-    {% endif %}
+            {% if (not (variant.compare_price == '0.00')) and (not (variant.compare_price == '')) %}
+                <span class="price-add">
+                  <span>
+                    <s>(<span class="price addCurrPrice">{{ (variant.compare_price * system_flags.eshop.currency[0].rate_from / system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }}</span> {{ system_flags.eshop.current_currency.sign }})</s>
+                  </span>
+                </span>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
       </span>
     <!-- End. Product price-->
 </div>
@@ -586,7 +623,7 @@ $(document).ready(function() {
         var phone = $("#fastorder-frame").find("input[name='phone']").val();
         var address = $("#fastorder-frame").find("input[name='address']").val();
 
-        rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '2', 'name': name, 'phone': phone, 'address': address}, function (resTX) {
+        rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '2', 'name': name, 'phone': phone, 'address': address, 'variant_id': variant_id }, function (resTX) {
             $("div#fastorder-frame").html("<label><div align='center'>Заказ добавлен. В ближайшее время вам перезвонит наш манеджер.</div></label>");
         });
 
@@ -601,7 +638,7 @@ $(document).ready(function() {
         var phone = $("#fastprice-frame").find("input[name='phone']").val();
         var address = $("#fastprice-frame").find("input[name='address']").val();
 
-        rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '3', 'name': name, 'phone': phone, 'address': address}, function (resTX) {
+        rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '3', 'name': name, 'phone': phone, 'address': address, 'variant_id': variant_id }, function (resTX) {
             $("div#fastprice-frame").html("<label><div align='center'>Спасибо. В ближайшее время вам перезвонит наш манеджер.</div></label>");
         });
 

@@ -9,7 +9,7 @@ include_once(dirname(__FILE__).'/functions.php');
 
 rpcRegisterFunction('eshop_linked_products', 'linked_prd');
 rpcRegisterFunction('eshop_change_img_pos', 'change_img_pos');
-rpcRegisterFunction('eshop_change_price', 'change_price');
+rpcRegisterFunction('eshop_change_variant', 'change_variant');
 
 rpcRegisterFunction('eshop_compare', 'compare_prd');
 rpcRegisterFunction('eshop_viewed', 'viewed_prd');
@@ -82,7 +82,7 @@ function change_img_pos($params){
     return array('status' => 0, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
 }
 
-function change_price($params){
+function change_variant($params){
     global $userROW, $mysql;
 
     $results = array();
@@ -90,7 +90,7 @@ function change_price($params){
 
     $qid = intval($params['id']);
     $mode = filter_var( $params['mode'], FILTER_SANITIZE_STRING );
-    $price = floatval(filter_var( $params['price'], FILTER_SANITIZE_STRING ));
+    $value = floatval(filter_var( $params['value'], FILTER_SANITIZE_STRING ));
     
     if($price < 0) {
         $price = 0;
@@ -101,19 +101,31 @@ function change_price($params){
         $SQL = array();
         switch ($mode) {
             case 'price':
-                $SQL['price'] = $price;
+                $SQL['price'] = $value;
             break;
             case 'compare_price':
-                $SQL['compare_price'] = $price;
+                $SQL['compare_price'] = $value;
+            break;
+            case 'amount':
+                if($value == '') {
+                    $value = 'NULL';
+                }
+                $SQL['amount'] = $value;
             break;
         }
         
         if(isset($qid)) {
             $vnames = array();
-            foreach ($SQL as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
-            //var_dump('UPDATE '.prefix.'_eshop_variants SET '.implode(', ',$vnames).' WHERE product_id = \''.intval($qid).'\'  ');
-            $mysql->query('UPDATE '.prefix.'_eshop_variants SET '.implode(', ',$vnames).' WHERE product_id = \''.intval($qid).'\'  ');
-            return array('status' => 1, 'errorCode' => 0, 'data' => 'Price success changed', 'update' => '');
+            foreach ($SQL as $k => $v) { 
+                if($k == 'amount') {
+                    $vnames[] = $k.' = '.$v;
+                }
+                else {
+                    $vnames[] = $k.' = '.db_squote($v);
+                }
+            }
+            $mysql->query('UPDATE '.prefix.'_eshop_variants SET '.implode(', ',$vnames).' WHERE id = \''.intval($qid).'\'  ');
+            return array('status' => 1, 'errorCode' => 0, 'data' => 'Variant success changed', 'update' => '');
         }
 
     }
@@ -662,6 +674,17 @@ function ebasket_add_fast_order($linked_ds, $linked_id, $title, $price, $count, 
     
     $mysql->query("INSERT INTO ".prefix."_eshop_order_basket (`order_id`, `linked_id`, `title`, `count`, `price`, `linked_fld`) VALUES (".db_squote($qid).", ".db_squote($linked_id).", ".db_squote($title).", ".db_squote($count).", ".db_squote($price).", ".db_squote(serialize($xfld))." )");
     
+    $v_id = $xfld['item']['v_id'];
+    $variant = $mysql->record("SELECT amount FROM ".prefix."_eshop_variants where id = '".intval($v_id)."'");
+    $current_amount = $variant['amount'];
+    $r_count = $count;
+    if($current_amount-$r_count > 0) {
+        $mysql->query("update ".prefix."_eshop_variants set amount = amount - ".intval($r_count)." where id = ".intval($v_id));
+    }
+    else {
+        $mysql->query("update ".prefix."_eshop_variants set amount = 0 where id = ".intval($v_id));
+    }
+    
     // mail notify
 
     $filter = array();
@@ -769,6 +792,7 @@ function ebasket_rpc_manage($params){
             $linked_ds = intval($params['ds']);
             $linked_id = intval($params['id']);
             $count     = intval($params['count']);
+            $variant_id = intval($params['variant_id']);
 
             // Check available DataSources
             if (!(in_array($linked_ds, array($DSlist['news'])))) {
@@ -788,15 +812,27 @@ function ebasket_rpc_manage($params){
                     if ($linked_id) {
                         array_push($conditions, "p.id = ".db_squote($linked_id));
                     }
+                    
+                    if ($variant_id != 0) {
+                        array_push($conditions, "v.id = ".db_squote($variant_id));
+                    }
                 
                     $fSort = " GROUP BY p.id ORDER BY p.id DESC";
                     $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN (SELECT * FROM ".prefix."_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-                    $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+                    $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.id AS v_id, v.sku AS v_sku, v.name AS v_name, v.amount AS v_amount, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
                 
                     // Retrieve news record
                     $rec = $mysql->record($sqlQ);
                     if (!is_array($rec)) {
                         return array('status' => 0, 'errorCode' => 3, 'errorText' => 'Item [news] with ID ('.$linked_id.') is not found');
+                    }
+
+                    if($rec['v_amount'] != NULL) {
+                        
+                        if($count > $rec['v_amount']) {
+                            return array('status' => 0, 'errorCode' => 4, 'errorText' => 'Item with ID ('.$linked_id.') should be enough count');
+                        }
+                    
                     }
 
                     $btitle = $rec['name'];
@@ -835,6 +871,7 @@ function ebasket_rpc_manage($params){
             $linked_ds = intval($params['ds']);
             $linked_id = intval($params['id']);
             $count     = intval($params['count']);
+            $variant_id = intval($params['variant_id']);
             $type     = intval($params['type']);
             
             $order['name'] = filter_var( $params['name'], FILTER_SANITIZE_STRING );
@@ -871,23 +908,31 @@ function ebasket_rpc_manage($params){
             if ($linked_id) {
                 array_push($conditions, "p.id = ".db_squote($linked_id));
             }
+            
+            if ($variant_id != 0) {
+                array_push($conditions, "v.id = ".db_squote($variant_id));
+            }
 
             $fSort = " GROUP BY p.id ORDER BY p.id DESC";
             $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN (SELECT * FROM ".prefix."_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
-            $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+            $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.id AS v_id, v.sku AS v_sku, v.name AS v_name, v.amount AS v_amount, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
 
             // Retrieve news record
             $rec = $mysql->record($sqlQ);
             if (!is_array($rec)) {
                 return array('status' => 0, 'errorCode' => 3, 'errorText' => 'Item [news] with ID ('.$linked_id.') is not found');
             }
+            
+            if($count > $rec['v_amount']) {
+                return array('status' => 0, 'errorCode' => 4, 'errorText' => 'Item with ID ('.$linked_id.') should be enough count');
+            }
 
             $btitle = $rec['name'];
             $price = $rec['price'];
 
             $view_link = checkLinkAvailable('eshop', 'show')?
-                        generateLink('eshop', 'show', array('alt' => $row['url'])):
-                        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
+                        generateLink('eshop', 'show', array('alt' => $rec['url'])):
+                        generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $rec['url']));
 
             $rec['view_link'] = $view_link;
 

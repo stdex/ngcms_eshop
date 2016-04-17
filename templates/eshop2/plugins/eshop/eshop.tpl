@@ -360,7 +360,7 @@ cuSel(params);
                         </button>
                     </div>
                     <div class="btn-buy btn-green">
-                        <button type="button" class="btnBuy orderBut" data-id="{{ entry.id }}">
+                        <button type="button" class="btnBuy orderBut" data-id="{{ entry.id }}" data-variant="{{ entry.variants[0]['id'] }}">
                             <span class="icon_cleaner icon_cleaner_buy"></span>
                             <span class="text-el">Купить</span>
                         </button>

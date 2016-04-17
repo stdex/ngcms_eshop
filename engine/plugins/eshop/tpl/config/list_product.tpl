@@ -71,8 +71,10 @@
 <td width="15%">Изображение</td>
 <td width="30%">Название</td>
 <td width="15%">Категория</td>
-<td width="10%">Текущая цена</td>
+<td width="10%">Вариант</td>
+<td width="10%">Цена</td>
 <td width="10%">Старая цена</td>
+<td width="10%">Количество</td>
 <td width="10%">Статус</td>
 <td width="5%"><input class="check" type="checkbox" name="master_box" title="Выбрать все" onclick="javascript:check_uncheck_all(check_product)" /></td>
 </tr>
@@ -89,8 +91,10 @@
     </div>
 </td>
 <td width="15%" class="contentEntry1">{{ entry.category }}</td>
-<td width="10%" class="contentEntry1"><input size="3" type="text" autocomplete="off" class="price_input" value="{{ entry.variants[0].price }}" data-id="{{ entry.id }}">&nbsp;{{ system_flags.eshop.currency[0].sign }} &nbsp;</td>
-<td width="10%" class="contentEntry1"><input size="3" type="text" autocomplete="off" class="compare_price_input" value="{{ entry.variants[0].compare_price }}" data-id="{{ entry.id }}">&nbsp;{{ system_flags.eshop.currency[0].sign }} &nbsp;</td>
+<td width="10%" class="contentEntry1">{% for variant in entry.variants %}{{ variant.name }}&nbsp;<br/><br/>{% endfor %}</td>
+<td width="5%" class="contentEntry1">{% for variant in entry.variants %}<input size="3" type="text" autocomplete="off" class="price_input" value="{{ variant.price }}" data-id="{{ variant.id }}">&nbsp;{{ system_flags.eshop.currency[0].sign }} &nbsp;<br/><br/>{% endfor %}</td>
+<td width="5%" class="contentEntry1">{% for variant in entry.variants %}<input size="3" type="text" autocomplete="off" class="compare_price_input" value="{{ variant.compare_price }}" data-id="{{ variant.id }}">&nbsp;{{ system_flags.eshop.currency[0].sign }} &nbsp;<br/><br/>{% endfor %}</td>
+<td width="5%" class="contentEntry1">{% for variant in entry.variants %}<input size="3" type="text" autocomplete="off" class="compare_amount_input" value="{{ variant.amount }}" data-id="{{ variant.id }}">&nbsp;<br/><br/>{% endfor %}</td>
 <td width="10%" class="contentEntry1"><img src="{{home}}/engine/skins/default/images/{% if (entry.active == 1) %}yes.png{% else %}no.png{% endif %}" alt=""></td>
 <td width="5%" class="contentEntry1"><input name="selected_product[]" value="{{ entry.id }}" class="check" type="checkbox" /></td>
 </tr>
@@ -103,7 +107,7 @@
 <td width="100%" colspan="8">&nbsp;</td>
 </tr>
 <tr align="center">
-<td colspan="8" class="contentEdit" align="right" valign="top">
+<td colspan="10" class="contentEdit" align="right" valign="top">
 <div style="text-align: left;">
 Действие: <select name="subaction" style="font: 12px Verdana, Courier, Arial; width: 230px;">
 <option value="">-- Действие --</option>
@@ -136,8 +140,8 @@ $(document).ready(function(){
     $(document).on('change', '.price_input',  function(e) {
         var id = $(this).attr("data-id");
         var mode = "price";
-        var price = $(this).val();
-        rpcEshopRequest('eshop_change_price', {'id':id, 'mode':mode, 'price':price}, function (resTX) {
+        var value = $(this).val();
+        rpcEshopRequest('eshop_change_variant', {'id':id, 'mode':mode, 'value':value}, function (resTX) {
             eshop_indication('success','Товар сохранен');
         });
     });
@@ -145,11 +149,21 @@ $(document).ready(function(){
     $(document).on('change', '.compare_price_input',  function(e) {
         var id = $(this).attr("data-id");
         var mode = "compare_price";
-        var price = $(this).val();
-        rpcEshopRequest('eshop_change_price', {'id':id, 'mode':mode, 'price':price}, function (resTX) {
+        var value = $(this).val();
+        rpcEshopRequest('eshop_change_variant', {'id':id, 'mode':mode, 'value':value}, function (resTX) {
             eshop_indication('success','Товар сохранен');
         });
     });
+    
+    $(document).on('change', '.compare_amount_input',  function(e) {
+        var id = $(this).attr("data-id");
+        var mode = "amount";
+        var value = $(this).val();
+        rpcEshopRequest('eshop_change_variant', {'id':id, 'mode':mode, 'value':value}, function (resTX) {
+            eshop_indication('success','Товар сохранен');
+        });
+    });
+    
 });
 
 </script>
