@@ -2761,6 +2761,10 @@ function automation()
                 $v_stock = empty($iv['v_stock'])?"":$iv['v_stock'];
                 $v_amount = empty($iv['v_amount'])?"":$iv['v_amount'];
                 
+                if($v_amount == '') {
+                        $v_amount = 'NULL';
+                }
+                
                 $annotation = empty($iv['annotation'])?"":$iv['annotation'];
                 $body = empty($iv['body'])?"":$iv['body'];
                 $active = empty($iv['active'])?"1":$iv['active'];
@@ -2813,7 +2817,7 @@ function automation()
                                 if($category_id != 0) {
                                     $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
                                 }
-
+                                
                                 $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `sku`, `name`, `price`, `compare_price`, `stock`, `amount`) VALUES ('$qid', '$v_sku', '$v_name', '$v_price', '$v_compare_price', '$v_stock', '$v_amount')");
                                 
                             }
@@ -2893,7 +2897,7 @@ function automation()
                     if($category_id != 0) {
                         $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
                     }
-
+                    
                     $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `sku`, `name`, `price`, `compare_price`, `stock`, `amount`) VALUES ('$qid', '$v_sku', '$v_name', '$v_price', '$v_compare_price', '$v_stock', '$v_amount')");
                         
                 }
