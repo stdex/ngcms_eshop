@@ -1152,6 +1152,29 @@ color:#6A920F;
 </style>
 
 <script>
+
+var variant = "";
+var variant_id = "";
+var variant_price = "";
+var variant_compare_price = "";
+var variant_stock = "";
+
+
+function change_variant(el) {
+    variant = $(el).attr("value").split('|');
+    parse_variant_str(variant);
+    
+    $('.priceVariant').html(variant_price);
+    $('.addCurrPrice').html(variant_compare_price);
+}
+
+function parse_variant_str(variant) {
+    variant_id = variant[0];
+    variant_price = variant[1];
+    variant_compare_price = variant[2];
+    variant_stock = variant[3];
+}
+    
 $(document).ready(function() {
 
     $(".icon_times_drop, #basket_back").click(function(e){
@@ -1174,10 +1197,15 @@ $(document).ready(function() {
             count = 1;
         }
         
-        if(typeof variant_id != 'undefined') {
-            var variant_id = $(this).attr('data-variant');
+        if( variant_id == "" || variant_id == undefined) {
+            variant_id = $(this).attr('data-variant');
         }
-
+        
+        if( variant_id == "" || variant_id == undefined) {
+            variant = $("#variantSwitcher").attr('value').split('|');
+            parse_variant_str(variant);
+        }
+        
         rpcEshopRequest('eshop_ebasket_manage', {'action': 'add', 'ds':1,'id':id,'count':count, 'variant_id': variant_id }, function (resTX) {
             document.getElementById('tinyBask').innerHTML = resTX['update'];
             $(".forCenter").css("display", "block");

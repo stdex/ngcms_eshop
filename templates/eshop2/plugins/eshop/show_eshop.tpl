@@ -232,21 +232,11 @@
 {% endif %}
 
 <script>
-var variant_id = {{ entriesVariants[0].id }};
-var variant_price = {{ entriesVariants[0].price }};
-var variant_compare_price = {{ entriesVariants[0].compare_price }};
-var variant_stock = {{ entriesVariants[0].stock }};
-
-function change_variant(el) {
-    variant = $(el).attr("value").split('|');
-    variant_id = variant[0];
-    variant_price = variant[1];
-    variant_compare_price = variant[2];
-    variant_stock = variant[3];
-    
-    $('.priceVariant').html(variant_price);
-    $('.addCurrPrice').html(variant_compare_price);
-}
+variant = "";
+variant_id = {{ entriesVariants[0].id }};
+variant_price = {{ entriesVariants[0].price }};
+variant_compare_price = {{ entriesVariants[0].compare_price }};
+variant_stock = {{ entriesVariants[0].stock }};
 </script>
 
 <div class="frame-prices-buy-wish-compare">
@@ -622,7 +612,16 @@ $(document).ready(function() {
         var name = $("#fastorder-frame").find("input[name='name']").val();
         var phone = $("#fastorder-frame").find("input[name='phone']").val();
         var address = $("#fastorder-frame").find("input[name='address']").val();
-
+        
+        if( variant_id == "" || variant_id == undefined) {
+            variant_id = $(this).attr('data-variant');
+        }
+        
+        if( variant_id == "" || variant_id == undefined) {
+            variant = $("#variantSwitcher").attr('value').split('|');
+            parse_variant_str(variant);
+        }
+        
         rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '2', 'name': name, 'phone': phone, 'address': address, 'variant_id': variant_id }, function (resTX) {
             $("div#fastorder-frame").html("<label><div align='center'>Заказ добавлен. В ближайшее время вам перезвонит наш манеджер.</div></label>");
         });
@@ -637,7 +636,16 @@ $(document).ready(function() {
         var name = $("#fastprice-frame").find("input[name='name']").val();
         var phone = $("#fastprice-frame").find("input[name='phone']").val();
         var address = $("#fastprice-frame").find("input[name='address']").val();
-
+        
+        if( variant_id == "" || variant_id == undefined) {
+            variant_id = $(this).attr('data-variant');
+        }
+        
+        if( variant_id == "" || variant_id == undefined) {
+            variant = $("#variantSwitcher").attr('value').split('|');
+            parse_variant_str(variant);
+        }
+        
         rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '3', 'name': name, 'phone': phone, 'address': address, 'variant_id': variant_id }, function (resTX) {
             $("div#fastprice-frame").html("<label><div align='center'>Спасибо. В ближайшее время вам перезвонит наш манеджер.</div></label>");
         });
