@@ -6,7 +6,7 @@
             <div id="sliderProduct" style="dislay: block;width:100%; height:540px; border:1px solid #eee">
             {% for entry in entriesImg %}
                 <div data-slidr="{{ loop.index }}" style="text-align:center">
-                    <img src="{{home}}/uploads/eshop/products/{{entry.filepath}}" title="{{ name }}" alt="">
+                    <img src="{{home}}/uploads/eshop/products/{{id}}/{{entry.filepath}}" title="{{ name }}" alt="">
                 </div>
             {% endfor %}
             </div>
@@ -58,7 +58,7 @@
                 <span class="current_price">{{ (entriesVariants[0].price * system_flags.eshop.currency[0].rate_from / system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }} {{ system_flags.eshop.current_currency.sign }}
                 </span>
                 {% endif %}
-                <div class="ui large button buy radius-none orderBut" data-id="{{ id }}" style="margin-left:1em">ÊÓÏÈÒÜ </div>
+                <div class="ui large button buy radius-none orderBut" data-id="{{ id }}" data-variant="{{ entriesVariants[0]['id'] }}" style="margin-left:1em">ÊÓÏÈÒÜ </div>
             </div>      
 
         </div>
@@ -85,7 +85,7 @@
                     <a class="buy" href="{{entry.fulllink}}">Êóïèòü</a>
                     <!--<a class="prev" href="/buy">Áûñòğûé ïğîñìîòğ</a>-->
             </div>
-            <a class="image" style="background:url({% if (entry.images[0].filepath) %}{{home}}/uploads/eshop/products/thumb/{{entry.images[0].filepath}}{% else %}{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg{% endif %}) 50% 50% /cover #eee"></a>
+            <a class="image" style="background:url({% if (entry.images[0].filepath) %}{{home}}/uploads/eshop/products/{{entry.id}}/thumb/{{entry.images[0].filepath}}{% else %}{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg{% endif %}) 50% 50% /cover #eee"></a>
             <a class="name">{{ entry.name }}</a>
             <div class="prices">
                 {% if (entry.variants[0].price) %}<span class="old">{{ (entry.variants[0].price * system_flags.eshop.currency[0].rate_from / system_flags.eshop.current_currency.rate_from)|number_format(2, '.', '') }} {{ system_flags.eshop.current_currency.sign }}</span>{% endif %}
@@ -119,6 +119,29 @@ $(document).ready(function() {
 </script>
 
 <script>
+    
+var variant = "";
+var variant_id = "";
+var variant_price = "";
+var variant_compare_price = "";
+var variant_stock = "";
+
+
+function change_variant(el) {
+    variant = $(el).attr("value").split('|');
+    parse_variant_str(variant);
+    
+    $('.priceVariant').html(variant_price);
+    $('.addCurrPrice').html(variant_compare_price);
+}
+
+function parse_variant_str(variant) {
+    variant_id = variant[0];
+    variant_price = variant[1];
+    variant_compare_price = variant[2];
+    variant_stock = variant[3];
+}
+    
 $(document).ready(function() {
 
     $(".orderBut").click(function(e){
@@ -127,8 +150,17 @@ $(document).ready(function() {
         if( count == undefined) {
             count = 1;
         }
+        
+        if( variant_id == "" || variant_id == undefined) {
+            variant_id = $(this).attr('data-variant');
+        }
+        
+        if( variant_id == "" || variant_id == undefined) {
+            variant = $("#variantSwitcher").attr('value').split('|');
+            parse_variant_str(variant);
+        }
 
-        rpcEshopRequest('eshop_ebasket_manage', {'action': 'add', 'ds':1,'id':id,'count':count }, function (resTX) {
+        rpcEshopRequest('eshop_ebasket_manage', {'action': 'add', 'ds':1,'id':id,'count':count, 'variant_id': variant_id }, function (resTX) {
             document.getElementById('tinyBask').innerHTML = resTX['update'];
             $('.message-add-to-cart').removeClass('hidden');
             $('.message-add-to-cart').addClass('visible');

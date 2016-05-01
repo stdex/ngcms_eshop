@@ -20,7 +20,7 @@
                         <a class="ui icon remove cart_quantity_delete" title="Удалить эту позицию" data-id="{{ entry.id }}" data-linked_ds="{{ entry.linked_ds }}" data-linked_id="{{ entry.linked_id }}">&times;</a>                 </td>
 
                     <td class="product-thumbnail">
-                        <a href="{{entry.xfields.item.view_link}}"><img width="180" height="180" src="{% if (entry.xfields.item.image_filepath) %}{{home}}/uploads/eshop/products/thumb/{{entry.xfields.item.image_filepath}}{% else %}{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg{% endif %}" class="attachment-shop_thumbnail size-shop_thumbnail wp-post-image" /></a>                 </td>
+                        <a href="{{entry.xfields.item.view_link}}"><img width="180" height="180" src="{% if (entry.xfields.item.image_filepath) %}{{home}}/uploads/eshop/products/{{entry.xfields.item.id}}/thumb/{{entry.xfields.item.image_filepath}}{% else %}{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg{% endif %}" class="attachment-shop_thumbnail size-shop_thumbnail wp-post-image" /></a>                 </td>
 
                     <td class="product-name">
                         <a href="{{entry.xfields.item.view_link}}">{{ entry.title }} </a>

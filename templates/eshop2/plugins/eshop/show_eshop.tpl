@@ -39,7 +39,7 @@
     <a href="{{entry.fulllink}}" class="frame-photo-title">
         <span class="photo-block">
             <span class="helper"></span>
-                        {% if (entry.images[0].filepath) %}<img src='{{home}}/uploads/eshop/products/thumb/{{entry.images[0].filepath}}' class="vImg">{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' class="vImg">{% endif %}
+                        {% if (entry.images[0].filepath) %}<img src='{{home}}/uploads/eshop/products/{{entry.id}}/thumb/{{entry.images[0].filepath}}' class="vImg">{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' class="vImg">{% endif %}
                                             </span>
         <span class="title">{{ entry.name }}</span>
     </a>
@@ -110,10 +110,10 @@
                {% for entry in entriesImg %}
                 <!-- Start. main image-->
                 <li class="jcarousel-item jcarousel-item-vertical jcarousel-item-{{loop.index}} jcarousel-item-{{loop.index}}-vertical {% if loop.first %}active{% endif %}" jcarouselindex="{{loop.index}}" style="float: left; list-style: none; height: 308px;">
-                    <a onclick="return false;" rel="useZoom: 'photoProduct'" href="{{home}}/uploads/eshop/products/{{entry.filepath}}" class="cloud-zoom-gallery" id="mainThumb">
+                    <a onclick="return false;" rel="useZoom: 'photoProduct'" href="{{home}}/uploads/eshop/products/{{id}}/{{entry.filepath}}" class="cloud-zoom-gallery" id="mainThumb">
                     <span class="photo-block">
                     <span class="helper"></span>
-                    <img src="{{home}}/uploads/eshop/products/thumb/{{entry.filepath}}"  class="vImgPr">
+                    <img src="{{home}}/uploads/eshop/products/{{id}}/thumb/{{entry.filepath}}"  class="vImgPr">
                     </span>
                     </a>
                 </li>
@@ -137,10 +137,10 @@
     {% if (entriesImg) %}
     {% for entry in entriesImg %}
         {% if loop.first %}
-            <a rel="position: 'xBlock'" onclick="return false;" href="{{home}}/uploads/eshop/products/{{entry.filepath}}" class="frame-photo-title photoProduct cloud-zoom isDrop" id="photoProduct" data-drop="#photo" data-start="Product.initDrop" data-scroll-content="false" style="position: relative; display: block;">
+            <a rel="position: 'xBlock'" onclick="return false;" href="{{home}}/uploads/eshop/products/{{id}}/{{entry.filepath}}" class="frame-photo-title photoProduct cloud-zoom isDrop" id="photoProduct" data-drop="#photo" data-start="Product.initDrop" data-scroll-content="false" style="position: relative; display: block;">
                 <span class="photo-block">
                     <span class="helper"></span>
-                    <img src="{{home}}/uploads/eshop/products/thumb/{{entry.filepath}}" title="{{ name }}" class="vImgPr" style="display: block;">
+                    <img src="{{home}}/uploads/eshop/products/{{id}}/thumb/{{entry.filepath}}" title="{{ name }}" class="vImgPr" style="display: block;">
                 </span>
             </a>
             <div class="mousetrap" style="z-index: 9999; position: absolute; width: 179px; height: 323px; left: 0px; top: 0px; cursor: move; background-image: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7);"></div>
@@ -284,20 +284,20 @@ variant_stock = {{ entriesVariants[0].stock }};
     </div>
 </div>
 <div class="btn-buy btn-cart d_n">
-    <button type="button" data-id="5853" class="btnBuy">
+    <button type="button" data-id="{{ id }}" data-variant="{{ entriesVariants[0]['id'] }}" class="btnBuy">
     <span class="icon_cleaner icon_cleaner_buy"></span>
     <span class="text-el">В корзине</span>
     </button>
 </div>
 <div class="btn-buy-p btn-buy btn-green" style="margin-right: 3px;">
-    <button type="button" class="btnBuy orderBut" data-id="{{ id }}" style="padding: 0 3px;">
+    <button type="button" class="btnBuy orderBut" data-id="{{ id }}" data-variant="{{ entriesVariants[0]['id'] }}" style="padding: 0 3px;">
     <span class="icon_cleaner icon_cleaner_buy"></span>
     <span class="text-el">Купить</span>
     </button>
 </div>
 
 <div class="btn-buy-p btn-buy" style="margin-right: 3px;">
-   <button type="button" class="btnBuy fastOrderBut" data-id="{{ id }}" style="padding: 0 3px;">
+   <button type="button" class="btnBuy fastOrderBut" data-id="{{ id }}" data-variant="{{ entriesVariants[0]['id'] }}" style="padding: 0 3px;">
    <span class="icon_cleaner icon_cleaner_buy"></span>
    <span class="text-el">Купить в один клик</span>
  </button>
@@ -583,9 +583,9 @@ var productPhotoCZoom = isTouch ? undefined : true;
 <div style="display: none;">
     {% for entry in entriesImg %}
         {% if loop.first %}
-        <img src="{{home}}/uploads/eshop/products/{{entry.filepath}}" class="vImgPr">
+        <img src="{{home}}/uploads/eshop/products/{{id}}/{{entry.filepath}}" class="vImgPr">
         {% endif %}
-        <img src="{{home}}/uploads/eshop/products/{{entry.filepath}}">
+        <img src="{{home}}/uploads/eshop/products/{{id}}/{{entry.filepath}}">
     {% endfor %}
 </div>
 

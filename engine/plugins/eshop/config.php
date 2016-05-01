@@ -265,16 +265,20 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
             $qid = $mysql->lastid('eshop_products');
             
             if($images != NULL) {
+                
+                @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/', 0777);
+                @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb', 0777);
+                
                 foreach ($images as $inx_img => $img) {
                     $timestamp = time();
                     $iname = $timestamp."-".$img;
                     
                     $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
-                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$iname;
+                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/'.$iname;
                     rename($temp_name, $current_name);
                     
                     $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
-                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/thumb/'.$iname;
+                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb/'.$iname;
                     rename($temp_name, $current_name);
                     
                     $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')");
@@ -579,16 +583,20 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
             $mysql->query('UPDATE '.prefix.'_eshop_products SET '.implode(', ',$vnames).' WHERE id = \''.intval($qid).'\'  ');
 
             if($images != NULL) {
+                
+                @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/', 0777);
+                @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb', 0777);
+                
                 foreach ($images as $inx_img => $img) {
                     $timestamp = time();
                     $iname = $timestamp."-".$img;
                     
                     $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
-                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$iname;
+                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/'.$iname;
                     rename($temp_name, $current_name);
                     
                     $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
-                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/thumb/'.$iname;
+                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb/'.$iname;
                     rename($temp_name, $current_name);
                     
                     $pos = $max_img_pos + $inx_img;
@@ -679,7 +687,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
         $imgID = intval($_REQUEST['delimg']);
         $imgPath = input_filter_com(convert($_REQUEST['filepath']));
         $mysql->query("delete from ".prefix."_eshop_images where id = ".$imgID."");
-        delete_product_image($imgPath);
+        delete_product_image($imgPath, $qid);
 
         $r_pos = 0;
         foreach ($mysql->select('SELECT * FROM '.prefix.'_eshop_images WHERE product_id = '.$row['id'].' ORDER BY position, id ') as $img_row)
@@ -768,7 +776,7 @@ global $mysql;
         
         foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_images WHERE product_id in ({$id})") as $irow)
         {
-            delete_product_image($irow['filepath']);
+            delete_product_image($irow['filepath'], $irow['product_id']);
         }
         $mysql->query("delete from ".prefix."_eshop_images where product_id in ({$id})");
         
@@ -995,12 +1003,12 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     }
 }
 
-function delete_product_image($img_name)
+function delete_product_image($img_name, $qid)
 {
 global $tpl, $template, $config, $mysql, $lang, $twig;
 
-    $upload_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/';
-    $upload_thumbnail_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/thumb/';
+    $upload_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/'.$qid.'/';
+    $upload_thumbnail_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/products/'.$qid.'/thumb/';
     
     $imgname = $upload_dir . $img_name;
     $thumbname = $upload_thumbnail_dir . $img_name;
@@ -2945,7 +2953,7 @@ function automation()
 
 
 function import_upload_images($qid) {
-global $tpl, $mysql, $cron, $twig;
+global $tpl, $mysql, $twig;
 
     $positions_img = array();
     foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_images WHERE product_id = '$qid' ORDER BY position, id") as $irow)
@@ -3015,18 +3023,46 @@ global $tpl, $mysql, $cron, $twig;
                 $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
                 copy($file_path, $thumbname);
             }
+                
+            $newwidth = pluginGetVariable('eshop', 'pre_width');
+            if(isset($newwidth) && ($newwidth != '0')) {
+                
+                if ($extension == "jpg" || $extension == "jpeg") {
+                    $src = imagecreatefromjpeg ( $file_path );
+                } else if ($extension == "png") {
+                    $src = imagecreatefrompng ( $file_path );
+                } else {
+                    $src = imagecreatefromgif ( $file_path );
+                }
+                
+                list ( $width, $height ) = getimagesize ( $file_path );
+                $newheight = ($height / $width) * $newwidth;
+                $tmp = imagecreatetruecolor ( $newwidth, $newheight );
+                imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
+
+                $thumbname = $file_path;
+                
+                imagejpeg ( $tmp, $thumbname, 100 );
+                
+                imagedestroy ( $src );
+                imagedestroy ( $tmp );
+                    
+            }
 
             $img = $name;
 
             $timestamp = time();
             $iname = $timestamp."-".$img;
+            
+            @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/', 0777);
+            @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb', 0777);
 
             $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
-            $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$iname;
+            $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/'.$iname;
             rename($temp_name, $current_name);
 
             $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
-            $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/thumb/'.$iname;
+            $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb/'.$iname;
             rename($temp_name, $current_name);
                                 
             $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')");

@@ -151,7 +151,7 @@
 
     <ul class="jq-jesse" id="list">
         {% for img in entries.entriesImg %}
-        <li class="jq-jesse__item"><a href='{{home}}/uploads/eshop/products/{{img.filepath}}' target='_blank'><img class="fix" name="#content-target-{{img.id}}"  data-id="{{img.id}}" src='{{home}}/uploads/eshop/products/thumb/{{img.filepath}}' width='100' height='100'></a>
+        <li class="jq-jesse__item"><a href='{{home}}/uploads/eshop/products/{{entries.id}}/{{img.filepath}}' target='_blank'><img class="fix" name="#content-target-{{img.id}}"  data-id="{{img.id}}" src='{{home}}/uploads/eshop/products/{{entries.id}}/thumb/{{img.filepath}}' width='100' height='100'></a>
         <div id="content-target-{{img.id}}">
            <a href="{{img.del_link}}" class="del_img" data-id="{{img.id}}">[x]</a>&nbsp;&nbsp;&nbsp;
         </div></li>
@@ -221,7 +221,7 @@
     
     <script>
         
-        var cat_features = {{ entries.cat_features }};
+        var cat_features = "{{ entries.cat_features }}";
         
         $(function(){
             $('select[name=parent]').change(function(){

@@ -6,7 +6,7 @@
     <span class="photo-block">
       <span class="helper">
       </span>
-      {% if (entry.images[0].filepath) %}<img src='{{home}}/uploads/eshop/products/thumb/{{entry.images[0].filepath}}' class="vImg">{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' class="vImg">{% endif %}
+      {% if (entry.images[0].filepath) %}<img src='{{home}}/uploads/eshop/products/{{entry.id}}/thumb/{{entry.images[0].filepath}}' class="vImg">{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' class="vImg">{% endif %}
       {% if (mode == 'stocked') %}<span class="product-status hit"></span>{% endif %}
       {% if (mode == 'last') %}<span class="product-status nowelty"></span>{% endif %}
       {% if (mode =='featured') %}<span class="product-status action"></span>{% endif %}

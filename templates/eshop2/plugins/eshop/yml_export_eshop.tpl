@@ -21,7 +21,7 @@
                 <categoryId>{{ entry.cid }}</categoryId>
                 {% if (entry.images) %}
                     {% for img in entry.images %}
-                    {% if (loop.index < 10) %}<picture>{{home}}/uploads/eshop/products/thumb/{{img.filepath}}</picture>{% endif %}
+                    {% if (loop.index < 10) %}<picture>{{home}}/uploads/eshop/products/{{entry.id}}/thumb/{{img.filepath}}</picture>{% endif %}
                     {% endfor %}
                 {% endif %}
                 <name>{{ entry.name }}</name>

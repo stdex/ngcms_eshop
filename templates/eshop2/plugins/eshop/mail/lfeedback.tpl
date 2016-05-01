@@ -45,7 +45,7 @@
         {% for entry in entries %}
         <tr style="background:#FFFFFF;" valign="top">
             <td style="background: #E6E6E6; color: #000; font: bold 14px/30px 'Roboto', sans-serif; text-align: center; text-transform: uppercase;">
-                {% if (entry.image_filepath) %}<img src='{{home}}/uploads/eshop/products/thumb/{{entry.xfields.item.image_filepath}}' height="100px" >{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' height="100px" >{% endif %}
+                {% if (entry.image_filepath) %}<img src='{{home}}/uploads/eshop/products/{{entry.id}}/thumb/{{entry.xfields.item.image_filepath}}' height="100px" >{% else %}<img src='{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg' height="100px" >{% endif %}
             </td>
             <td style="background: #E6E6E6; color: #000; font: bold 12px/30px 'Roboto', sans-serif; text-align: center; text-transform: uppercase;">
                 <a href="{{ entry.news_url }}" target="_blank">{{ entry.title }}</a>

@@ -131,7 +131,7 @@ mail/lfeedback_comment.tpl -  шаблон вывода письма о добавлении нового отзыва.
 Часть функционала использует RPC запросы для взаимодействия клиент-сервер:
 
 1) Добавление продукции в корзину:
-rpcEshopRequest('eshop_ebasket_manage', {'action': 'add', 'ds':1, 'id':id, 'count':count }, function (resTX) {
+rpcEshopRequest('eshop_ebasket_manage', {'action': 'add', 'ds':1, 'id':id, 'count':count, 'variant_id': variant_id }, function (resTX) {
     document.getElementById('tinyBask').innerHTML = resTX['update'];
 });
 
@@ -167,12 +167,12 @@ rpcEshopRequest('eshop_ebasket_manage', {'action': 'update_count',  'id':id, 'li
 
 
 4) Добавление быстрого заказа:
-rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '2', 'name': name, 'phone': phone, 'address': address}, function (resTX) {
+rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '2', 'name': name, 'phone': phone, 'address': address, 'variant_id': variant_id}, function (resTX) {
     $("div#fastorder-frame").html("<label><div align='center'>Заказ добавлен. В ближайшее время вам перезвонит наш манеджер.</div></label>");
 });
 
 Добавление заказа с кнопки "Узнать о наличии":
-rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '3', 'name': name, 'phone': phone, 'address': address}, function (resTX) {
+rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '3', 'name': name, 'phone': phone, 'address': address, 'variant_id': variant_id}, function (resTX) {
     $("div#fastprice-frame").html("<label><div align='center'>Спасибо. В ближайшее время вам перезвонит наш манеджер.</div></label>");
 });
 

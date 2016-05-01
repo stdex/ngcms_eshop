@@ -126,7 +126,7 @@
                     {% for entry in entries %}
                     <tr class="items items-bask cart-product items-product">
                         <td class="frame-items">
-                            <a class="frame-photo-title" href="{{entry.xfields.item.view_link}}"><span class="photo-block"><span class="helper"></span> <img alt="" src="{% if (entry.xfields.item.image_filepath) %}{{home}}/uploads/eshop/products/thumb/{{entry.xfields.item.image_filepath}}{% else %}{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg{% endif %}"></span> <span class="title">{{ entry.title }}</span></a>
+                            <a class="frame-photo-title" href="{{entry.xfields.item.view_link}}"><span class="photo-block"><span class="helper"></span> <img alt="" src="{% if (entry.xfields.item.image_filepath) %}{{home}}/uploads/eshop/products/{{entry.xfields.item.id}}/thumb/{{entry.xfields.item.image_filepath}}{% else %}{{home}}/engine/plugins/eshop/tpl/img/img_none.jpg{% endif %}"></span> <span class="title">{{ entry.title }}</span></a>
                             <div class="description">{{ entry.xfields.item.v_name }}</div>
                         </td>
                         <td>

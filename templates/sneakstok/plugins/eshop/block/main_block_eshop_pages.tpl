@@ -1,5 +1,5 @@
 {{ prev_link }}
-{{pages}}
+{{ pages }}
 {{ next_link }}
 
 <script>
