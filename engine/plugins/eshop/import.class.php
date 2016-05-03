@@ -149,6 +149,8 @@ class YMLOffer extends YMLCategory {
                         
                         $extensions = array_map('trim', explode(',', pluginGetVariable('eshop', 'ext_image')));
                         
+                        $pre_quality = pluginGetVariable('eshop', 'pre_quality');
+                        
                         if(!in_array($extension, $extensions)) {
                             return "0";
                         }
@@ -178,27 +180,65 @@ class YMLOffer extends YMLCategory {
                                 unlink ( $thumbname );
                             }
                             
-                            imagejpeg ( $tmp, $thumbname, 100 );
+                            imagejpeg ( $tmp, $thumbname, ($pre_quality>=10 && $pre_quality<=100)?$pre_quality:100  );
                             
                             imagedestroy ( $src );
                             imagedestroy ( $tmp );
                         }
                         else {
+                            if ($extension == "jpg" || $extension == "jpeg") {
+                                $src = imagecreatefromjpeg ( $file_path );
+                            } else if ($extension == "png") {
+                                $src = imagecreatefrompng ( $file_path );
+                            } else {
+                                $src = imagecreatefromgif ( $file_path );
+                            }
+                            imagejpeg ( $src, $file_path, ($pre_quality>=10 && $pre_quality<=100)?$pre_quality:100 );
                             $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
                             copy($file_path, $thumbname);
+                            
+                            imagedestroy ( $src );
                         }
                         
+                        $newwidth = pluginGetVariable('eshop', 'pre_width');
+                        if(isset($newwidth) && ($newwidth != '0')) {
+                            
+                            if ($extension == "jpg" || $extension == "jpeg") {
+                                $src = imagecreatefromjpeg ( $file_path );
+                            } else if ($extension == "png") {
+                                $src = imagecreatefrompng ( $file_path );
+                            } else {
+                                $src = imagecreatefromgif ( $file_path );
+                            }
+                            
+                            list ( $width, $height ) = getimagesize ( $file_path );
+                            $newheight = ($height / $width) * $newwidth;
+                            $tmp = imagecreatetruecolor ( $newwidth, $newheight );
+                            imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
+
+                            $thumbname = $file_path;
+                            
+                            imagejpeg ( $tmp, $thumbname, ($pre_quality>=10 && $pre_quality<=100)?$pre_quality:100 );
+                            
+                            imagedestroy ( $src );
+                            imagedestroy ( $tmp );
+                                
+                        }
+
                         $img = $name;
 
                         $timestamp = time();
                         $iname = $timestamp."-".$img;
-                        
+
+                        @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/', 0777);
+                        @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb', 0777);
+
                         $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
-                        $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$iname;
+                        $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/'.$iname;
                         rename($temp_name, $current_name);
-                        
+
                         $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
-                        $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/thumb/'.$iname;
+                        $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb/'.$iname;
                         rename($temp_name, $current_name);
                                             
                         $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')");

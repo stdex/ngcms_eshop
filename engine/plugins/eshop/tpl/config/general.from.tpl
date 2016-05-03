@@ -58,6 +58,10 @@
 <td class="contentEntry1" valign=top>Ширина при загрузке<br /></td>
 <td class="contentEntry2" valign=top><input name="pre_width" type="text" title="Ширина при загрузке" size="20" value="{{entries.pre_width}}" /></td>
 </tr>
+<tr>
+<td class="contentEntry1" valign=top>Качество при загрузке<br /></td>
+<td class="contentEntry2" valign=top><input name="pre_quality" type="text" title="Качество при загрузке" size="20" value="{{entries.pre_quality}}" /></td>
+</tr>
 <!--
 <tr>
 <td class="contentEntry1" valign=top>Максимальный размер загружаемого изображения<br /><small>Размер в мегабайтах</small></td>

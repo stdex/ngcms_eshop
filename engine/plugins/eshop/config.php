@@ -2924,6 +2924,64 @@ function automation()
         
     }
 
+    if (isset($_REQUEST['multiple_upload_images']))
+    {
+
+        $images = $_REQUEST['data']['images'];
+
+        if($images != NULL) {
+            
+            foreach ($images as $inx_img => $img) {
+            
+                $img_parts = explode(".", $img);
+                $img_s = explode("_", $img_parts[0]);
+                $qid = $img_s[0];
+                if($qid != "") {
+                    
+                    $prd_row = $mysql->record("select * from ".prefix."_eshop_products where id = ".db_squote($qid)." limit 1");
+                    if ( !is_array($prd_row) ) {
+                        break;
+                    }
+            
+                    $positions_img = array();
+                    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_images WHERE product_id = '$qid' ORDER BY position, id") as $irow)
+                    {
+                        $positions_img[] = $irow['position'];
+                    }
+
+                    if(!empty($positions_img)) {
+                        $max_img_pos = max($positions_img) + 1;
+                    }
+                    else {
+                        $max_img_pos = 0;
+                    }
+
+                    $inx_img =  $max_img_pos;
+                    
+                    @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/', 0777);
+                    @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb', 0777);
+                
+                    $timestamp = time();
+                    $iname = $timestamp."-".$img;
+                    
+                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
+                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/'.$iname;
+                    rename($temp_name, $current_name);
+                    
+                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
+                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb/'.$iname;
+                    rename($temp_name, $current_name);
+                    
+                    $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')");
+                    
+                }
+            }
+        }
+
+        $info = "Изображения загружены<br/>";
+        msg(array("type" => "info", "info" => $info));
+    }
+
     $xt = $twig->loadTemplate($tpath['config/automation'].'config/'.'automation.tpl');
     
     $yml_export_link = checkLinkAvailable('eshop', 'yml_export')?
@@ -2984,6 +3042,8 @@ global $tpl, $mysql, $twig;
             $extension = $fileParts ['extension'];
 
             $extensions = array_map('trim', explode(',', pluginGetVariable('eshop', 'ext_image')));
+            
+            $pre_quality = pluginGetVariable('eshop', 'pre_quality');
 
             if(!in_array($extension, $extensions)) {
                 return "0";
@@ -3014,14 +3074,24 @@ global $tpl, $mysql, $twig;
                     unlink ( $thumbname );
                 }
                 
-                imagejpeg ( $tmp, $thumbname, 100 );
+                imagejpeg ( $tmp, $thumbname, ($pre_quality>=10 && $pre_quality<=100)?$pre_quality:100 );
                 
                 imagedestroy ( $src );
                 imagedestroy ( $tmp );
             }
             else {
+                if ($extension == "jpg" || $extension == "jpeg") {
+                    $src = imagecreatefromjpeg ( $file_path );
+                } else if ($extension == "png") {
+                    $src = imagecreatefrompng ( $file_path );
+                } else {
+                    $src = imagecreatefromgif ( $file_path );
+                }
+                imagejpeg ( $src, $file_path, ($pre_quality>=10 && $pre_quality<=100)?$pre_quality:100 );
                 $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
                 copy($file_path, $thumbname);
+                
+                imagedestroy ( $src );
             }
                 
             $newwidth = pluginGetVariable('eshop', 'pre_width');
@@ -3042,7 +3112,7 @@ global $tpl, $mysql, $twig;
 
                 $thumbname = $file_path;
                 
-                imagejpeg ( $tmp, $thumbname, 100 );
+                imagejpeg ( $tmp, $thumbname, ($pre_quality>=10 && $pre_quality<=100)?$pre_quality:100 );
                 
                 imagedestroy ( $src );
                 imagedestroy ( $tmp );
@@ -3104,6 +3174,7 @@ global $tpl, $mysql, $cron, $twig;
         pluginSetVariable('eshop', 'ext_image', check_php_str($_REQUEST['ext_image']) );
         
         pluginSetVariable('eshop', 'pre_width', intval($_REQUEST['pre_width']));
+        pluginSetVariable('eshop', 'pre_quality', intval($_REQUEST['pre_quality']));
         
         pluginSetVariable('eshop', 'catz_max_image_size', intval($_REQUEST['catz_max_image_size']));
         pluginSetVariable('eshop', 'catz_width_thumb', intval($_REQUEST['catz_width_thumb']));
@@ -3172,6 +3243,7 @@ global $tpl, $mysql, $cron, $twig;
     $ext_image = pluginGetVariable('eshop', 'ext_image');
     
     $pre_width = pluginGetVariable('eshop', 'pre_width');
+    $pre_quality = pluginGetVariable('eshop', 'pre_quality');
     
     $catz_max_image_size = pluginGetVariable('eshop', 'catz_max_image_size');
     $catz_width_thumb = pluginGetVariable('eshop', 'catz_width_thumb');
@@ -3206,6 +3278,7 @@ global $tpl, $mysql, $cron, $twig;
         'ext_image' => $ext_image,
         
         'pre_width' => $pre_width,
+        'pre_quality' => $pre_quality,
         
         'catz_max_image_size' => $catz_max_image_size,
         'catz_width_thumb' => $catz_width_thumb,

@@ -1,3 +1,9 @@
+<script src="{{ admin_url }}/plugins/eshop/tpl/config/jq/jquery-1.7.2.min.js" type="text/javascript"></script>
+
+<link rel="stylesheet" type="text/css" href="{{ admin_url }}/plugins/eshop/upload/uploadifive/uploadifive.css">
+<script src="{{ admin_url }}/plugins/eshop/upload/uploadifive/jquery.uploadifive.min.js" type="text/javascript"></script>
+
+
 <table border="0" cellspacing="0" cellpadding="0" class="content">
 <tbody>
 <tr>
@@ -124,6 +130,79 @@
 </tr>
 
 <tr>
+    <td width="50%" class="contentEntry1" valign="top">
+        <form action="" method="post" id="multiple_upload_images" enctype="multipart/form-data">
+        <input type="hidden" name="multiple_upload_images"  value="1">
+        <table border="0" cellspacing="0" cellpadding="0" class="content" align="center">
+            <tbody>
+            <tr>
+                <td class="contentHead"><img src="{{ admin_url }}/skins/default/images/nav.gif" hspace="8" alt="">Массовая загрузка изображений</td>
+            </tr>
+            <tr>
+                <td>
+
+                <div class="list">
+                    
+                        <script type="text/javascript">
+                        $(document).ready(function() {
+
+                            var i = 0;
+                            $('#file_upload').uploadifive({
+                                'auto'             : false,
+                                'formData'         : {},
+                                'queueID'          : 'queue',
+                                'uploadScript'     : '/engine/plugins/eshop/upload/libs/upload_product_images.php',
+                                'onUpload' : function(filesToUpload) {
+                                         i = 0;
+                                    },
+                                'onUploadComplete' : function(file, data) {
+                                        console.log(file);
+                                        console.log(data);
+                                        if(data == "1") {
+                                            var form = document.forms['multiple_upload_images'];
+                                            var el = document.createElement("input");
+                                            el.type = "hidden";
+                                            el.name = "data[images]["+i+"]";
+                                            el.value = file.name;
+                                            form.appendChild(el);
+                                            i++;
+                                        }
+                                    },
+                                'onQueueComplete' : function(uploads) {
+                                    document.getElementById('multiple_upload_images').submit();
+                                }
+                            });
+
+
+                        });
+
+                        </script>
+
+                        <div id="queue">
+                        </div>
+                        <input id="file_upload" name="file_upload" type="file" multiple="true">
+
+                    
+                    
+                </div>
+                
+                </td>
+
+            </tr>
+
+            <tr align="center">
+            <td width="100%" class="contentEdit" align="center" valign="top">
+                <input onclick="javascript:$('#file_upload').uploadifive('upload')" class="button" style="float:center; width: 55px;"  value="Загрузить!">
+            </td>
+            </tr>
+            </tbody>
+        </table>
+        </form>
+    </td>
+</tr>
+
+
+<tr>
     <td width="50%" valign="top" class="contentEntry1">
         <form action="" method="post">
         <input type="hidden" name="change_price" value="1">
@@ -187,6 +266,7 @@
         </table>
         </form>
     </td>
+    
 </tr>
 
 </tbody>
