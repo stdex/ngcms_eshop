@@ -618,8 +618,10 @@ $(document).ready(function() {
         }
         
         if( variant_id == "" || variant_id == undefined) {
-            variant = $("#variantSwitcher").attr('value').split('|');
-            parse_variant_str(variant);
+            if(document.getElementById("variantSwitcher") !== null) {
+                variant = $("#variantSwitcher").attr('value').split('|');
+                parse_variant_str(variant);
+            }
         }
         
         rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '2', 'name': name, 'phone': phone, 'address': address, 'variant_id': variant_id }, function (resTX) {
@@ -642,8 +644,10 @@ $(document).ready(function() {
         }
         
         if( variant_id == "" || variant_id == undefined) {
-            variant = $("#variantSwitcher").attr('value').split('|');
-            parse_variant_str(variant);
+            if(document.getElementById("variantSwitcher") !== null) {
+                variant = $("#variantSwitcher").attr('value').split('|');
+                parse_variant_str(variant);
+            }
         }
         
         rpcEshopRequest('eshop_ebasket_manage', {'action': 'add_fast', 'ds':1, 'id':id, 'count':count, 'type': '3', 'name': name, 'phone': phone, 'address': address, 'variant_id': variant_id }, function (resTX) {

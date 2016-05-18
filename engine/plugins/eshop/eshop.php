@@ -1593,7 +1593,8 @@ function plugin_ebasket_list(){
         foreach ($mysql->select("select * from ".prefix."_eshop_ebasket where ".join(" or ", $filter), 1) as $rec) {
             $r_count = $rec['count'];
             $linked_id = $rec['linked_id'];
-            $variant_id = $rec['linked_fld']['item']['v_id'];
+            $linked_fld = unserialize($rec['linked_fld']);
+            $variant_id = $linked_fld['item']['v_id']; 
             $conditions = array();
             if ($linked_id) {
                 array_push($conditions, "p.id = ".db_squote($linked_id));
