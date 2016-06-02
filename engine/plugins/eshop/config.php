@@ -786,6 +786,13 @@ global $mysql;
     {
         $mysql->query("delete from ".prefix."_eshop_products where id in ({$id})");
         $mysql->query("delete from ".prefix."_eshop_options where product_id in ({$id})");
+        $mysql->query("delete from ".prefix."_eshop_products_likes where product_id in ({$id})");
+        $mysql->query("delete from ".prefix."_eshop_products_comments where product_id in ({$id})");
+        $mysql->query("delete from ".prefix."_eshop_related_products where product_id in ({$id})");
+        $mysql->query("delete from ".prefix."_eshop_related_products where related_id in ({$id})");
+        $mysql->query("delete from ".prefix."_eshop_variants where product_id in ({$id})");
+        $mysql->query("delete from ".prefix."_eshop_ebasket where linked_id in ({$id})");
+        $mysql->query("delete from ".prefix."_eshop_compare where linked_fld in ({$id})");
         
         foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_images WHERE product_id in ({$id})") as $irow)
         {
@@ -1340,7 +1347,7 @@ global $tpl, $mysql, $twig;
     //get all categories
     $catz_array = array();
     
-    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id") as $row)
+    foreach ($mysql->select("SELECT *, (SELECT COUNT(*) FROM ".prefix."_eshop_products_categories WHERE category_id = id) AS catCnt FROM ".prefix."_eshop_categories ORDER BY position, id") as $row)
     {
 
         $catz_array[$row['id']] = 
@@ -1351,8 +1358,9 @@ global $tpl, $mysql, $twig;
                 'CategoryName' => $row['name'],
                 'Description' => $row['description'],                                               
                 'SortOrder' => $row['position'],
-                'IconFile' => $row['image']
-                );
+                'IconFile' => $row['image'],
+                'catCnt' => $row['catCnt'],
+                );                
     }
     //generate menu starting with parent categories (that have a 0 parent)
     $tEntry = generate_menu(0, $catz_array);
@@ -1408,7 +1416,8 @@ function generate_menu($parent, $catz_array)
                 'prefix' => get_prefix($value['CategoryID']),
                 'parent' => $value['parent'],
                 'position' => $value['SortOrder'],
-                'image' => $value['IconFile']
+                'image' => $value['IconFile'],
+                'catCnt' => $value['catCnt'],
             );
             
             if ($key != 0) $addspaces .= '&nbsp;';

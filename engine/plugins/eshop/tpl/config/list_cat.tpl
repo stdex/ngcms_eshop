@@ -4,6 +4,7 @@
 <td width="5%">ID</td>
 <td width="15%">Изображение</td>
 <td width="72%">Название</td>
+<td width="12%">Количество</td>
 <td width="5%">Порядок</td>
 <td width="5%">Действие</td>
 </tr>
@@ -20,6 +21,7 @@
     </div>
     
 </td>
+<td width="15%" class="contentEntry1" style="text-align:center;vertical-align:middle">{{ entry.catCnt }}</td>
 <td width="15%" class="contentEntry1" style="text-align:center;vertical-align:middle">{{ entry.position }}</td>
 <td width="15%" class="contentEntry1" style="text-align:center;vertical-align:middle"><a href="{{ entry.del_link }}"  /><img src="/engine/skins/default/images/delete.gif"></a></td>
 </tr>
