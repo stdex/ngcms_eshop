@@ -64,26 +64,11 @@ function plugin_block_eshop($number, $mode, $cat, $products, $overrideTemplateNa
         $view_link = checkLinkAvailable('eshop', 'show')?
                         generateLink('eshop', 'show', array('alt' => $row['url'])):
                         generateLink('core', 'plugin', array('plugin' => 'eshop', 'handler' => 'show'), array('alt' => $row['url']));
+                        
+        $row['edit_link'] = "?mod=extra-config&plugin=eshop&action=edit_product&id=".$row['id']."";
+        $row['view_link'] = $view_link;
         
-        $tEntries[$row['id']] = array (
-            'id'                   => $row['id'],
-            'code'                 => $row['code'],
-            'name'                 => $row['name'],
-            
-            'category'             => $row['category'],
-            
-            'active'               => $row['active'],
-            'featured'             => $row['featured'],
-            'stocked'              => $row['stocked'],
-            
-            'position'             => $row['position'],
-            
-            'date'                 => $row['date'],
-            'editdate'             => $row['editdate'],
-            
-            'edit_link'            => "?mod=extra-config&plugin=eshop&action=edit_product&id=".$row['id']."",
-            'view_link'            => $view_link,
-        );
+        $tEntries[$row['id']] = $row;
     }
     
     $entries_array_ids = array_keys($tEntries);

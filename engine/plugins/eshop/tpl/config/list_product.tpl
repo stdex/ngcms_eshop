@@ -52,6 +52,18 @@
 <!--Block 3-->
 <td rowspan="2">
 <table border="0" cellspacing="0" cellpadding="0" class="filterblock">
+    <tr>
+    <td valign="top">
+    <label>ID</label>
+    <input name="fid" id="fid" class="bfid" type="text" value="{{fid}}" size="40"/></span>
+    </td>
+    </tr>
+    <tr>
+    <td valign="top">
+    <label>Код</label>
+    <input name="fcode" id="fcode" class="bfcode" type="text" value="{{fcode}}" size="40"/></span>
+    </td>
+    </tr>
 </table>
 </td>
 

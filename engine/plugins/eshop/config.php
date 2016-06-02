@@ -67,6 +67,8 @@ global $tpl, $mysql, $lang, $twig;
     $fName          = $_REQUEST['fname'];
     $fStatus        = $_REQUEST['fstatus'];
     $fCategory      = $_REQUEST['fcategory'];
+    $fId            = $_REQUEST['fid'];
+    $fCode          = $_REQUEST['fcode'];
 
     $news_per_page  = isset($_REQUEST['rpp'])?intval($_REQUEST['rpp']):intval($admCookie['eshop']['pp']);
     // - Set default value for `Records Per Page` parameter
@@ -93,6 +95,14 @@ global $tpl, $mysql, $lang, $twig;
         $catz_filter_comma_separated = implode(",", $catz_filter);
         array_push($conditions, "pc.category_id IN (".$catz_filter_comma_separated.") ");
     }
+    
+    if ($fId) {
+        array_push($conditions, "p.id = ".db_squote($fId));
+    }
+    
+    if ($fCode) {
+        array_push($conditions, "p.code = ".db_squote($fCode));
+    }
 
     $fSort = " GROUP BY p.id ORDER BY p.id DESC";
     $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id ".(count($conditions)?"WHERE ".implode(" AND ", $conditions):'').$fSort;
@@ -109,6 +119,7 @@ global $tpl, $mysql, $lang, $twig;
     $count = $mysql->result($sqlQCount);
     $countPages = ceil($count / $news_per_page);
     
+    //var_dump($sqlQ);
     //var_dump($sqlQ.' LIMIT '.$start_from.', '.$news_per_page);
 
     foreach ($mysql->select($sqlQ.' LIMIT '.$start_from.', '.$news_per_page) as $row)
@@ -171,6 +182,8 @@ global $tpl, $mysql, $lang, $twig;
         'fname'         =>  secure_html($fName),
         'fstatus'           =>  secure_html($fStatus),
         'fcategory'         =>  secure_html($fCategory),
+        'fid'         =>  secure_html($fId),
+        'fcode'         =>  secure_html($fCode),
         'entries' => isset($tEntry)?$tEntry:'' 
     );
     
@@ -1821,6 +1834,14 @@ global $tpl, $mysql, $twig;
     $fName          = $_REQUEST['fname'];
     $fPhone         = $_REQUEST['fphone'];
     $fAdress        = $_REQUEST['fadress'];
+    $fCustomerName  = $_REQUEST['an'];
+
+    // Selected date
+    $fDateStart     = $_REQUEST['dr1'];
+    $fDateEnd       = $_REQUEST['dr2'];
+    
+    if($fDateStart == 'DD.MM.YYYY') $fDateStart = '';
+    if($fDateEnd == 'DD.MM.YYYY') $fDateEnd = '';
 
     $news_per_page  = isset($_REQUEST['rpp'])?intval($_REQUEST['rpp']):intval($admCookie['eshop']['pp_order']);
     // - Set default value for `Records Per Page` parameter
@@ -1842,6 +1863,24 @@ global $tpl, $mysql, $twig;
 
     if ($fAdress) {
         array_push($conditions, "address LIKE ".db_squote("%".$fAdress."%"));
+    }
+    
+    if ($fCustomerName) {
+        $sqlQCustomer = "SELECT id FROM ".prefix."_users where name = ".db_squote($fCustomerName).";";
+        $customer_id = $mysql->result($sqlQCustomer);
+        array_push($conditions, "author_id = ".db_squote($customer_id));
+    }
+    
+    if ($fDateStart && $fDateEnd) {
+        $fDateEndWithTime = $fDateEnd." 23:59:59";
+        array_push( $conditions, "dt BETWEEN UNIX_TIMESTAMP(STR_TO_DATE(".db_squote($fDateStart).",'%d.%m.%Y')) AND UNIX_TIMESTAMP(STR_TO_DATE(".db_squote($fDateEndWithTime).",'%d.%m.%Y %H:%i:%s'))" );
+    }
+    elseif ($fDateStart) {
+        array_push($conditions, "dt BETWEEN UNIX_TIMESTAMP(STR_TO_DATE(".db_squote($fDateStart).",'%d.%m.%Y')) AND NOW()" );
+    }
+    elseif ($fDateEnd) {
+        $fDateEndWithTime = $fDateEnd." 23:59:59";
+        array_push($conditions, "dt BETWEEN UNIX_TIMESTAMP(STR_TO_DATE('01.01.1970','%d.%m.%Y')) AND UNIX_TIMESTAMP(STR_TO_DATE(".db_squote($fDateEndWithTime).",'%d.%m.%Y %H:%i:%s'))" );
     }
 
     $fSort = " ORDER BY id DESC";
@@ -1876,6 +1915,9 @@ global $tpl, $mysql, $twig;
         'fname'         =>  secure_html($fName),
         'fphone'            =>  secure_html($fPhone),
         'fadress'           =>  secure_html($fAdress),
+        'an'           =>  secure_html($fCustomerName),
+        'fDateStart'            =>  $fDateStart?$fDateStart:'',
+        'fDateEnd'          =>  $fDateEnd?$fDateEnd:'',
         'entries' => isset($tEntry)?$tEntry:'',
     );
     

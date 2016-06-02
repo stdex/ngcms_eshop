@@ -1,6 +1,6 @@
 <div class="frame-inside page-product">
    <div class="container">
-            <div class="clearfix item-product {% if (entriesVariants[0].stock == 0) or (entriesVariants[0].stock == 1) %}not-avail{% elseif (entriesVariants[0].stock == 5) %}to-cart{% endif %}">
+            <div class="clearfix item-product {% if (entriesVariants[0].stock == 0) %}not-avail{% elseif (entriesVariants[0].stock == 5) or (entriesVariants[0].stock == 1) %}to-cart{% endif %}">
       <div class="right-product">
         <!--Start. Payments method form -->
         <div class="" data-mq-max="1280" data-mq-min="0" data-mq-target="#deliveryTabs">
@@ -310,19 +310,35 @@ variant_stock = {{ entriesVariants[0].stock }};
 
 </div>
 
-{% else %}
+{% elseif (entriesVariants[0].stock == 1) %}
+<!-- Start. Collect information about Variants, for future processing -->
+<div class="frame-count-buy js-variant-5853 js-variant">
 
+<div class="btn-buy-p btn-buy btn-green" style="margin-right: 3px;">
+    <button type="button" class="btnBuy fastPriceBut" data-id="{{ id }}" data-variant="{{ entriesVariants[0]['id'] }}" style="padding: 0 3px;">
+    <span class="icon_cleaner icon_cleaner_buy"></span>
+    <span class="text-el">Сообщить о появлении</span>
+    </button>
+</div>
+
+<div class="label-is-aviable">
+  <span class="icon-is-aviable"></span>
+  <span class="text-el">На заказ</span>
+</div>
+
+</div>
+{% else %}
 <div class="d_i-b v-a_m">
  <div class="js-variant-5858 js-variant">
   <div class="btn-not-avail">
-   <button type="button" class="infoBut fastPriceBut">
+   <button type="button" class="infoBut fastPriceBut" data-id="{{ id }}" data-variant="{{ entriesVariants[0]['id'] }}" >
    <span class="icon-but"></span>
    <span class="text-el">Сообщить о появлении</span>
  </button>
 </div>
 <div class="label-is-aviable">
-  <span class="icon-no-aviable"></span>
-  <span class="text-el">{% if (entriesVariants[0].stock == 0) %}Нет в наличии{% elseif (entriesVariants[0].stock == 1) %}На заказ{% endif %}</span>
+  <span class="icon-is-aviable"></span>
+  <span class="text-el">{% if (entriesVariants[0].stock == 0) %}Нет в наличии{% endif %}</span>
 </div>
 </div>
 </div>
