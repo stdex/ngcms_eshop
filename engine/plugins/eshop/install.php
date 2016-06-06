@@ -131,7 +131,7 @@ function plugin_eshop_install($action) {
             array('action'  => 'cmodify', 'name' => 'name', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
             array('action'  => 'cmodify', 'name' => 'position', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
             array('action'  => 'cmodify', 'name' => 'ftype', 'type' => 'int(1)', 'params' => 'NOT NULL default \'0\''),
-            array('action'  => 'cmodify', 'name' => 'fdefault', 'type' => 'varchar(255)', 'params' => 'NOT NULL default \'\''),
+            array('action'  => 'cmodify', 'name' => 'fdefault', 'type' => 'text', 'params' => 'NOT NULL default \'\''),
             array('action'  => 'cmodify', 'name' => 'foptions', 'type' => 'varchar(500)', 'params' => 'NOT NULL default \'\''),
             array('action'  => 'cmodify', 'name' => 'in_filter', 'type' => 'int(1)', 'params' => 'NOT NULL default \'0\''),
             array('action'  => 'cmodify', 'name' => 'required', 'type' => 'int(1)', 'params' => 'NOT NULL default \'0\''),
@@ -146,7 +146,7 @@ function plugin_eshop_install($action) {
         'fields'    => array(
             array('action'  => 'cmodify', 'name' => 'product_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
             array('action'  => 'cmodify', 'name' => 'feature_id', 'type' => 'int(11)', 'params' => 'NOT NULL default \'0\''),
-            array('action'  => 'cmodify', 'name' => 'value', 'type' => 'varchar(500)', 'params' => 'NOT NULL default \'\''),
+            array('action'  => 'cmodify', 'name' => 'value', 'type' => 'text', 'params' => 'NOT NULL default \'\''),
         )
     ),
 

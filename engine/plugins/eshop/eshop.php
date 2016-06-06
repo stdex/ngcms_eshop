@@ -1018,7 +1018,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
             {
                 if($orow['ftype'] == 2) {
                     $foptions = json_decode($orow['foptions'],true);
-                    $orow['value'] = $foptions[$orow['value']];
+                    $orow['value'] = iconv("utf-8", "windows-1251", $foptions[$orow['value']]);
                 }
                 $options_array[$orow['id']] = $orow['value'];
             }
@@ -1235,7 +1235,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $Curren
         {
             if($orow['ftype'] == 2) {
                 $foptions = json_decode($orow['foptions'],true);
-                $orow['value'] = $foptions[$orow['value']];
+                $orow['value'] = iconv("utf-8", "windows-1251", $foptions[$orow['value']]);
             }
             $features_array[] = $orow;
         }
@@ -1446,7 +1446,7 @@ global $tpl, $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $lang, 
         {
             if($orow['ftype'] == 2) {
                 $foptions = json_decode($orow['foptions'],true);
-                $orow['value'] = $foptions[$orow['value']];
+                $orow['value'] = iconv("utf-8", "windows-1251", $foptions[$orow['value']]);
             }
             $features_array[] = $orow;
         }

@@ -1,3 +1,18 @@
+<script src="{{ admin_url }}/plugins/eshop/tpl/config/tinymce/tinymce.min.js" type="text/javascript"></script>
+<script>
+
+tinymce.init({
+  selector: 'textarea[name=html_default]',
+  height: 100,
+  plugins: [
+    'advlist autolink lists link image charmap print preview anchor',
+    'searchreplace visualblocks code fullscreen',
+    'insertdatetime media table contextmenu paste code'
+  ],
+  toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image'
+});
+
+</script>
 {{entries.error}}
 
 <form method="post" action="">
@@ -24,6 +39,7 @@
                 <option value="text" {% if (entries.ftype == 0) %}selected{% endif %}>Текстовый</option>
                 <option value="checkbox" {% if (entries.ftype == 1) %}selected{% endif %}>Флажок (checkbox)</option>
                 <option value="select" {% if (entries.ftype == 2) %}selected{% endif %}>Выбор значения</option>
+                <option value="html" {% if (entries.ftype == 3) %}selected{% endif %}>HTML</option>
             </select>
         </td>
     </tr>
@@ -86,6 +102,19 @@
 </table>
 </div>
 
+<!-- FIELD TYPE: HTML -->
+<div id="type_html">
+<table border="0" cellspacing="1" cellpadding="1" class="content">
+ <tr class="contRow1">
+  <td width="5%" style="background-color: #EAF0F7; border-left: 1px solid #D1DFEF;">HTML</td>
+  <td width="45%">Значение по умолчанию:</td>
+  <td>
+      <textarea name="html_default">{% if (entries.ftype == 3) %}{{ entries.fdefault }}{% endif %}</textarea>
+  </td>
+ </tr>
+</table>
+</div>
+
 <table border="0" width="100%" cellspacing="0" cellpadding="0">
     <tr>
         <td width="50%" class="contentEntry1">Позиция<br /><small></small></td>
@@ -112,9 +141,10 @@ function clx(mode) {
     document.getElementById('type_text').style.display      = (mode == 'text')?     'block':'none';
     document.getElementById('type_checkbox').style.display  = (mode == 'checkbox')? 'block':'none';
     document.getElementById('type_select').style.display    = (mode == 'select')?   'block':'none';
+    document.getElementById('type_html').style.display    = (mode == 'html')?   'block':'none';
 }
 
-clx('{% if (entries.ftype == 0) %}text{% elseif(entries.ftype == 1) %}checkbox{% elseif(entries.ftype == 2) %}select{% endif %}');
+clx('{% if (entries.ftype == 0) %}text{% elseif(entries.ftype == 1) %}checkbox{% elseif(entries.ftype == 2) %}select{% elseif(entries.ftype == 3) %}html{% endif %}');
 
 
 
@@ -133,7 +163,6 @@ $("#xfBtnAdd").click(function() {
     var xl = $('#xfSelectTable tbody>tr:last').clone();
     xl.find("input").val('');
     xl.find("input").eq(0).attr("name", "so_data["+soMaxNum+"][0]");
-    //xl.find("span").eq(0).text(soMaxNum);
     xl.find("input").eq(1).attr("name", "so_data["+soMaxNum+"][1]");
     soMaxNum++;
 

@@ -75,11 +75,11 @@ function change_img_pos($params){
             $mysql->query("update ".prefix."_eshop_images set position = ".db_squote($img_row['position'])." where (product_id = ".db_squote($img_row['product_id']).") and (position = ".db_squote($position).") ");
             //$prev_img_row = $mysql->record("select * from ".prefix."_eshop_images where (product_id = ".db_squote($img_row['product_id']).") and (position = ".db_squote($prevPosition).")");
             $mysql->query("update ".prefix."_eshop_images set position = ".db_squote($position)." where (id = ".db_squote($img_row['id']).") ");
-            return array('status' => 1, 'errorCode' => 0, 'data' => 'Images swaped success', 'update' => '');
+            return array('status' => 1, 'errorCode' => 0, 'data' => iconv("windows-1251", "utf-8", 'Images swaped success'), 'update' => '');
         }
     }
 
-    return array('status' => 0, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
+    return array('status' => 0, 'errorCode' => 0, 'data'     => iconv("windows-1251", "utf-8", 'OK, '.var_export($params, true)));
 }
 
 function change_variant($params){
@@ -125,12 +125,12 @@ function change_variant($params){
                 }
             }
             $mysql->query('UPDATE '.prefix.'_eshop_variants SET '.implode(', ',$vnames).' WHERE id = \''.intval($qid).'\'  ');
-            return array('status' => 1, 'errorCode' => 0, 'data' => 'Variant success changed', 'update' => '');
+            return array('status' => 1, 'errorCode' => 0, 'data' => iconv("windows-1251", "utf-8", 'Variant success changed'), 'update' => '');
         }
 
     }
 
-    return array('status' => 0, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
+    return array('status' => 0, 'errorCode' => 0, 'data'     => iconv("windows-1251", "utf-8", 'OK, '.var_export($params, true)));
 }
 
 function compare_prd($params){
@@ -142,7 +142,7 @@ function compare_prd($params){
     $id = intval($params['id']);
 
     if ($id < 1) {
-        return array('status' => 0, 'errorCode' => 2, 'errorText' => 'ID should be positive');
+        return array('status' => 0, 'errorCode' => 2, 'errorText' => iconv("windows-1251", "utf-8", 'ID should be positive'));
     }
 
     switch ($params['action']) {
@@ -174,7 +174,7 @@ function compare_prd($params){
             $tpath = locatePluginTemplates(array('compare_block_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'));
             $xt = $twig->loadTemplate($tpath['compare_block_eshop'].'compare_block_eshop.tpl');
 
-            return array('status' => 1, 'errorCode' => 0, 'data' => 'Item added into compare', 'update' => arrayCharsetConvert(0, $xt->render($tVars)));
+            return array('status' => 1, 'errorCode' => 0, 'data' => iconv("windows-1251", "utf-8", 'Item added into compare'), 'update' => arrayCharsetConvert(0, $xt->render($tVars)));
 
             break;
         case 'remove':
@@ -204,12 +204,12 @@ function compare_prd($params){
             $tpath = locatePluginTemplates(array('compare_block_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'));
             $xt = $twig->loadTemplate($tpath['compare_block_eshop'].'compare_block_eshop.tpl');
 
-            return array('status' => 1, 'errorCode' => 0, 'data' => 'Item removed from compare', 'update' => arrayCharsetConvert(0, $xt->render($tVars)));
+            return array('status' => 1, 'errorCode' => 0, 'data' => iconv("windows-1251", "utf-8", 'Item removed from compare'), 'update' => arrayCharsetConvert(0, $xt->render($tVars)));
 
             break;
     }
     
-    return array('status' => 1, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
+    return array('status' => 1, 'errorCode' => 0, 'data'     => iconv("windows-1251", "utf-8", 'OK, '.var_export($params, true)));
 }
 
 function viewed_prd($params){
@@ -314,12 +314,12 @@ function viewed_prd($params){
             $tpath = locatePluginTemplates(array('viewed_block_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'));
             $xt = $twig->loadTemplate($tpath['viewed_block_eshop'].'viewed_block_eshop.tpl');
     
-            return array('status' => 1, 'errorCode' => 0, 'data' => 'Item added into compare', 'update' => arrayCharsetConvert(0, $xt->render($tVars)));
+            return array('status' => 1, 'errorCode' => 0, 'data' => iconv("windows-1251", "utf-8", 'Item added into compare'), 'update' => arrayCharsetConvert(0, $xt->render($tVars)));
 
             break;
     }
     
-    return array('status' => 1, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
+    return array('status' => 1, 'errorCode' => 0, 'data'     => iconv("windows-1251", "utf-8", 'OK, '.var_export($params, true)));
 }
 
 function likes_result($params){
@@ -376,7 +376,7 @@ function likes_result($params){
                 $tpath = locatePluginTemplates(array('likes_eshop'), 'eshop', pluginGetVariable('eshop', 'localsource'));
                 $xt = $twig->loadTemplate($tpath['likes_eshop'].'likes_eshop.tpl');
 
-                return array('status' => 1, 'errorCode' => 0, 'data' => 'Likes updated', 'update' => arrayCharsetConvert(0, $xt->render($likes_tVars)));
+                return array('status' => 1, 'errorCode' => 0, 'data' => iconv("windows-1251", "utf-8", 'Likes updated'), 'update' => arrayCharsetConvert(0, $xt->render($likes_tVars)));
                 
                 
             }
@@ -386,7 +386,7 @@ function likes_result($params){
             break;
         }
     
-    return array('status' => 1, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
+    return array('status' => 1, 'errorCode' => 0, 'data'     => iconv("windows-1251", "utf-8", 'OK, '.var_export($params, true)));
 }
 
 function comments_add($params) {
@@ -641,7 +641,7 @@ function ebasket_add_item($linked_ds, $linked_id, $title, $price, $count, $xfld 
 
     $xt = $twig->loadTemplate($tpath['ebasket/total'].'ebasket/'.'total.tpl');
     
-    return array('status' => 1, 'errorCode' => 0, 'data' => 'Item added into ebasket', 'update' => arrayCharsetConvert(0, $xt->render($tVars)));
+    return array('status' => 1, 'errorCode' => 0, 'data' => iconv("windows-1251", "utf-8", 'Item added into ebasket'), 'update' => arrayCharsetConvert(0, $xt->render($tVars)));
 }
 
 function ebasket_add_fast_order($linked_ds, $linked_id, $title, $price, $count, $type, $order, $xfld = array()) {
@@ -727,7 +727,7 @@ function ebasket_add_fast_order($linked_ds, $linked_id, $title, $price, $count, 
         sendEmailMessage($mailTo, $mailSubject, $mailBody, $filename = false, $mail_from, $ctype = 'text/html');
     }
 
-    return array('status' => 1, 'errorCode' => 0, 'data' => 'Item added into ebasket', 'update' => '');
+    return array('status' => 1, 'errorCode' => 0, 'data' => iconv("windows-1251", "utf-8", 'Item added into ebasket'), 'update' => '');
 }
 
 function basket_update_item_count($id, $linked_ds, $linked_id, $count) {
@@ -735,7 +735,7 @@ function basket_update_item_count($id, $linked_ds, $linked_id, $count) {
 
     $mysql->query("update ".prefix."_eshop_ebasket set count = ".db_squote($count)." where (linked_id = ".db_squote($linked_id).") and (linked_ds = ".db_squote($linked_ds).") and (id = ".db_squote($id).")");
 
-    return array('status' => 1, 'errorCode' => 0, 'data' => 'Item count updated');
+    return array('status' => 1, 'errorCode' => 0, 'data' => iconv("windows-1251", "utf-8", 'Item count updated'));
 }
 
 function basket_delete_item($id, $linked_ds, $linked_id) {
@@ -743,7 +743,7 @@ function basket_delete_item($id, $linked_ds, $linked_id) {
 
     $mysql->query("delete from ".prefix."_eshop_ebasket where id = ".db_squote($id)." and linked_id = ".db_squote($linked_id)." and linked_ds = ".db_squote($linked_ds)." limit 1");
 
-    return array('status' => 1, 'errorCode' => 0, 'data' => 'Item deleted');
+    return array('status' => 1, 'errorCode' => 0, 'data' => iconv("windows-1251", "utf-8", 'Item deleted'));
 }
 
 function basket_update() {
@@ -776,7 +776,7 @@ function basket_update() {
 
     $xt = $twig->loadTemplate($tpath['ebasket/total'].'ebasket/'.'total.tpl');
     
-    return array('status' => 1, 'errorCode' => 0, 'data' => 'Update ebasket', 'update' => arrayCharsetConvert(0, $xt->render($tVars)));
+    return array('status' => 1, 'errorCode' => 0, 'data' => iconv("windows-1251", "utf-8", 'Update ebasket'), 'update' => arrayCharsetConvert(0, $xt->render($tVars)));
 }
 
 function ebasket_rpc_manage($params){
@@ -785,7 +785,7 @@ function ebasket_rpc_manage($params){
     LoadPluginLibrary('xfields', 'common');
 
     if (!is_array($params) || !isset($params['action']))
-        return array('status' => 0, 'errorCode' => 1, 'errorText' => 'Activity mode is not set');
+        return array('status' => 0, 'errorCode' => 1, 'errorText' => iconv("windows-1251", "utf-8", 'Параметр действия не задан'));
 
     $params = arrayCharsetConvert(1, $params);
 
@@ -799,12 +799,12 @@ function ebasket_rpc_manage($params){
 
             // Check available DataSources
             if (!(in_array($linked_ds, array($DSlist['news'])))) {
-                return array('status' => 0, 'errorCode' => 2, 'errorText' => 'ebasket can be used only for NEWS');
+                return array('status' => 0, 'errorCode' => 2, 'errorText' => iconv("windows-1251", "utf-8", 'Плагин поддерживает работу только с элементами продукции'));
             }
 
             // Check available DataSources
             if ($count < 1) {
-                return array('status' => 0, 'errorCode' => 2, 'errorText' => 'Count should be positive');
+                return array('status' => 0, 'errorCode' => 3, 'errorText' => iconv("windows-1251", "utf-8", 'Количество продукции должно быть положительным'));
             }
 
             // Check if linked item is available
@@ -828,13 +828,13 @@ function ebasket_rpc_manage($params){
                     $rec = $mysql->record($sqlQ);
 
                     if (!is_array($rec)) {
-                        return array('status' => 0, 'errorCode' => 3, 'errorText' => 'Item [news] with ID ('.$linked_id.') is not found');
+                        return array('status' => 0, 'errorCode' => 4, 'errorText' => iconv("windows-1251", "utf-8", 'Продукт с ID ('.$linked_id.') не найден'));
                     }
 
                     if($rec['v_amount'] != NULL) {
                         
                         if($count > $rec['v_amount']) {
-                            return array('status' => 0, 'errorCode' => 4, 'errorText' => 'Item with ID ('.$linked_id.') should be enough count');
+                            return array('status' => 0, 'errorCode' => 5, 'errorText' => iconv("windows-1251", "utf-8", 'Нет требуемого количества продукта с ID ('.$linked_id.'). Можно заказать только '.$rec['v_amount'].''));
                         }
                     
                     }
@@ -881,7 +881,7 @@ function ebasket_rpc_manage($params){
             $order['name'] = filter_var( $params['name'], FILTER_SANITIZE_STRING );
             if(empty($order['name']))
             {
-                return array('status' => 0, 'errorCode' => 3, 'errorText' => 'Item [news] with ID ('.$linked_id.') is not found');
+                return array('status' => 0, 'errorCode' => 6, 'errorText' => iconv("windows-1251", "utf-8", 'Не заполнено поле имя'));
             }
 
             $order['email'] = "";
@@ -889,18 +889,18 @@ function ebasket_rpc_manage($params){
             $order['phone'] = filter_var( $params['phone'], FILTER_SANITIZE_STRING );
             if(empty($order['phone']))
             {
-                return array('status' => 0, 'errorCode' => 3, 'errorText' => 'Item [news] with ID ('.$linked_id.') is not found');
+                return array('status' => 0, 'errorCode' => 7, 'errorText' => iconv("windows-1251", "utf-8", 'Не заполнено поле телефон'));
             }
             
             $order['address'] = filter_var( $params['address'], FILTER_SANITIZE_STRING );
             if(empty($order['address']))
             {
-                return array('status' => 0, 'errorCode' => 3, 'errorText' => 'Item [news] with ID ('.$linked_id.') is not found');
+                return array('status' => 0, 'errorCode' => 8, 'errorText' => iconv("windows-1251", "utf-8", 'Не заполнено поле адрес'));
             }
             
             // Check available DataSources
             if (!(in_array($linked_ds, array($DSlist['news'])))) {
-                return array('status' => 0, 'errorCode' => 2, 'errorText' => 'ebasket can be used only for NEWS');
+                return array('status' => 0, 'errorCode' => 2, 'errorText' => iconv("windows-1251", "utf-8", 'Плагин поддерживает работу только с элементами продукции'));
             }
 
             // Check available DataSources
@@ -924,13 +924,13 @@ function ebasket_rpc_manage($params){
             // Retrieve news record
             $rec = $mysql->record($sqlQ);
             if (!is_array($rec)) {
-                return array('status' => 0, 'errorCode' => 3, 'errorText' => 'Item [news] with ID ('.$linked_id.') is not found');
+                return array('status' => 0, 'errorCode' => 4, 'errorText' => iconv("windows-1251", "utf-8", 'Продукт с ID ('.$linked_id.') не найден'));
             }
             
             if($rec['v_amount'] != NULL) {
                 
                 if($count > $rec['v_amount']) {
-                    return array('status' => 0, 'errorCode' => 4, 'errorText' => 'Item with ID ('.$linked_id.') should be enough count');
+                    return array('status' => 0, 'errorCode' => 5, 'errorText' => iconv("windows-1251", "utf-8", 'Нет требуемого количества продукта с ID ('.$linked_id.'). Можно заказать только '.$rec['v_amount'].''));
                 }
             
             }
@@ -949,7 +949,7 @@ function ebasket_rpc_manage($params){
 
             break;
     }
-    return array('status' => 1, 'errorCode' => 0, 'data'     => 'OK, '.var_export($params, true));
+    return array('status' => 1, 'errorCode' => 0, 'data'     => iconv("windows-1251", "utf-8", 'OK, '.var_export($params, true)));
 
 }
 

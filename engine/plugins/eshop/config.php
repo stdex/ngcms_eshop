@@ -375,12 +375,15 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     {
         $frow['value'] = '';
         $frow['foptions'] = json_decode($frow['foptions'], true);
+        foreach($frow['foptions'] as $key => $value) {
+            $frow['foptions'][$key] = iconv("utf-8", "windows-1251", $value);
+        }
         $features_array[] = $frow;
     }
     
     foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories_features") as $cfrow)
     {
-        $cat_features_array[$cfrow['category_id']][] = $cfrow['feature_id'];
+        $cat_features_array[$cfrow['category_id']][] = iconv("windows-1251", "utf-8", $cfrow['feature_id']);
     }
 
     $tEntry['catz'] = getTree($cats);
@@ -431,6 +434,9 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     {
         $frow['value'] = $options_array[$frow['id']];
         $frow['foptions'] = json_decode($frow['foptions'], true);
+        foreach($frow['foptions'] as $key => $value) {
+            $frow['foptions'][$key] = iconv("utf-8", "windows-1251", $value);
+        }
         $features_array[] = $frow;
     }
     
@@ -718,7 +724,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $parse;
     
     foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories_features") as $cfrow)
     {
-        $cat_features_array[$cfrow['category_id']][] = $cfrow['feature_id'];
+        $cat_features_array[$cfrow['category_id']][] = iconv("windows-1251", "utf-8", $cfrow['feature_id']);
     }
 
     $tEntry['cat_features'] = json_encode($cat_features_array);
@@ -1481,6 +1487,9 @@ global $tpl, $mysql, $twig;
         $row['edit_link'] = "?mod=extra-config&plugin=eshop&action=edit_feature&id=".$row['id'];
         $row['del_link'] = "?mod=extra-config&plugin=eshop&action=del_feature&id=".$row['id'];
         $row['foptions'] = json_decode($row['foptions'],true);
+        foreach($row['foptions'] as $key => $value) {
+            $row['foptions'][$key] = iconv("utf-8", "windows-1251", $value);
+        }
         $tEntry[] = $row;
     }
  
@@ -1550,14 +1559,18 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
                     foreach ($_REQUEST['so_data'] as $k => $v) {
                         if (is_array($v) && isset($v[0]) && isset($v[1]) && (($v[0] != '') || ($v[1] != ''))) {
                             if ($v[0] != '') {
-                                $optlist[$v[0]] = $v[1];
+                                $optlist[$v[0]] = iconv("windows-1251", "utf-8", $v[1]);
                             } else {
-                                $optlist[] = $v[1];
+                                $optlist[] = iconv("windows-1251", "utf-8", $v[1]);
                             }
                         }
                     }
                 }
                 $SQL['foptions'] = json_encode($optlist);
+                break;
+            case 'html':
+                $SQL['ftype'] = '3';
+                $SQL['fdefault'] = $_REQUEST['html_default'];
                 break;
         }
 
@@ -1678,14 +1691,18 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
                     foreach ($_REQUEST['so_data'] as $k => $v) {
                         if (is_array($v) && isset($v[0]) && isset($v[1]) && (($v[0] != '') || ($v[1] != ''))) {
                             if ($v[0] != '') {
-                                $optlist[$v[0]] = $v[1];
+                                $optlist[$v[0]] = iconv("windows-1251", "utf-8", $v[1]);
                             } else {
-                                $optlist[] = $v[1];
+                                $optlist[] = iconv("windows-1251", "utf-8", $v[1]);
                             }
                         }
                     }
                 }
                 $SQL['foptions'] = json_encode($optlist);
+                break;
+            case 'html':
+                $SQL['ftype'] = '3';
+                $SQL['fdefault'] = $_REQUEST['html_default'];
                 break;
         }
 
@@ -1749,7 +1766,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     if ($tEntry['ftype'] == '2') {
         if (is_array($tEntry['foptions']))
             foreach ($tEntry['foptions'] as $k => $v) {
-                array_push($sOpts, '<tr><td><input size="12" name="so_data['.($fNum).'][0]" type="text" value="'.($tEntry['foptions']?htmlspecialchars($k, ENT_COMPAT | ENT_HTML401, 'cp1251'):'').'"/></td><td><input type="text" size="55" name="so_data['.($fNum).'][1]" value="'.htmlspecialchars($v, ENT_COMPAT | ENT_HTML401, 'cp1251').'"/></td><td><a href="#" onclick="return false;"><img src="'.skins_url.'/images/delete.gif" alt="DEL" width="12" height="12" /></a></td></tr>');
+                array_push($sOpts, '<tr><td><input size="12" name="so_data['.($fNum).'][0]" type="text" value="'.($tEntry['foptions']?htmlspecialchars($k, ENT_COMPAT | ENT_HTML401, 'cp1251'):'').'"/></td><td><input type="text" size="55" name="so_data['.($fNum).'][1]" value="'.iconv("utf-8", "windows-1251", $v).'"/></td><td><a href="#" onclick="return false;"><img src="'.skins_url.'/images/delete.gif" alt="DEL" width="12" height="12" /></a></td></tr>');
                 $fNum++;
             }
     }
@@ -2014,7 +2031,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
     foreach ($mysql->select("select * from ".prefix."_eshop_purchases where ".join(" or ", $filter), 1) as $prow) {
                 $prow['info'] = json_decode($prow['info'], true);
                 foreach($prow['info'] as $k_info => $v_info) {
-                    $prow['info_string'] .= $k_info." => ".$v_info."<br/>";
+                    $prow['info_string'] .= $k_info." => ".iconv("utf-8", "windows-1251", $v_info)."<br/>";
                 }
                 $purchases []= $prow;
     }
@@ -2693,6 +2710,9 @@ function automation()
             {
                 $frow['value'] = $options_array[$frow['id']];
                 $frow['foptions'] = json_decode($frow['foptions'], true);
+                foreach($frow['foptions'] as $key => $value) {
+                    $frow['foptions'][$key] = iconv("utf-8", "windows-1251", $value);
+                }
                 $features_array["xfields_".$frow['name']] = $frow['value'];
                 $xf_name_id[$frow['name']] = $frow['id'];
             }

@@ -12,6 +12,22 @@
 <script type="text/javascript" src="{{ admin_url }}/plugins/eshop/tpl/config/jq_tokeninput/js/jquery.tokeninput.js"></script>
 <link rel="stylesheet" href="{{ admin_url }}/plugins/eshop/tpl/config/jq_tokeninput/css/token-input.css" type="text/css" />
 
+<script src="{{ admin_url }}/plugins/eshop/tpl/config/tinymce/tinymce.min.js" type="text/javascript"></script>
+<script>
+
+tinymce.init({
+  selector: 'textarea[class=html_textarea]',
+  height: 100,
+  plugins: [
+    'advlist autolink lists link image charmap print preview anchor',
+    'searchreplace visualblocks code fullscreen',
+    'insertdatetime media table contextmenu paste code'
+  ],
+  toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image'
+});
+
+</script>
+
 <script type="text/javascript" src="{{ admin_url }}/plugins/eshop/tpl/js/eshop.js"></script>
 
 {{entries.error}}
@@ -288,6 +304,8 @@
                             <option value="{{k}}" {% if (entries.mode == 'add') %}{% if (feature.fdefault == k) %}selected {% endif %}{% else %}{% if (feature.value == k) %}selected {% endif %}{% endif %}>{{v}}</option>
                         {% endfor %}
                     </select>
+                    {% elseif feature.ftype == 3 %}
+                    <textarea class="html_textarea" name="data[features][{{feature.id}}]">{% if not(feature.value) and (entries.mode == 'add') %}{{feature.fdefault}}{% else %}{{feature.value}}{% endif %}</textarea>
                     {% endif %}
                 </td>
             </tr>
