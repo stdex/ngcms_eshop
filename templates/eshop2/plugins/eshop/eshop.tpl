@@ -134,9 +134,6 @@ $(document).ready(function() {
         {% endif %} 
 
     {% endfor %}
-		<br /><br />
-		<br />
-		<br /><br /><br /><br /><br /><br /><br />
         <div class="frame-group-checks">
             <div class="inside-padd">
                 <div class="title">
