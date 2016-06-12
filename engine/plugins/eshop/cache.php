@@ -136,6 +136,24 @@ function generate_currency_cache($load = false)
     
 }
 
+function generate_categories_features_cache($load = false)
+{global $mysql, $config;
+
+    $eshop_dir = get_plugcfg_dir('eshop');
+    
+    if(!file_exists($eshop_dir.'/cache_categories_features.php') or $load){
+        
+        $categories_features_tEntry = array();
+        foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories_features") as $row)
+        {
+            $categories_features_tEntry[] = $row;
+        }
+        
+        file_put_contents($eshop_dir.'/cache_categories_features.php', serialize($categories_features_tEntry));
+    }
+    
+}
+
 function generate_features_cache($load = false)
 {global $mysql, $config;
 

@@ -81,7 +81,7 @@ global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang, $mysql, $twig, $userROW
     }
 
     $SYSTEM_FLAGS["eshop"]["catz"] = $catz_tEntry;
-    
+
     generate_features_cache();
     
     if(file_exists($eshop_dir.'/cache_features.php')){
@@ -89,9 +89,21 @@ global $CurrentHandler, $SYSTEM_FLAGS, $template, $lang, $mysql, $twig, $userROW
     } else {
         $features_tEntry = array();
     }
-    
-    $SYSTEM_FLAGS["eshop"]["features"] = $features_tEntry;
 
+    $SYSTEM_FLAGS["eshop"]["features"] = $features_tEntry;
+    
+    generate_categories_features_cache();
+    
+    if(file_exists($eshop_dir.'/cache_categories_features.php')){
+        $categories_features_tEntry = unserialize(file_get_contents($eshop_dir.'/cache_categories_features.php'));
+    } else {
+        $categories_features_tEntry = array();
+    }
+    
+    $SYSTEM_FLAGS["eshop"]["categories_features"] = $categories_features_tEntry;
+    
+    $twig->addFunction('IsCatFeatures',	new Twig_Function_Function('IsCatFeatures'));
+    
     $filter = array();
     if (is_array($userROW)) {
         $filter []= '(user_id = '.db_squote($userROW['id']).')';
@@ -283,4 +295,15 @@ if (class_exists('gsmgFilter')) {
     }
     
     register_filter('gsmg','eshop', new gShopFilter);
+}
+
+function IsCatFeatures($category_id, $feature_id, $array)
+{
+    if(is_array($array)) {
+        foreach ($array as $row){
+            if($category_id == $row['category_id'] && $feature_id == $row['feature_id'])
+                return true;
+        }
+        return false;
+    } else return false;
 }

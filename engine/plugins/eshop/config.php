@@ -1596,6 +1596,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
             }
             
             generate_features_cache(true);
+            generate_categories_features_cache(true);
             
             redirect_eshop('?mod=extra-config&plugin=eshop&action=list_feature');
         }
@@ -1727,7 +1728,8 @@ global $tpl, $template, $config, $mysql, $lang, $twig;
             }
             
             generate_features_cache(true);
-            
+            generate_categories_features_cache(true);
+
             redirect_eshop('?mod=extra-config&plugin=eshop&action=list_feature');
         }
 
