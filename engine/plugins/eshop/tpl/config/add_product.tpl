@@ -237,7 +237,7 @@ tinymce.init({
     
     <script>
         
-        var cat_features = "{{ entries.cat_features }}";
+        var cat_features = {{ entries.cat_features }};
         
         $(function(){
             $('select[name=parent]').change(function(){
@@ -246,7 +246,7 @@ tinymce.init({
                 $.each( cat_features, function( i, l ){
                     if(i.toString() == selected_cat_id) {
                         $('tr[class=features]').css('display','none');
-                        $.each( l, function( iv, lv ){
+                        $.each( eval(l), function( iv, lv ){
                             $("tr[data-fid=" + lv + "]").css('display','table-row');
                         });
                         find = true;
@@ -254,7 +254,7 @@ tinymce.init({
                 });
                 
                 if(!find) {
-                    $("tr[class=features]").css('display','table-row');
+                    $("tr[class=features]").css('display','none');
                 }
 
             });
@@ -269,7 +269,7 @@ tinymce.init({
             $.each( cat_features, function( i, l ){
                 if(i.toString() == selected_cat_id) {
                     $('tr[class=features]').css('display','none');
-                    $.each( l, function( iv, lv ){
+                    $.each( eval(l), function( iv, lv ){
                         $("tr[data-fid=" + lv + "]").css('display','table-row');
                     });
                     find = true;
@@ -277,7 +277,7 @@ tinymce.init({
             });
             
             if(!find) {
-                $("tr[class=features]").css('display','table-row');
+                $("tr[class=features]").css('display','none');
             }
 
         });
