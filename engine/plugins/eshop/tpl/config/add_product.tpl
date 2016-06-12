@@ -237,7 +237,7 @@ tinymce.init({
     
     <script>
         
-        var cat_features = {{ entries.cat_features }};
+        var cat_features = {% if (entries.cat_features == 'null') %} "" {% else %} {{ entries.cat_features }} {% endif %};
         
         $(function(){
             $('select[name=parent]').change(function(){
