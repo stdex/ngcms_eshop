@@ -71,14 +71,14 @@ $(document).ready(function() {
     -->
     {% set cnt_in_filter = 0 %}
     {% for ftr in system_flags.eshop.features %}
-        {% if ftr.in_filter == 1 %}
+        {% if ftr.in_filter == 1 and IsCatFeatures(cat_info.id, ftr.id, system_flags.eshop.categories_features) %}
             {% set cnt_in_filter = cnt_in_filter + 1 %}
         {% endif %}
     {% endfor %}
 
     {% if (system_flags.eshop.features) and (cnt_in_filter) %}
     {% for ftr in system_flags.eshop.features %}
-        {% if ftr.in_filter == 1 %}
+        {% if ftr.in_filter == 1 and IsCatFeatures(cat_info.id, ftr.id, system_flags.eshop.categories_features) %}
             {% if ftr.ftype == 0 %}
             <div class="frame-group-checks">
                 <div class="inside-padd">
@@ -124,7 +124,7 @@ $(document).ready(function() {
                             <select name="filters[{{ ftr.id }}]">
                                 <option value=""></option>
                                 {% for fkopt, fvopt in ftr.foptions %}
-                                <option value="{{ fkopt }}" {% if (current_filter[ftr.id] is defined) %} selected {% endif %}>{{ fvopt }}</option>
+                                <option value="{{ fkopt }}" {% if (current_filter[ftr.id] == fkopt) %} selected {% endif %}>{{ fvopt }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -134,7 +134,9 @@ $(document).ready(function() {
         {% endif %} 
 
     {% endfor %}
-
+		<br /><br />
+		<br />
+		<br /><br /><br /><br /><br /><br /><br />
         <div class="frame-group-checks">
             <div class="inside-padd">
                 <div class="title">
