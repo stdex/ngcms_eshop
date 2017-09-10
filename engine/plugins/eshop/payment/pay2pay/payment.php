@@ -1,21 +1,21 @@
 <?php
 
-if (!defined('NGCMS'))
+if (!defined('NGCMS')) {
     exit('HAL');
+}
 
 function payment_action($payment_name, $payment_options, $rData)
 {
-global $tpl, $template, $config, $mysql, $lang, $twig, $SUPRESS_TEMPLATE_SHOW, $SYSTEM_FLAGS;
+    global $config, $mysql, $SUPRESS_TEMPLATE_SHOW, $SUPRESS_MAINBLOCK_SHOW, $SYSTEM_FLAGS;
 
     $SUPRESS_TEMPLATE_SHOW = 1;
     $SUPRESS_MAINBLOCK_SHOW = 1;
 
     $current_time = time() + ($config['date_adjust'] * 60);
-    $result = intval($rData['result']);
+    $result = (int)$rData['result'];
 
-    if(!empty($result))
-    {
-        switch($result) {
+    if (!empty($result)) {
+        switch ($result) {
             case '1':
                 // fail_url
                 redirect_eshop(link_eshop());
@@ -23,70 +23,74 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $SUPRESS_TEMPLATE_SHOW, $
             case '2':
                 $rData['sign'] = str_replace(' ', '+', $rData['sign']);
                 $rData['xml'] = str_replace(' ', '+', $rData['xml']);
-                
+
                 // result_url
-                if (!empty($rData['xml']) and !empty($rData['sign'])){
-                    // Инициализация переменной для хранения сообщения об ошибке
+                if (!empty($rData['xml']) and !empty($rData['sign'])) {
                     $error = '';
-                    // Декодируем входные параметры
                     $xml_encoded = str_replace(' ', '+', $rData['xml']);
                     $xml = base64_decode($xml_encoded);
-                    // преобразуем входной xml в удобный для использования формат
                     $xml_vars = simplexml_load_string($xml);
-                    //$file = '/home/s/stdex/air.tw1.ru/public_html/engine/plugins/eshop/eeeeee.txt';
-                    //file_put_contents($file, strval($xml_vars), FILE_APPEND | LOCK_EX);
 
-                    if ($xml_vars->order_id)
-                    // Если поле order_id не заполнено, продолжать нет смысла.
-                    {
-                        
+                    if ($xml_vars->order_id) {
+
                         $hidden_key = $payment_options['hidden_key'];
                         $sign = md5($hidden_key.$xml.$hidden_key);
                         $sign_encode = base64_encode($sign);
-                        
+
                         $a_or_id = explode("_", $xml_vars->order_id);
                         $zid = $a_or_id[1];
-                        $merchant_id = (string) $xml_vars->merchant_id;
-                        $order_id = (string) $xml_vars->order_id;
-                        $amount = (string) $xml_vars->amount;
-                        $currency = (string) $xml_vars->currency;
-                        $description = (string) $xml_vars->description;
+                        $merchant_id = (string)$xml_vars->merchant_id;
+                        $order_id = (string)$xml_vars->order_id;
+                        $amount = (string)$xml_vars->amount;
+                        $currency = (string)$xml_vars->currency;
+                        $description = (string)$xml_vars->description;
                         $description = iconv("utf-8", "windows-1251", $description);
-                        $paymode = (string) $xml_vars->paymode;
-                        $trans_id = (string) $xml_vars->trans_id;
-                        $status = (string) $xml_vars->status;
-                        $error_msg = (string) $xml_vars->error_msg;
-                        $test_mode = (string) $xml_vars->test_mode;
-                        
-                        $info = array('payment_name' => $payment_name, 'merchant_id' => $merchant_id, 'amount' => $amount, 'currency' => $currency, 'description' => $description, 'paymode' => $paymode, 'trans_id' => $trans_id, 'status' => $status, 'error_msg' => $error_msg, 'test_mode' => $test_mode);
-                        
-                        if($sign_encode == $rData['sign']) {
-       
-                            if($status == 'success') {
+                        $paymode = (string)$xml_vars->paymode;
+                        $trans_id = (string)$xml_vars->trans_id;
+                        $status = (string)$xml_vars->status;
+                        $error_msg = (string)$xml_vars->error_msg;
+                        $test_mode = (string)$xml_vars->test_mode;
 
-                                $mysql->query('INSERT INTO '.prefix.'_eshop_purchases (dt, order_id, info)
+                        $info = array(
+                            'payment_name' => $payment_name,
+                            'merchant_id' => $merchant_id,
+                            'amount' => $amount,
+                            'currency' => $currency,
+                            'description' => $description,
+                            'paymode' => $paymode,
+                            'trans_id' => $trans_id,
+                            'status' => $status,
+                            'error_msg' => $error_msg,
+                            'test_mode' => $test_mode,
+                        );
+
+                        if ($sign_encode == $rData['sign']) {
+
+                            if ($status == 'success') {
+
+                                $mysql->query(
+                                    'INSERT INTO '.prefix.'_eshop_purchases (dt, order_id, info)
                                     VALUES
                                     ('.db_squote($current_time).',
                                         '.db_squote($zid).',
                                         '.db_squote(json_encode($info)).'
                                     )
-                                ');
+                                '
+                                );
 
-                                $mysql->query('UPDATE '.prefix.'_eshop_orders SET
+                                $mysql->query(
+                                    'UPDATE '.prefix.'_eshop_orders SET
                                     paid = 1
                                     WHERE id = '.$zid.'
-                                ');
+                                '
+                                );
                             }
-                            
-                        }
-                        else {
+
+                        } else {
                             $error = 'Incorrect sign';
-                            //redirect_eshop(link_eshop());
                         }
-                    }
-                    else {
+                    } else {
                         $error = 'Unknown order_id';
-                        //redirect_eshop(link_eshop());
                     }
 
                     // Отвечаем серверу Pay2Pay
@@ -96,8 +100,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $SUPRESS_TEMPLATE_SHOW, $
                         <status>yes</status>
                         <err_msg></err_msg>
                         </result>";
-                    }
-                    else {
+                    } else {
                         $ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
                         <result>
                         <status>no</status>
@@ -115,31 +118,30 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $SUPRESS_TEMPLATE_SHOW, $
             default:
                 break;
         }
-    }
-    else{
+    } else {
 
         $filter = array();
         $SQL = array();
-        
-        $order_id = filter_var( $rData['order_id'], FILTER_SANITIZE_STRING );
-        $uniqid = filter_var( $rData['order_uniqid'], FILTER_SANITIZE_STRING );
-        if(empty($order_id) || empty($uniqid))
-        {
+
+        $order_id = filter_var($rData['order_id'], FILTER_SANITIZE_STRING);
+        $uniqid = filter_var($rData['order_uniqid'], FILTER_SANITIZE_STRING);
+        if (empty($order_id) || empty($uniqid)) {
             redirect_eshop(link_eshop());
-        }
-        else {
-            $filter []= '(id = '.db_squote($order_id).')';
-            $filter []= '(uniqid = '.db_squote($uniqid).')';
-            $sqlQ = "SELECT * FROM ".prefix."_eshop_orders ".(count($filter)?"WHERE ".implode(" AND ", $filter):'')." LIMIT 1";
+        } else {
+            $filter [] = '(id = '.db_squote($order_id).')';
+            $filter [] = '(uniqid = '.db_squote($uniqid).')';
+            $sqlQ = "SELECT * FROM ".prefix."_eshop_orders ".(count($filter) ? "WHERE ".implode(
+                        " AND ",
+                        $filter
+                    ) : '')." LIMIT 1";
             $row = $mysql->record($sqlQ);
-            
-            if($row['paid'] == 1) {
+
+            if ($row['paid'] == 1) {
                 redirect_eshop(link_eshop());
-            }
-            elseif(!empty($row)) {
+            } elseif (!empty($row)) {
                 $merchant_id = $payment_options['merchant_id']; // Идентификатор магазина в Pay2Pay
                 $secret_key = $payment_options['secret_key']; // Секретный ключ
-                $hash_order_id =  $current_time."_".$order_id; // Номер заказа
+                $hash_order_id = $current_time."_".$order_id; // Номер заказа
                 $amount = $row['total_price']; // Сумма заказа
                 $currency = $SYSTEM_FLAGS['eshop']['currency'][0]['code']; // Валюта заказа
                 $desc = 'Оплата по заказу ID: '.$order_id; // Описание заказа
@@ -163,7 +165,7 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $SUPRESS_TEMPLATE_SHOW, $
                 // Кодируем данные в BASE64
                 $xml_encode = base64_encode($xml);
                 $sign_encode = base64_encode($sign);
-                echo'
+                echo '
                 <!DOCTYPE html><html><body>
                     <form id="b-site" action="https://merchant.pay2pay.com/?page=init" method="post">
                         <input type="hidden" name="xml" value="'.$xml_encode.'">
@@ -173,11 +175,10 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $SUPRESS_TEMPLATE_SHOW, $
                     <script>$("document").ready(function() {$("#b-site").submit();});</script>
                 </body></html>';
                 exit;
-            }
-            else {
+            } else {
                 redirect_eshop(link_eshop());
             }
-            
+
         }
     }
 

@@ -1,21 +1,23 @@
 <?php
 
-if (!defined('NGCMS')) die ('HAL');
+if (!defined('NGCMS')) {
+    die ('HAL');
+}
 
-include_once(dirname(__FILE__).'/cache.php');
+include_once(__DIR__.'/cache.php');
 
-class YMLCategory extends ImportConfig {
+class YMLCategory extends ImportConfig
+{
 
     /**
      * Получаем список всех категорий
      * @return array
      */
-    function GetFromSite() {
-        global $tpl, $mysql, $twig;
+    public function GetFromSite()
+    {
+        global $mysql;
 
-        $catz_arr = array();
-        foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id") as $category)
-        {
+        foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id") as $category) {
             $this->Add2Session(
                 $category['id'],
                 $category['name'],
@@ -25,7 +27,7 @@ class YMLCategory extends ImportConfig {
             );
         }
 
-        if(!empty($_SESSION['cats'])) {
+        if (!empty($_SESSION['cats'])) {
             $this->eco('Существующие категории: '.count($_SESSION['cats']).' шт.<br>');
         } else {
             $this->eco('На сайте ещё нет категорий<br>');
@@ -36,23 +38,30 @@ class YMLCategory extends ImportConfig {
      * Получаем категории из XML и добавляем их
      * @param $xml
      */
-    function GetFromXML($xml) {
-        global $tpl, $mysql, $twig, $parse;
+    public function GetFromXML($xml)
+    {
+        global $mysql, $parse;
         $update = 0;
-        foreach($xml as $xml_cat) {
-            $NAME = iconv('utf-8','windows-1251',(string)$xml_cat);
+        foreach ($xml as $xml_cat) {
+            $NAME = iconv('utf-8', 'windows-1251', (string)$xml_cat);
             $UF_ID = (int)$xml_cat->attributes()->id;
             $UF_PARENT_ID = (int)$xml_cat->attributes()->parentId;
-            
-            if(!in_array($UF_ID, $_SESSION['cats_uf_ids'])) {
+
+            if (!in_array($UF_ID, $_SESSION['cats_uf_ids'])) {
 
                 $URL = strtolower($parse->translit($NAME, 1, 1));
                 $URL = str_replace("/", "-", $URL);
-                
+
                 if ($URL) {
-                    if ( !is_array($mysql->record("select id from ".prefix."_eshop_categories where url = ".db_squote($URL)." limit 1")) ) {
-                        
-                        $mysql->query('INSERT INTO '.prefix.'_eshop_categories (id, name, url, meta_title, parent_id) 
+                    if (!is_array(
+                        $mysql->record(
+                            "select id from ".prefix."_eshop_categories where url = ".db_squote($URL)." limit 1"
+                        )
+                    )
+                    ) {
+
+                        $mysql->query(
+                            'INSERT INTO '.prefix.'_eshop_categories (id, name, url, meta_title, parent_id) 
                             VALUES 
                             (   '.db_squote($UF_ID).',
                                 '.db_squote($NAME).',
@@ -60,8 +69,9 @@ class YMLCategory extends ImportConfig {
                                 '.db_squote($NAME).',
                                 '.db_squote($UF_PARENT_ID).'
                             )
-                        ');
-                        
+                        '
+                        );
+
                         $this->Add2Session(
                             $UF_ID,
                             $NAME,
@@ -69,15 +79,15 @@ class YMLCategory extends ImportConfig {
                             $UF_ID,
                             $UF_PARENT_ID
                         );
-                        
+
                         generate_catz_cache(true);
-                        
+
                         $this->eco('Добавлена категория: '.$NAME.'<br>');
                         $update++;
                     }
                 }
-                
-                
+
+
             }
 
         }
@@ -94,7 +104,8 @@ class YMLCategory extends ImportConfig {
      * @param $uf_id
      * @param $uf_parent_id
      */
-    function Add2Session($id, $name, $code, $uf_id, $uf_parent_id) {
+    public function Add2Session($id, $name, $code, $uf_id, $uf_parent_id)
+    {
         $_SESSION['cats'][$id]['ID'] = $id;
         $_SESSION['cats'][$id]['NAME'] = $name;
         $_SESSION['cats'][$id]['CODE'] = $code;
@@ -106,123 +117,144 @@ class YMLCategory extends ImportConfig {
 
 }
 
-class YMLOffer extends YMLCategory {
+class YMLOffer extends YMLCategory
+{
 
     /**
      * Добавляем элемент
      * @param $offer
      * @return bool
      */
-    function Add($offer, $name, $url) {
-        global $tpl, $mysql, $twig, $parse, $SYSTEM_FLAGS, $config;
+    public function Add($offer, $name, $url)
+    {
+        global $mysql, $SYSTEM_FLAGS, $config;
 
-        $description = iconv('utf-8','windows-1251',(string)$offer->description);
+        $description = iconv('utf-8', 'windows-1251', (string)$offer->description);
         $PROP = array();
         $PROP['id'] = (int)$offer->attributes()->id;
         $PROP['name'] = $name;
         $PROP['url'] = $url;
         $PROP['meta_title'] = $name;
-        $PROP['annotation'] = str_replace('&nbsp;',' ',$description);
+        $PROP['annotation'] = str_replace('&nbsp;', ' ', $description);
         $PROP['date'] = time() + ($config['date_adjust'] * 60);
         $PROP['editdate'] = $PROP['date'];
 
         $vnames = array();
-        foreach ($PROP as $k => $v) { $vnames[] = $k.' = '.db_squote($v); }
-        $result = $mysql->query('INSERT INTO '.prefix.'_eshop_products SET '.implode(', ',$vnames).' ');
-        
-        if($result) {
+        foreach ($PROP as $k => $v) {
+            $vnames[] = $k.' = '.db_squote($v);
+        }
+        $result = $mysql->query('INSERT INTO '.prefix.'_eshop_products SET '.implode(', ', $vnames).' ');
+
+        if ($result) {
             $qid = $mysql->lastid('eshop_products');
 
-            if(count($offer->picture) > 0) {
+            if (count($offer->picture) > 0) {
                 $pictures = $this->xml2array($offer->picture);
                 $inx_img = 0;
-                foreach($pictures as $picture) {
+                foreach ($pictures as $picture) {
                     try {
                         $rootpath = $_SERVER['DOCUMENT_ROOT'];
-                        $url = substr($picture, 0, strpos($picture, '?')?strpos($picture, '?'):strlen($picture));
+                        $url = substr($picture, 0, strpos($picture, '?') ? strpos($picture, '?') : strlen($picture));
                         $name = basename($url);
                         $file_path = $rootpath."/uploads/eshop/products/temp/$name";
                         file_put_contents($file_path, file_get_contents($url));
-                    
-                        $fileParts = pathinfo ( $file_path );
+
+                        $fileParts = pathinfo($file_path);
                         $extension = $fileParts ['extension'];
-                        
+
                         $extensions = array_map('trim', explode(',', pluginGetVariable('eshop', 'ext_image')));
-                        
+
                         $pre_quality = pluginGetVariable('eshop', 'pre_quality');
-                        
-                        if(!in_array($extension, $extensions)) {
+
+                        if (!in_array($extension, $extensions)) {
                             return "0";
                         }
-                        
+
                         // CREATE THUMBNAIL
                         if ($extension == "jpg" || $extension == "jpeg") {
-                            $src = imagecreatefromjpeg ( $file_path );
-                        } else if ($extension == "png") {
-                            $src = imagecreatefrompng ( $file_path );
+                            $src = imagecreatefromjpeg($file_path);
                         } else {
-                            $src = imagecreatefromgif ( $file_path );
+                            if ($extension == "png") {
+                                $src = imagecreatefrompng($file_path);
+                            } else {
+                                $src = imagecreatefromgif($file_path);
+                            }
                         }
-                        
-                        list ( $width, $height ) = getimagesize ( $file_path );
+
+                        list ($width, $height) = getimagesize($file_path);
 
                         $newwidth = pluginGetVariable('eshop', 'width_thumb');
-                        
-                        if($width > $newwidth) {
+
+                        if ($width > $newwidth) {
                             $newheight = ($height / $width) * $newwidth;
-                            $tmp = imagecreatetruecolor ( $newwidth, $newheight );
-                            
-                            imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
-                            
+                            $tmp = imagecreatetruecolor($newwidth, $newheight);
+
+                            imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
+
                             $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
-                            
-                            if (file_exists ( $thumbname )) {
-                                unlink ( $thumbname );
+
+                            if (file_exists($thumbname)) {
+                                unlink($thumbname);
                             }
-                            
-                            imagejpeg ( $tmp, $thumbname, ($pre_quality>=10 && $pre_quality<=100)?$pre_quality:100  );
-                            
-                            imagedestroy ( $src );
-                            imagedestroy ( $tmp );
-                        }
-                        else {
+
+                            imagejpeg(
+                                $tmp,
+                                $thumbname,
+                                ($pre_quality >= 10 && $pre_quality <= 100) ? $pre_quality : 100
+                            );
+
+                            imagedestroy($src);
+                            imagedestroy($tmp);
+                        } else {
                             if ($extension == "jpg" || $extension == "jpeg") {
-                                $src = imagecreatefromjpeg ( $file_path );
-                            } else if ($extension == "png") {
-                                $src = imagecreatefrompng ( $file_path );
+                                $src = imagecreatefromjpeg($file_path);
                             } else {
-                                $src = imagecreatefromgif ( $file_path );
+                                if ($extension == "png") {
+                                    $src = imagecreatefrompng($file_path);
+                                } else {
+                                    $src = imagecreatefromgif($file_path);
+                                }
                             }
-                            imagejpeg ( $src, $file_path, ($pre_quality>=10 && $pre_quality<=100)?$pre_quality:100 );
+                            imagejpeg(
+                                $src,
+                                $file_path,
+                                ($pre_quality >= 10 && $pre_quality <= 100) ? $pre_quality : 100
+                            );
                             $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
                             copy($file_path, $thumbname);
-                            
-                            imagedestroy ( $src );
+
+                            imagedestroy($src);
                         }
-                        
+
                         $newwidth = pluginGetVariable('eshop', 'pre_width');
-                        if(isset($newwidth) && ($newwidth != '0')) {
-                            
+                        if (isset($newwidth) && ($newwidth != '0')) {
+
                             if ($extension == "jpg" || $extension == "jpeg") {
-                                $src = imagecreatefromjpeg ( $file_path );
-                            } else if ($extension == "png") {
-                                $src = imagecreatefrompng ( $file_path );
+                                $src = imagecreatefromjpeg($file_path);
                             } else {
-                                $src = imagecreatefromgif ( $file_path );
+                                if ($extension == "png") {
+                                    $src = imagecreatefrompng($file_path);
+                                } else {
+                                    $src = imagecreatefromgif($file_path);
+                                }
                             }
-                            
-                            list ( $width, $height ) = getimagesize ( $file_path );
+
+                            list ($width, $height) = getimagesize($file_path);
                             $newheight = ($height / $width) * $newwidth;
-                            $tmp = imagecreatetruecolor ( $newwidth, $newheight );
-                            imagecopyresampled ( $tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height );
+                            $tmp = imagecreatetruecolor($newwidth, $newheight);
+                            imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
 
                             $thumbname = $file_path;
-                            
-                            imagejpeg ( $tmp, $thumbname, ($pre_quality>=10 && $pre_quality<=100)?$pre_quality:100 );
-                            
-                            imagedestroy ( $src );
-                            imagedestroy ( $tmp );
-                                
+
+                            imagejpeg(
+                                $tmp,
+                                $thumbname,
+                                ($pre_quality >= 10 && $pre_quality <= 100) ? $pre_quality : 100
+                            );
+
+                            imagedestroy($src);
+                            imagedestroy($tmp);
+
                         }
 
                         $img = $name;
@@ -240,86 +272,98 @@ class YMLOffer extends YMLCategory {
                         $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
                         $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb/'.$iname;
                         rename($temp_name, $current_name);
-                                            
-                        $mysql->query("INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')");
-                        
+
+                        $mysql->query(
+                            "INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')"
+                        );
+
                         $inx_img += 1;
-                        
+
                     } catch (Exception $ex) {
                         $this->eco('Ошибка: '.$ex.'<br>');
+
                         return "0";
                     }
 
                 }
             }
-            
+
             $category_id = (int)$offer->categoryId;
 
-            if($category_id != 0) {
-                $mysql->query("INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')");
+            if ($category_id != 0) {
+                $mysql->query(
+                    "INSERT INTO ".prefix."_eshop_products_categories (`product_id`, `category_id`) VALUES ('$qid','$category_id')"
+                );
             }
-            
+
             $price = (string)$offer->price;
             $currencyId = (string)$offer->currencyId;
             $stock = "5";
-            
-            if(isset($price)) {
+
+            if (isset($price)) {
                 foreach ($SYSTEM_FLAGS['eshop']['currency'] as $currency) {
-                    if($currencyId == "RUR") {
+                    if ($currencyId == "RUR") {
                         $currencyId = "RUB";
                     }
-                    
-                    if($currency['code'] == $currencyId) {
+
+                    if ($currency['code'] == $currencyId) {
                         $price = $price / $SYSTEM_FLAGS['eshop']['currency'][0]['rate_from'] * $currency['rate_from'];
                     }
                 }
-                
+
                 $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id='$qid'");
-                $mysql->query("INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `stock`) VALUES ('$qid', '$price', '$stock')");
+                $mysql->query(
+                    "INSERT INTO ".prefix."_eshop_variants (`product_id`, `price`, `stock`) VALUES ('$qid', '$price', '$stock')"
+                );
             }
-            
+
             $returnArr = array();
-            
+
             $returnArr[] = array_merge(['value' => $PROP['id']], array('name' => 'source_id'));
-            
+
             foreach ($offer->children() as $element) {
 
                 if (mb_strtolower($element->getName()) == 'param') {
                     $returnArr[] = array_merge(
-                            ['value' => (string) $element], $this->getElementAttributes($element)
+                        ['value' => (string)$element],
+                        $this->getElementAttributes($element)
                     );
                 }
-                
+
                 if (mb_strtolower($element->getName()) == 'url') {
                     $returnArr[] = array_merge(
-                            ['value' => (string) $element], array('name' => 'source_url')
+                        ['value' => (string)$element],
+                        array('name' => 'source_url')
                     );
                 }
-                
+
             }
-            
+
             foreach ($returnArr as $el) {
-                $f_name = iconv('utf-8','windows-1251', $el['name']);
-                $feature_row = $mysql->record("select * from ".prefix."_eshop_features where name = ".db_squote($f_name)." limit 1");
-                if ( !is_array($feature_row) ) {
+                $f_name = iconv('utf-8', 'windows-1251', $el['name']);
+                $feature_row = $mysql->record(
+                    "select * from ".prefix."_eshop_features where name = ".db_squote($f_name)." limit 1"
+                );
+                if (!is_array($feature_row)) {
                     $mysql->query('INSERT INTO '.prefix.'_eshop_features (name) VALUES ('.db_squote($f_name).')');
                     $rowID = $mysql->lastid('eshop_features');
                     $f_key = $rowID;
-                }
-                else {
+                } else {
                     $f_key = $feature_row['id'];
                 }
-                
-                $f_value = iconv('utf-8','windows-1251', $el['value']);
-                if($f_value != "") {
-                    $mysql->query("INSERT INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')");
+
+                $f_value = iconv('utf-8', 'windows-1251', $el['value']);
+                if ($f_value != "") {
+                    $mysql->query(
+                        "INSERT INTO ".prefix."_eshop_options (`product_id`, `feature_id`, `value`) VALUES ('$qid','$f_key','$f_value')"
+                    );
                 }
-                
+
             }
-        
+
         }
-        
-        
+
+
     }
 
     /**
@@ -328,42 +372,37 @@ class YMLOffer extends YMLCategory {
      * @param $offer
      * @return bool1
      */
-    function Update($id, $offer) {
+    public function Update($id, $offer)
+    {
     }
-
 
 }
 
-class ImportConfig {
+class ImportConfig
+{
     public $iblock_id = 6;
     public $debug = true;
-    
-    /*
-    function eco($data) {
-        if($this->debug === true) {
-            $_SESSION['import_yml'][] = $data;
-        }
-    }
-    */
-    
-    function eco($data) {
-        if($this->debug === true) {
+
+    public function eco($data)
+    {
+        if ($this->debug === true) {
             echo $data;
         }
     }
-    
 
-    function translitIt($str) {
+
+    public function translitIt($str)
+    {
         $str = Translit::transliterate($str);
         $str = Translit::asURLSegment($str);
+
         return $str;
     }
-    
-        
-    function addToFiles($key, $url)
+
+
+    public function addToFiles($key, $url)
     {
 
-        //$tempName = tempnam(ini_get('upload_tmp_dir'),'upload_');
         $tempName = tempnam('/tmp', 'php_files');
         $originalName = basename(parse_url($url, PHP_URL_PATH));
 
@@ -378,10 +417,8 @@ class ImportConfig {
             'error' => 0,
             'size' => strlen($imgRawData),
         );
-        
-        //return $_FILES[$key];
     }
-    
+
     /**
      * Gets lement attributes.
      *
@@ -389,11 +426,12 @@ class ImportConfig {
      *
      * @return array
      */
-    function getElementAttributes(\SimpleXMLElement $element) {
+    public function getElementAttributes(\SimpleXMLElement $element)
+    {
         $returnArr = [];
 
         foreach ($element->attributes() as $attrName => $attrValue):
-            $returnArr[strtolower($attrName)] = (string) $attrValue;
+            $returnArr[strtolower($attrName)] = (string)$attrValue;
         endforeach;
 
         return $returnArr;
@@ -402,17 +440,19 @@ class ImportConfig {
     /**
      * function xml2array
      */
-    function xml2array( $xmlObject, $out = array () )
+    public function xml2array($xmlObject, $out = array())
     {
-        foreach ( (array) $xmlObject as $index => $node )
-            $out[$index] = ( is_object ( $node ) ) ? xml2array ( $node ) : $node;
+        foreach ((array)$xmlObject as $index => $node) {
+            $out[$index] = (is_object($node)) ? xml2array($node) : $node;
+        }
 
         return $out;
     }
-    
+
 }
 
-final class Translit{
+final class Translit
+{
     /**
      * Укр/Рус символы
      *
@@ -421,8 +461,79 @@ final class Translit{
      * @static
      */
     static private $cyr = array(
-        'Щ',  'Ш', 'Ч', 'Ц','Ю', 'Я', 'Ж', 'А','Б','В','Г','Д','Е','Ё','З','И','Й','К','Л','М','Н','О','П','Р','С','Т','У','Ф','Х', 'Ь','Ы','Ъ','Э','Є','Ї','І',
-        'щ',  'ш', 'ч', 'ц','ю', 'я', 'ж', 'а','б','в','г','д','е','ё','з','и','й','к','л','м','н','о','п','р','с','т','у','ф','х', 'ь','ы','ъ','э','є','ї', 'і');
+        'Щ',
+        'Ш',
+        'Ч',
+        'Ц',
+        'Ю',
+        'Я',
+        'Ж',
+        'А',
+        'Б',
+        'В',
+        'Г',
+        'Д',
+        'Е',
+        'Ё',
+        'З',
+        'И',
+        'Й',
+        'К',
+        'Л',
+        'М',
+        'Н',
+        'О',
+        'П',
+        'Р',
+        'С',
+        'Т',
+        'У',
+        'Ф',
+        'Х',
+        'Ь',
+        'Ы',
+        'Ъ',
+        'Э',
+        'Є',
+        'Ї',
+        'І',
+        'щ',
+        'ш',
+        'ч',
+        'ц',
+        'ю',
+        'я',
+        'ж',
+        'а',
+        'б',
+        'в',
+        'г',
+        'д',
+        'е',
+        'ё',
+        'з',
+        'и',
+        'й',
+        'к',
+        'л',
+        'м',
+        'н',
+        'о',
+        'п',
+        'р',
+        'с',
+        'т',
+        'у',
+        'ф',
+        'х',
+        'ь',
+        'ы',
+        'ъ',
+        'э',
+        'є',
+        'ї',
+        'і',
+    );
 
     /**
      * Латинские соответствия
@@ -432,8 +543,79 @@ final class Translit{
      * @static
      */
     static private $lat = array(
-        'Shh','Sh','Ch','C','Ju','Ja','Zh','A','B','V','G','D','Je','Jo','Z','I','J','K','L','M','N','O','P','R','S','T','U','F','Kh','Y','Y','','E','Je','Ji','I',
-        'shh','sh','ch','c','ju','ja','zh','a','b','v','g','d','je','jo','z','i','j','k','l','m','n','o','p','r','s','t','u','f','kh','y','y','','e','je','ji', 'i');
+        'Shh',
+        'Sh',
+        'Ch',
+        'C',
+        'Ju',
+        'Ja',
+        'Zh',
+        'A',
+        'B',
+        'V',
+        'G',
+        'D',
+        'Je',
+        'Jo',
+        'Z',
+        'I',
+        'J',
+        'K',
+        'L',
+        'M',
+        'N',
+        'O',
+        'P',
+        'R',
+        'S',
+        'T',
+        'U',
+        'F',
+        'Kh',
+        'Y',
+        'Y',
+        '',
+        'E',
+        'Je',
+        'Ji',
+        'I',
+        'shh',
+        'sh',
+        'ch',
+        'c',
+        'ju',
+        'ja',
+        'zh',
+        'a',
+        'b',
+        'v',
+        'g',
+        'd',
+        'je',
+        'jo',
+        'z',
+        'i',
+        'j',
+        'k',
+        'l',
+        'm',
+        'n',
+        'o',
+        'p',
+        'r',
+        's',
+        't',
+        'u',
+        'f',
+        'kh',
+        'y',
+        'y',
+        '',
+        'e',
+        'je',
+        'ji',
+        'i',
+    );
 
     /**
      * Приватный конструктор класса
@@ -441,7 +623,9 @@ final class Translit{
      *
      * @access private
      */
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     /**
      * Статический метод транслитерации
@@ -452,10 +636,9 @@ final class Translit{
      * @static
      */
 
-    static public function transliterate($string, $wordSeparator = '', $clean = false) {
-        //$str = iconv($encIn, "utf-8", $str);
-
-        for($i=0; $i<count(self::$cyr); $i++){
+    static public function transliterate($string, $wordSeparator = '', $clean = false)
+    {
+        for ($i = 0; $i < count(self::$cyr); $i++) {
             $string = str_replace(self::$cyr[$i], self::$lat[$i], $string);
         }
 
@@ -469,15 +652,13 @@ final class Translit{
 
         if ($wordSeparator) {
             $string = str_replace(' ', $wordSeparator, $string);
-            $string = preg_replace('/['.$wordSeparator.']{2,}/','', $string);
+            $string = preg_replace('/['.$wordSeparator.']{2,}/', '', $string);
         }
 
         if ($clean) {
             $string = strtolower($string);
-            $string = preg_replace('/[^-_a-z0-9]+/','', $string);
+            $string = preg_replace('/[^-_a-z0-9]+/', '', $string);
         }
-
-        //return iconv("utf-8", $encOut, $str);
 
         return $string;
     }
@@ -489,7 +670,8 @@ final class Translit{
      * @access public
      * @static
      */
-    static public function asURLSegment($string){
+    static public function asURLSegment($string)
+    {
         return strtolower(self::transliterate($string, '_', true));
     }
 

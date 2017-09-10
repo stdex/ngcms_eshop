@@ -245,10 +245,3 @@ rpcEshopRequest('eshop_amain', {'action': 'show', 'number':8, 'mode':'last', 'pa
     }
 });
 По умолчанию используются шаблоны: block/main_block_eshop.tpl, block/main_block_eshop_pages.tpl, main_variables.ini
-
-
-# =========================================================================== #
-
-Отблагодарить меня можно по следующим реквизитам:
-WebMoney: Z182737149666 и R406852171246
-Яндекс.Деньги: 41001972962081

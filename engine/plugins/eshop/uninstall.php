@@ -1,9 +1,11 @@
 <?php
 
 // Protect against hack attempts
-if (!defined('NGCMS')) die ('HAL');
+if (!defined('NGCMS')) {
+    die ('HAL');
+}
 
-include_once(dirname(__FILE__).'/functions.php');
+include_once(__DIR__.'/functions.php');
 
 //
 // Configuration file for plugin
@@ -13,84 +15,84 @@ plugins_load_config();
 
 $db_update = array(
     array(
-        'table'     =>  'eshop_products',
-        'action'    =>  'drop',
+        'table' => 'eshop_products',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_products_comments',
-        'action'    =>  'drop',
+        'table' => 'eshop_products_comments',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_products_likes',
-        'action'    =>  'drop',
+        'table' => 'eshop_products_likes',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_products_view',
-        'action'    =>  'drop',
+        'table' => 'eshop_products_view',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_features',
-        'action'    =>  'drop',
+        'table' => 'eshop_features',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_options',
-        'action'    =>  'drop',
+        'table' => 'eshop_options',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_related_products',
-        'action'    =>  'drop',
+        'table' => 'eshop_related_products',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_categories',
-        'action'    =>  'drop',
+        'table' => 'eshop_categories',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_products_categories',
-        'action'    =>  'drop',
+        'table' => 'eshop_products_categories',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_categories_features',
-        'action'    =>  'drop',
+        'table' => 'eshop_categories_features',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_brands',
-        'action'    =>  'drop',
+        'table' => 'eshop_brands',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_purchases',
-        'action'    =>  'drop',
+        'table' => 'eshop_purchases',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_orders',
-        'action'    =>  'drop',
+        'table' => 'eshop_orders',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_order_basket',
-        'action'    =>  'drop',
+        'table' => 'eshop_order_basket',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_compare',
-        'action'    =>  'drop',
+        'table' => 'eshop_compare',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_variants',
-        'action'    =>  'drop',
+        'table' => 'eshop_variants',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_images',
-        'action'    =>  'drop',
+        'table' => 'eshop_images',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_currencies',
-        'action'    =>  'drop',
+        'table' => 'eshop_currencies',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_ebasket',
-        'action'    =>  'drop',
+        'table' => 'eshop_ebasket',
+        'action' => 'drop',
     ),
     array(
-        'table'     =>  'eshop_payment',
-        'action'    =>  'drop',
+        'table' => 'eshop_payment',
+        'action' => 'drop',
     ),
 
 );
@@ -107,13 +109,15 @@ if ($_REQUEST['action'] == 'commit') {
 }
 
 
-function deleteDir($path) {
-    if (empty($path)) { 
+function deleteDir($path)
+{
+    if (empty($path)) {
         return false;
     }
+
     return is_file($path) ?
-            @unlink($path) :
-            array_map(__FUNCTION__, glob($path.'/*')) == @rmdir($path);
+        @unlink($path) :
+        array_map(__FUNCTION__, glob($path.'/*')) == @rmdir($path);
 }
 
 ?>

@@ -1,103 +1,116 @@
 <?php
 
-if (!defined('NGCMS'))
+if (!defined('NGCMS')) {
     exit('HAL');
+}
 
 function payment_action($payment_name, $payment_options, $rData)
 {
-global $tpl, $template, $config, $mysql, $lang, $twig, $SUPRESS_TEMPLATE_SHOW, $SYSTEM_FLAGS;
+    global $config, $mysql, $SUPRESS_TEMPLATE_SHOW, $SUPRESS_MAINBLOCK_SHOW, $SYSTEM_FLAGS;
 
     $SUPRESS_TEMPLATE_SHOW = 1;
     $SUPRESS_MAINBLOCK_SHOW = 1;
 
     $current_time = time() + ($config['date_adjust'] * 60);
-    $result = intval($rData['result']);
+    $result = (int)$rData['result'];
 
-    if(!empty($result))
-    {
-        switch($result) {
+    if (!empty($result)) {
+        switch ($result) {
             case '1':
                 // fail_url
                 redirect_eshop(link_eshop());
                 break;
             case '2':
                 // result_url
-                
+
                 $method = $rData['method'];
                 $params = $rData['params'];
                 $secretKey = $payment_options['secretKey'];
-                
-                if($method == 'check') {
+
+                if ($method == 'check') {
                     $message = 'CHECK is successful';
-                    
-                    return json_encode(array(
-                        "jsonrpc" => "2.0",
-                        "result" => array(
-                            "message" => $message
+
+                    return json_encode(
+                        array(
+                            "jsonrpc" => "2.0",
+                            "result" => array(
+                                "message" => $message,
+                            ),
                         )
-                    ));
-                    
-                }
-                elseif($method == 'pay') {
-                    
-                    if ($params['sign'] == getMd5Sign($params, $secretKey))
-                    {
+                    );
+
+                } elseif ($method == 'pay') {
+
+                    if ($params['sign'] == getMd5Sign($params, $secretKey)) {
 
                         $merchant_purse = $params;
                         $amount = $rData['OutSum'];
                         $order_id = intval($rData['InvId']);
-                        
-                        $info = array('payment_name' => $payment_name, 'merchant_purse' => $merchant_purse, 'amount' => $amount, 'order_id' => $order_id);
 
-                        $mysql->query('INSERT INTO '.prefix.'_eshop_purchases (dt, order_id, info)
+                        $info = array(
+                            'payment_name' => $payment_name,
+                            'merchant_purse' => $merchant_purse,
+                            'amount' => $amount,
+                            'order_id' => $order_id,
+                        );
+
+                        $mysql->query(
+                            'INSERT INTO '.prefix.'_eshop_purchases (dt, order_id, info)
                             VALUES
                             ('.db_squote($current_time).',
                                 '.db_squote($order_id).',
                                 '.db_squote(json_encode($info)).'
                             )
-                        ');
+                        '
+                        );
 
-                        $mysql->query('UPDATE '.prefix.'_eshop_orders SET
+                        $mysql->query(
+                            'UPDATE '.prefix.'_eshop_orders SET
                             paid = 1
                             WHERE id = '.$order_id.'
-                        ');
-                        
+                        '
+                        );
+
                         $message = 'PAY is successful';
-                        
-                        return json_encode(array(
-                            "jsonrpc" => "2.0",
-                            "result" => array(
-                                "message" => $message
+
+                        return json_encode(
+                            array(
+                                "jsonrpc" => "2.0",
+                                "result" => array(
+                                    "message" => $message,
+                                ),
                             )
-                        ));
-                        
-                    }
-                    else {
-                        
+                        );
+
+                    } else {
+
                         $message = 'Incorrect digital signature';
-                    
-                        return json_encode(array(
+
+                        return json_encode(
+                            array(
+                                "jsonrpc" => "2.0",
+                                "error" => array(
+                                    "code" => -32000,
+                                    "message" => $message,
+                                ),
+                            )
+                        );
+
+                    }
+
+                } else {
+
+                    $message = $method.' not supported';
+
+                    return json_encode(
+                        array(
                             "jsonrpc" => "2.0",
                             "error" => array(
                                 "code" => -32000,
-                                "message" => $message
-                            )
-                        ));
-                        
-                    }
-                    
-                }
-                else {
-                    
-                    $message = $method.' not supported';
-                    
-                    return json_encode(array(
-                        "jsonrpc" => "2.0",
-                        "error" => array(
-                            "code" => -32000,
-                            "message" => $message
+                                "message" => $message,
+                            ),
                         )
-                    ));
+                    );
                 }
 
                 break;
@@ -108,28 +121,27 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $SUPRESS_TEMPLATE_SHOW, $
             default:
                 break;
         }
-    }
-    else{
+    } else {
 
         $filter = array();
         $SQL = array();
-        
-        $order_id = filter_var( $rData['order_id'], FILTER_SANITIZE_STRING );
-        $uniqid = filter_var( $rData['order_uniqid'], FILTER_SANITIZE_STRING );
-        if(empty($order_id) || empty($uniqid))
-        {
+
+        $order_id = filter_var($rData['order_id'], FILTER_SANITIZE_STRING);
+        $uniqid = filter_var($rData['order_uniqid'], FILTER_SANITIZE_STRING);
+        if (empty($order_id) || empty($uniqid)) {
             redirect_eshop(link_eshop());
-        }
-        else {
-            $filter []= '(id = '.db_squote($order_id).')';
-            $filter []= '(uniqid = '.db_squote($uniqid).')';
-            $sqlQ = "SELECT * FROM ".prefix."_eshop_orders ".(count($filter)?"WHERE ".implode(" AND ", $filter):'')." LIMIT 1";
+        } else {
+            $filter [] = '(id = '.db_squote($order_id).')';
+            $filter [] = '(uniqid = '.db_squote($uniqid).')';
+            $sqlQ = "SELECT * FROM ".prefix."_eshop_orders ".(count($filter) ? "WHERE ".implode(
+                        " AND ",
+                        $filter
+                    ) : '')." LIMIT 1";
             $row = $mysql->record($sqlQ);
-            
-            if($row['paid'] == 1) {
+
+            if ($row['paid'] == 1) {
                 redirect_eshop(link_eshop());
-            }
-            elseif(!empty($row)) {
+            } elseif (!empty($row)) {
 
 
                 if (!empty($_SERVER['REMOTE_ADDR'])) {
@@ -154,16 +166,15 @@ global $tpl, $template, $config, $mysql, $lang, $twig, $SUPRESS_TEMPLATE_SHOW, $
 
                 // build URL
                 $url = "https://unitpay.ru/api?method=initPayment&".
-                    "params[paymentType]=$paymentType&params[sum]=$sum&params[account]=$account&params[projectId]=$projectId&params[secretKey]=$secretKey&params[ip]=$ip&params[resultUrl]=$success_url&params[currency]=$currency"; 
+                    "params[paymentType]=$paymentType&params[sum]=$sum&params[account]=$account&params[projectId]=$projectId&params[secretKey]=$secretKey&params[ip]=$ip&params[resultUrl]=$success_url&params[currency]=$currency";
 
                 header('Location: '.$url.'');
 
                 exit;
-            }
-            else {
+            } else {
                 redirect_eshop(link_eshop());
             }
-            
+
         }
     }
 }
@@ -172,5 +183,6 @@ function getMd5Sign($params, $secretKey)
 {
     ksort($params);
     unset($params['sign']);
+
     return md5(join(null, $params).$secretKey);
 }
