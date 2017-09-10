@@ -5,107 +5,79 @@ if (!defined('NGCMS')) {
 
 include_once(__DIR__.'/functions.php');
 
+function createEshopUploadDirs()
+{
+    $uploadsDir = getUploadsDir();
+    $dirs = [
+        '/eshop/',
+        '/eshop/products/',
+        '/eshop/products/thumb/',
+        '/eshop/products/temp/',
+        '/eshop/products/temp/thumb/',
+        '/eshop/categories/',
+        '/eshop/categories/thumb/',
+    ];
+
+    foreach ($dirs as $dir) {
+        $newDir = $uploadsDir.$dir;
+        if (!file_exists($newDir)) {
+            if (!@mkdir($newDir, 0777) && !is_dir($newDir)) {
+                msg(
+                    array(
+                        "type" => "error",
+                        "text" => "Критическая ошибка <br /> не удалось создать папку ".$newDir,
+                    ),
+                    1
+                );
+            }
+        }
+    }
+}
+
+function backupRewritesEshop()
+{
+    global $plugin;
+
+    $pluginName = $plugin;
+
+    $eshopDir = extras_dir.'/'.$pluginName;
+
+    $rewrite_filepath_src = $eshopDir.'/install_tmp/rewrite.php';
+    $urlconf_filepath_src = $eshopDir.'/install_tmp/urlconf.php';
+    $rewrite_filepath_dst = root.'conf/rewrite.php';
+    $urlconf_filepath_dst = root.'conf/urlconf.php';
+
+    $now_datetime = date("Y-m-d_H:i:s");
+    $backupDir = $eshopDir.'/install_tmp/backup/';
+    $backupDtDir = $backupDir.$now_datetime;
+
+    if (!file_exists($backupDtDir)) {
+        mkdir($backupDir, 0777, true);
+        mkdir($backupDtDir, 0777, true);
+    }
+
+    copy(
+        $rewrite_filepath_dst,
+        $backupDtDir.'/rewrite.php'
+    );
+    copy(
+        $urlconf_filepath_dst,
+        $backupDtDir.'/urlconf.php'
+    );
+
+    copy($rewrite_filepath_src, $rewrite_filepath_dst);
+    copy($urlconf_filepath_src, $urlconf_filepath_dst);
+}
+
+/**
+ * @param $action
+ * @return bool
+ */
 function plugin_eshop_install($action)
 {
     global $mysql;
 
-    if (!file_exists(dirname(dirname(dirname(__DIR__))).'/uploads/eshop')) {
-        if (!@mkdir(dirname(dirname(dirname(__DIR__))).'/uploads/eshop/', 0777)) {
-            msg(
-                array(
-                    "type" => "error",
-                    "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(
-                            dirname(dirname(__DIR__))
-                        ).'/uploads/images/eshop',
-                ),
-                1
-            );
-        }
-    }
-
-    if (!file_exists(dirname(dirname(dirname(__DIR__))).'/uploads/eshop/products')) {
-        if (!@mkdir(dirname(dirname(dirname(__DIR__))).'/uploads/eshop/products/', 0777)) {
-            msg(
-                array(
-                    "type" => "error",
-                    "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(
-                            dirname(dirname(__DIR__))
-                        ).'/uploads/images/eshop/products',
-                ),
-                1
-            );
-        }
-    }
-
-    if (!file_exists(dirname(dirname(dirname(__DIR__))).'/uploads/eshop/products/thumb')) {
-        if (!@mkdir(dirname(dirname(dirname(__DIR__))).'/uploads/eshop/products/thumb/', 0777)) {
-            msg(
-                array(
-                    "type" => "error",
-                    "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(
-                            dirname(dirname(__DIR__))
-                        ).'/uploads/images/eshop/products/thumb',
-                ),
-                1
-            );
-        }
-    }
-
-    if (!file_exists(dirname(dirname(dirname(__DIR__))).'/uploads/eshop/products/temp')) {
-        if (!@mkdir(dirname(dirname(dirname(__DIR__))).'/uploads/eshop/products/temp/', 0777)) {
-            msg(
-                array(
-                    "type" => "error",
-                    "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(
-                            dirname(dirname(__DIR__))
-                        ).'/uploads/images/eshop/products/temp',
-                ),
-                1
-            );
-        }
-    }
-
-    if (!file_exists(dirname(dirname(dirname(__DIR__))).'/uploads/eshop/products/temp/thumb')) {
-        if (!@mkdir(dirname(dirname(dirname(__DIR__))).'/uploads/eshop/products/temp/thumb/', 0777)) {
-            msg(
-                array(
-                    "type" => "error",
-                    "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(
-                            dirname(dirname(__DIR__))
-                        ).'/uploads/images/eshop/products/temp/thumb',
-                ),
-                1
-            );
-        }
-    }
-
-    if (!file_exists(dirname(dirname(dirname(__DIR__))).'/uploads/eshop/categories')) {
-        if (!@mkdir(dirname(dirname(dirname(__DIR__))).'/uploads/eshop/categories/', 0777)) {
-            msg(
-                array(
-                    "type" => "error",
-                    "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(
-                            dirname(dirname(__DIR__))
-                        ).'/uploads/images/eshop/categories',
-                ),
-                1
-            );
-        }
-    }
-
-    if (!file_exists(dirname(dirname(dirname(__DIR__))).'/uploads/eshop/categories/thumb')) {
-        if (!@mkdir(dirname(dirname(dirname(__DIR__))).'/uploads/eshop/categories/thumb/', 0777)) {
-            msg(
-                array(
-                    "type" => "error",
-                    "text" => "Критическая ошибка <br /> не удалось создать папку ".dirname(
-                            dirname(dirname(__DIR__))
-                        ).'/uploads/images/eshop/categories/thumb',
-                ),
-                1
-            );
-        }
-    }
+    createEshopUploadDirs();
 
     if ($action != 'autoapply') {
         loadPluginLang('eshop', 'config', '', '', ':');
@@ -958,49 +930,25 @@ function plugin_eshop_install($action)
         case 'apply':
             if (fixdb_plugin_install('eshop', $db_update, 'install', ($action == 'autoapply') ? true : false)) {
                 $mysql->query(
-                    "insert into ".prefix."_eshop_currencies values (1,'доллары','$','USD','1.0000','1.0000',1,0,1), (2,'рубли','руб','RUB','0.0133','1.0000',1,1,1), (3,'гривна','грн','UAH','0.0428','1.0000',1,2,1)"
+                    "INSERT INTO ".prefix."_eshop_currencies VALUES (1,'доллары','$','USD','1.0000','1.0000',1,0,1), (2,'рубли','руб','RUB','0.0133','1.0000',1,1,1), (3,'гривна','грн','UAH','0.0428','1.0000',1,2,1)"
                 );
 
                 if (!$mysql->record('SHOW INDEX FROM '.prefix.'_eshop_products WHERE Key_name = \'name\'')) {
-                    $mysql->query('alter table '.prefix.'_eshop_products add FULLTEXT (name)');
+                    $mysql->query('ALTER TABLE '.prefix.'_eshop_products ADD FULLTEXT (name)');
                 }
 
                 if (!$mysql->record('SHOW INDEX FROM '.prefix.'_eshop_products WHERE Key_name = \'annotation\'')) {
-                    $mysql->query('alter table '.prefix.'_eshop_products add FULLTEXT (annotation)');
+                    $mysql->query('ALTER TABLE '.prefix.'_eshop_products ADD FULLTEXT (annotation)');
                 }
 
                 if (!$mysql->record('SHOW INDEX FROM '.prefix.'_eshop_products WHERE Key_name = \'body\'')) {
-                    $mysql->query('alter table '.prefix.'_eshop_products add FULLTEXT (body)');
+                    $mysql->query('ALTER TABLE '.prefix.'_eshop_products ADD FULLTEXT (body)');
                 }
 
                 plugin_mark_installed('eshop');
                 //create_urls();
 
-                $rootpath = $_SERVER['DOCUMENT_ROOT'];
-                $rewrite_filepath_src = $rootpath."/engine/plugins/eshop/install_tmp/rewrite.php";
-                $urlconf_filepath_src = $rootpath."/engine/plugins/eshop/install_tmp/urlconf.php";
-                $rewrite_filepath_dst = $rootpath."/engine/conf/rewrite.php";
-                $urlconf_filepath_dst = $rootpath."/engine/conf/urlconf.php";
-
-
-                $now_datetime = date("Y-m-d_H:i:s");
-                if (!file_exists($rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime)) {
-                    mkdir($rootpath."/engine/plugins/eshop/install_tmp/backup", 0777, true);
-                    mkdir($rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime, 0777, true);
-                }
-
-                copy(
-                    $rewrite_filepath_dst,
-                    $rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime."/rewrite.php"
-                );
-                copy(
-                    $urlconf_filepath_dst,
-                    $rootpath."/engine/plugins/eshop/install_tmp/backup/".$now_datetime."/urlconf.php"
-                );
-
-                copy($rewrite_filepath_src, $rewrite_filepath_dst);
-                copy($urlconf_filepath_src, $urlconf_filepath_dst);
-
+                backupRewritesEshop();
             } else {
                 return false;
             }

@@ -201,7 +201,7 @@
           
         </li>
         <li class="compare-button">
-            {{ callPlugin('eshop.compare') }}
+            {{ callPlugin('eshop.compare', {}) }}
         </li>
         <!--Start. Top menu and authentication data block-->
         <li class="btn-personal-area">
@@ -308,7 +308,7 @@
           <!-- Start. Include cart data template-->
           <div id="tinyBask" class="frame-cleaner">
             
-            {{ callPlugin('eshop.total') }}
+            {{ callPlugin('eshop.total', {}) }}
 
           </div>
           <!-- End. Include cart data template-->
@@ -359,7 +359,7 @@
 
                                             <div class="frame-drop-menu left-drop">
 
-                                                {{ callPlugin('eshop.show_catz_tree') }}
+                                                {{ callPlugin('eshop.show_catz_tree', {}) }}
 
                                               <!--
                                               <ul class="items">
@@ -1053,7 +1053,7 @@
             </div>
           </div>
         
-          {{ callPlugin('eshop.notify') }}
+          {{ callPlugin('eshop.notify', {}) }}
 
         <div id="jq-dropdown-1" class="jq-dropdown jq-dropdown-tip">
             <ul class="jq-dropdown-menu">

@@ -99,7 +99,8 @@
                 <small></small>
             </td>
             <td width="50%" class="contentEntry2"><textarea rows="10" cols="45"
-                                                            name="annotation">{{ entries.annotation }}</textarea></td>
+                                                            name="annotation"
+                                                            class=html_textarea>{{ entries.annotation }}</textarea></td>
         </tr>
 
         <tr>
@@ -107,7 +108,8 @@
                 <small></small>
             </td>
             <td width="50%" class="contentEntry2"><textarea rows="10" cols="45"
-                                                            name="body">{{ entries.body }}</textarea></td>
+                                                            name="body"
+                                                            class=html_textarea>{{ entries.body }}</textarea></td>
         </tr>
 
 

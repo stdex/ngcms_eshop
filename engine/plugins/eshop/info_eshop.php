@@ -158,7 +158,7 @@ function eshop_infovars_show()
 }
 
 // Отображение общей информации о сравнеии продукции
-function plugin_eshop_compare($params)
+function plugin_eshop_compare()
 {
     global $twig, $SYSTEM_FLAGS;
 
@@ -169,7 +169,7 @@ function plugin_eshop_compare($params)
 }
 
 // Отображение общей информации/остатков в корзине
-function plugin_ebasket_total($params)
+function plugin_ebasket_total()
 {
     global $twig, $SYSTEM_FLAGS;
 
@@ -180,7 +180,7 @@ function plugin_ebasket_total($params)
 }
 
 // Отображение блока нотификации при добавлении продукта в корзину
-function plugin_ebasket_notify($params)
+function plugin_ebasket_notify()
 {
     global $twig;
 
@@ -206,7 +206,7 @@ twigRegisterFunction('eshop', 'total', plugin_ebasket_total);
 if (class_exists('p_uprofileFilter')) {
     class uOrderFilter extends p_uprofileFilter
     {
-        function editProfileForm($userID, $SQLrow, &$tvars)
+        public function editProfileForm($userID, $SQLrow, &$tvars)
         {
             global $mysql;
 
@@ -250,7 +250,7 @@ if (class_exists('p_uprofileFilter')) {
 if (class_exists('gsmgFilter')) {
     class gShopFilter extends gsmgFilter
     {
-        function onShow(&$output)
+        public function onShow(&$output)
         {
             global $mysql;
 
@@ -258,7 +258,7 @@ if (class_exists('gsmgFilter')) {
 
                 $new_output = "";
 
-                $lm = $mysql->record("select date(from_unixtime(max(date))) as pd from ".prefix."_eshop_products");
+                $lm = $mysql->record("SELECT date(from_unixtime(max(date))) AS pd FROM ".prefix."_eshop_products");
                 foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id") as $rows) {
                     $cat_link = checkLinkAvailable('eshop', '') ?
                         generateLink('eshop', '', array('alt' => $rows['url'])) :
@@ -271,7 +271,7 @@ if (class_exists('gsmgFilter')) {
                     $new_output .= "</url>";
                 }
 
-                $query = "select * from ".prefix."_eshop_products where active = 1 order by id desc";
+                $query = "SELECT * FROM ".prefix."_eshop_products WHERE active = 1 ORDER BY id DESC";
 
                 foreach ($mysql->select($query) as $rec) {
                     $link = checkLinkAvailable('eshop', 'show') ?

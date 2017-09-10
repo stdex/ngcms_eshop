@@ -43,6 +43,45 @@ cat_name, images - не учитывается.
 
 # =========================================================================== #
 
+API:
+Endpoint для api по-умолчанию: /eshop/api/
+
+Доступные методы:
+
+1) Выгрузка заказов
+GET /eshop/api/?type=get-orders
+Параметры:
+from (дата в формате ГГГГ-ММ-ДД)
+to (дата в формате ГГГГ-ММ-ДД)
+
+2) Выгрузка товаров заказа
+GET /eshop/api/?type=get-order-products
+Параметры:
+from (дата в формате ГГГГ-ММ-ДД)
+to (дата в формате ГГГГ-ММ-ДД)
+
+3) Выгрузка параметров продукции
+GET /eshop/api/?type=get-features
+
+4) Выгрузка вариантов продукции
+GET /eshop/api/?type=get-variants
+Параметры:
+product_id (ID продукции)
+
+5) Обновление статуса заказа
+POST /eshop/api/?type=update-order-statuses
+
+6) Обновление вариантов продукции
+POST /eshop/api/?type=update-variants
+
+7) Обновление продукции
+POST /eshop/api/?type=update-products
+
+8) Обновление параметров продукции
+POST /eshop/api/?type=update-features
+
+# =========================================================================== #
+
 После установки плагина и активации и настройки ЧПУ станут доступны страницы:
 /[{alt}/][page/{page}/] - страницы категорий. (Шаблон вывода eshop.tpl)
 /{alt}.html - страницы продукции. (Шаблон вывода show_eshop.tpl)
@@ -54,6 +93,7 @@ cat_name, images - не учитывается.
 /eshop/order/?id={id}&uniqid={uniqid} - страница существуюшего заказа. (Шаблон вывода order_eshop.tpl)
 /eshop/currency/?id={id} - страница смены валюты.
 /eshop/payment/?payment_id={payment_id}&order_id={order_id}&order_uniqid={order_uniqid} - страница отправки запроса на оплату и приема результата оплаты. (Шаблон вывода payment_eshop.tpl)
+/eshop/api/?type={method} - страница API запросов
 
 variables.ini - отвечает за переменные для постраничной навигации.
 comments.form_eshop.tpl - шаблон вывода формы для добавления отзывов на странице продукта.
@@ -81,11 +121,11 @@ mail/lfeedback_comment.tpl -  шаблон вывода письма о добавлении нового отзыва.
 Доступные параметры:
 - template - шаблон вывода, например если block_cats_tree, то это block/block_cats_tree.tpl (если не используется, то по-умолчанию block_cats_tree)
 
-3. {{ callPlugin('eshop.total') }} - выводит блок корзины с количеством и ценой. Шаблон вывода: ebasket/total.tpl
+3. {{ callPlugin('eshop.total', {}) }} - выводит блок корзины с количеством и ценой. Шаблон вывода: ebasket/total.tpl
 
-4. {{ callPlugin('eshop.notify') }} - выводит блоки, связанные с добавлением заказов (добавление в корзину, заказ в один клик, и.т.д).  Шаблон вывода: ebasket/notify.tpl
+4. {{ callPlugin('eshop.notify', {}) }} - выводит блоки, связанные с добавлением заказов (добавление в корзину, заказ в один клик, и.т.д).  Шаблон вывода: ebasket/notify.tpl
 
-5. {{ callPlugin('eshop.compare') }} - выводит блок количества добавленных к сравнению продуктов. Шаблон вывода: compare_block_eshop.tpl
+5. {{ callPlugin('eshop.compare', {}) }} - выводит блок количества добавленных к сравнению продуктов. Шаблон вывода: compare_block_eshop.tpl
 
 6. Также в main.tpl поддерживаются страндартные TWIG блоки, которые позволяют выводить/скрывать определенные блоки в зависимости от страницы на которой находится посетитель.
 - {% if pluginIsActive('eshop') %}XXX{% endif %} - выводится если плагин eshop активирован.

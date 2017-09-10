@@ -99,8 +99,8 @@ $db_update = array(
 
 if ($_REQUEST['action'] == 'commit') {
     if (fixdb_plugin_install($plugin, $db_update, 'deinstall')) {
-        $img_dir = dirname(dirname(dirname(dirname(__FILE__)))).'/uploads/eshop/';
-        deleteDir($img_dir);
+        $uploadsDir = getUploadsDir();
+        deleteEshopUploadDirs($uploadsDir.'/eshop/');
         remove_urls();
         plugin_mark_deinstalled($plugin);
     }
@@ -109,7 +109,7 @@ if ($_REQUEST['action'] == 'commit') {
 }
 
 
-function deleteDir($path)
+function deleteEshopUploadDirs($path)
 {
     if (empty($path)) {
         return false;

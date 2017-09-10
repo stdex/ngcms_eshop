@@ -624,7 +624,7 @@ function import_yml($yml_url)
 
         if ($url) {
             $prd_row = $mysql->record(
-                "select * from ".prefix."_eshop_products where url = ".db_squote($url)." limit 1"
+                "SELECT * FROM ".prefix."_eshop_products WHERE url = ".db_squote($url)." LIMIT 1"
             );
             if (!is_array($prd_row)) {
                 $oid = $ofs->Add($offer, $name, $url);
@@ -832,4 +832,45 @@ function LoadVariables_eshop()
     $tpath = locatePluginTemplates(array(':'), 'eshop', pluginGetVariable('eshop', 'localsource'));
 
     return parse_ini_file($tpath[':'].'/main_variables.ini', true);
+}
+
+function getUploadsDir()
+{
+    global $config;
+    $uploadsDir = dirname($config['images_dir']);
+
+    return $uploadsDir;
+}
+
+function makeUploadsDirs($dir, $thumb = true)
+{
+    global $config;
+    $uploadsDir = dirname($config['images_dir']);
+
+    @mkdir($uploadsDir.$dir, 0777);
+    if ($thumb) {
+        @mkdir($uploadsDir.$dir.'/thumb', 0777);
+    }
+}
+
+function moveFromTemp($qid, $path, $img, $iname)
+{
+    global $config;
+    $uploadsDir = dirname($config['images_dir']);
+
+    $temp_name = $uploadsDir.$path.'temp/'.$img;
+    $current_name = $uploadsDir.$path.$qid.'/'.$iname;
+    rename($temp_name, $current_name);
+
+    $temp_name = $uploadsDir.$path.'temp/thumb/'.$img;
+    $current_name = $uploadsDir.$path.$qid.'/thumb/'.$iname;
+    rename($temp_name, $current_name);
+
+}
+
+function getPaymentDir($id)
+{
+    $eshop_dir = get_plugcfg_dir('eshop');
+
+    return $eshop_dir.'/payment/'.$id.'/';
 }

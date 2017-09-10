@@ -21,8 +21,10 @@ register_plugin_page('eshop', 'ebasket_update', 'plugin_ebasket_update');
 
 register_plugin_page('eshop', 'order', 'order_eshop');
 register_plugin_page('eshop', 'payment', 'payment_eshop');
+register_plugin_page('eshop', 'api', 'api_eshop');
 
 include_once(__DIR__.'/cache.php');
+include_once(__DIR__.'/api.php');
 
 function eshop_header_show()
 {
@@ -327,7 +329,7 @@ function eshop($params)
         ) ? "WHERE ".implode(" AND ", $conditions) : '').$fSort;
     $sqlQ = "SELECT p.id AS id, p.url AS url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url AS curl, c.name AS category, v.price AS price ".$sqlQPart;
 
-    $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ.") AS T ";
+    $sqlQCount = "SELECT COUNT(*) AS CNT FROM (".$sqlQ.") AS T ";
 
     $count = $mysql->result($sqlQCount);
 
@@ -531,7 +533,7 @@ function eshop($params)
 
 function search_eshop($params)
 {
-    global $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $userROW, $CurrentHandler, $lang;
+    global $template, $twig, $mysql, $SYSTEM_FLAGS, $config, $CurrentHandler, $lang;
 
     $url = pluginGetVariable('eshop', 'url');
     switch ($CurrentHandler['handlerParams']['value']['pluginName']) {
@@ -619,7 +621,7 @@ function search_eshop($params)
             ) ? "WHERE ".implode(" AND ", $conditions) : '').$fSort;
         $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url as curl, c.name AS category ".$sqlQPart;
 
-        $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ.") AS T ";
+        $sqlQCount = "SELECT COUNT(*) AS CNT FROM (".$sqlQ.") AS T ";
 
         $count = $mysql->result($sqlQCount);
         $countPages = ceil($count / $limitCount);
@@ -879,7 +881,7 @@ function stocks_eshop($params)
         ) ? "WHERE ".implode(" AND ", $conditions) : '').$fSort;
     $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views, c.id AS cid, c.url as curl, c.name AS category ".$sqlQPart;
 
-    $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ.") AS T ";
+    $sqlQCount = "SELECT COUNT(*) AS CNT FROM (".$sqlQ.") AS T ";
 
     $count = $mysql->result($sqlQCount);
 
@@ -1376,7 +1378,7 @@ function show_eshop($params)
         }
 
         foreach ($mysql->select(
-            'SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views FROM '.prefix.'_eshop_related_products rp LEFT JOIN '.prefix.'_eshop_products p ON p.id=rp.related_id WHERE rp.product_id = '.$row['id'].' AND p.active = 1 ORDER BY rp.position'
+            'SELECT p.id AS id, p.url AS url, p.code AS code, p.name AS name, p.annotation AS annotation, p.body AS body, p.active AS active, p.featured AS featured, p.position AS position, p.meta_title AS meta_title, p.meta_keywords AS meta_keywords, p.meta_description AS meta_description, p.date AS date, p.editdate AS editdate, p.views AS views FROM '.prefix.'_eshop_related_products rp LEFT JOIN '.prefix.'_eshop_products p ON p.id=rp.related_id WHERE rp.product_id = '.$row['id'].' AND p.active = 1 ORDER BY rp.position'
         ) as $rrow) {
 
             $fulllink = checkLinkAvailable('eshop', 'show') ?
@@ -1423,9 +1425,9 @@ function show_eshop($params)
         if ($cmode > 1) {
             // Delayed update of counters
             $mysql->query(
-                "insert into ".prefix."_eshop_products_view (id, cnt) values (".db_squote(
+                "INSERT INTO ".prefix."_eshop_products_view (id, cnt) VALUES (".db_squote(
                     $row['id']
-                ).", 1) on duplicate key update cnt = cnt + 1"
+                ).", 1) ON DUPLICATE KEY UPDATE cnt = cnt + 1"
             );
         } else {
             if ($cmode > 0) {
@@ -1450,7 +1452,7 @@ function show_eshop($params)
         $likes_xt = $twig->loadTemplate($likes_tpath['likes_eshop'].'likes_eshop.tpl');
 
         $likes = $mysql->record(
-            "SELECT COUNT(*) as count FROM ".prefix."_eshop_products_likes l WHERE l.product_id='".$qid."'"
+            "SELECT COUNT(*) AS count FROM ".prefix."_eshop_products_likes l WHERE l.product_id='".$qid."'"
         );
 
         $likes_tVars = array(
@@ -1756,7 +1758,7 @@ function plugin_ebasket_list()
         $SQL['uniqid'] = substr(str_shuffle(MD5(microtime())), 0, 10);
 
 
-        foreach ($mysql->select("select * from ".prefix."_eshop_ebasket where ".join(" or ", $filter), 1) as $rec) {
+        foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_ebasket WHERE ".join(" or ", $filter), 1) as $rec) {
             $r_count = $rec['count'];
             $linked_id = $rec['linked_id'];
             $linked_fld = unserialize($rec['linked_fld']);
@@ -1799,7 +1801,7 @@ function plugin_ebasket_list()
             if ($qid != null) {
 
                 foreach ($mysql->select(
-                    "select * from ".prefix."_eshop_ebasket where ".join(" or ", $filter),
+                    "SELECT * FROM ".prefix."_eshop_ebasket WHERE ".join(" or ", $filter),
                     1
                 ) as $rec) {
                     $r_linked_id = $rec['linked_id'];
@@ -1813,11 +1815,11 @@ function plugin_ebasket_list()
                 }
 
                 if (count($filter)) {
-                    $mysql->query("delete from ".prefix."_eshop_ebasket where ".join(" or ", $filter));
+                    $mysql->query("DELETE FROM ".prefix."_eshop_ebasket WHERE ".join(" or ", $filter));
                     foreach ($recs as $rec) {
                         $v_id = $rec['xfields']['item']['v_id'];
                         $variant = $mysql->record(
-                            "SELECT amount FROM ".prefix."_eshop_variants where id = '".(int)$v_id."'"
+                            "SELECT amount FROM ".prefix."_eshop_variants WHERE id = '".(int)$v_id."'"
                         );
                         $current_amount = $variant['amount'];
                         $r_count = $rec['count'];
@@ -1845,7 +1847,7 @@ function plugin_ebasket_list()
 
                 $total = 0;
                 foreach ($mysql->select(
-                    "select * from ".prefix."_eshop_order_basket where ".join(" or ", $filter),
+                    "SELECT * FROM ".prefix."_eshop_order_basket WHERE ".join(" or ", $filter),
                     1
                 ) as $rec) {
                     $total += round($rec['price'] * $rec['count'], 2);
@@ -1999,7 +2001,7 @@ function order_eshop()
 
             $total = 0;
             foreach ($mysql->select(
-                "select * from ".prefix."_eshop_order_basket where ".join(" or ", $filter),
+                "SELECT * FROM ".prefix."_eshop_order_basket WHERE ".join(" or ", $filter),
                 1
             ) as $rec) {
                 $total += round($rec['price'] * $rec['count'], 2);
@@ -2137,103 +2139,11 @@ function payment_eshop()
     $SYSTEM_FLAGS['meta']['keywords'] = "";
 }
 
-function build_tree($cats, $parent_id, $only_parent = false)
+function api_eshop()
 {
-    if (is_array($cats) and isset($cats[$parent_id])) {
-        $tree = '<ul>';
-        if ($only_parent == false) {
-            foreach ($cats[$parent_id] as $cat) {
-                $tree .= '<li><a href="'.$cat['url'].'">'.$cat['cat_name'].'</a> ('.$cat['num'].')';
-                $tree .= build_tree($cats, $cat['id']);
-                $tree .= '</li>';
-            }
-        } elseif (is_numeric($only_parent)) {
-            $cat = $cats[$parent_id][$only_parent];
-            $tree .= '<li>'.$cat['cat_name'].' #'.$cat['id'];
-            $tree .= build_tree($cats, $cat['id']);
-            $tree .= '</li>';
-        }
-        $tree .= '</ul>';
-    } else {
-        return null;
-    }
-
-    return $tree;
-}
-
-function getCats($res)
-{
-
-    $levels = array();
-    $tree = array();
-    $cur = array();
-
-    while ($rows = mysql_fetch_assoc($res)) {
-
-        $cur = &$levels[$rows['id']];
-        $cur['parent_id'] = $rows['parent_id'];
-        $cur['name'] = $rows['name'];
-        $cur['url'] = $rows['url'];
-        $cur['image'] = $rows['image'];
-        $cur['description'] = $rows['description'];
-        $cur['active'] = $rows['active'];
-
-        if ($rows['parent_id'] == 0) {
-            $tree[$rows['id']] = &$cur;
-        } else {
-            $levels[$rows['parent_id']]['children'][$rows['id']] = &$cur;
-        }
-    }
-
-    return $tree;
-}
-
-
-function getTree($arr, $flg, $l)
-{
-    $flg;
-    $out = '';
-    $ft = '&#8212; ';
-    foreach ($arr as $k => $v) {
-
-        if ($k == $flg) {
-            $out .= '<option value="'.$k.'" selected>'.str_repeat($ft, $l).$v['name'].'</option>';
-        } else {
-            $out .= '<option value="'.$k.'">'.str_repeat($ft, $l).$v['name'].'</option>';
-        }
-        if (!empty($v['children'])) {
-            //$l = $l + 1;
-            $out .= getTree($v['children'], $flg, $l + 1);
-            //$l = $l - 1;
-        }
-    }
-
-    return $out;
-}
-
-function getChildIdsArray($arr, $flg)
-{
-    $out = array();
-    $flg;
-
-    foreach ($arr as $k => $v) {
-        if ($v['url'] == $flg) {
-            $out = array_merge($out, array_keys($v['children']));
-            $current_id = $k;
-            /*
-            foreach($v['children'] as $k1=>$v1){
-                if(array_key_exists("children",$v1)) {
-                    getChildIdsArray($v, $k1);
-                }
-            }
-            */
-        }
-
-    }
-
-    $out[] = $current_id;
-
-    return $out;
+    $type = $_REQUEST['type'];
+    $api = new ApiEshop($type);
+    $api->run();
 }
 
 function recursiveCategory($arr, $flg)
@@ -2312,7 +2222,7 @@ function eshopUpdateDelayedCounters()
     $mysql->query("lock tables ".prefix."_eshop_products_view write, ".prefix."_eshop write");
 
     // Read data and update counters
-    foreach ($mysql->select("select * from ".prefix."_eshop_products_view") as $vrec) {
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_products_view") as $vrec) {
         $mysql->query(
             "update ".prefix."_eshop_products set views = views + ".(int)$vrec['cnt']." where id = ".(int)$vrec['id']
         );
@@ -2321,7 +2231,7 @@ function eshopUpdateDelayedCounters()
     // Truncate view table
     //$mysql->query("truncate table ".prefix."_eshop_view");
     // DUE TO BUG IN MYSQL - USE DELETE + OPTIMIZE
-    $mysql->query("delete from ".prefix."_eshop_products_view");
+    $mysql->query("DELETE FROM ".prefix."_eshop_products_view");
     $mysql->query("optimize table ".prefix."_eshop_products_view");
 
     // Unlock tables

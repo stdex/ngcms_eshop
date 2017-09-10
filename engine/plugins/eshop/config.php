@@ -117,9 +117,7 @@ function list_product()
 
     $tVars = array();
 
-    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id");
-
-    $cats = getCats($res);
+    $cats = getCats2();
 
     // Load admin page based cookies
     $admCookie = admcookie_get();
@@ -171,7 +169,7 @@ function list_product()
         ) ? "WHERE ".implode(" AND ", $conditions) : '').$fSort;
     $sqlQ = "SELECT p.id AS id, p.url AS url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.name AS category ".$sqlQPart;
 
-    $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ.") AS T ";
+    $sqlQCount = "SELECT COUNT(*) AS CNT FROM (".$sqlQ.") AS T ";
 
     //$sqlQCount = "SELECT COUNT(p.id) FROM ng_eshop_products p ORDER BY p.id DESC";
 
@@ -303,7 +301,7 @@ function add_product()
         if ($SQL["url"]) {
             if (is_array(
                 $mysql->record(
-                    "select id from ".prefix."_eshop_products where url = ".db_squote($SQL["url"])." limit 1"
+                    "SELECT id FROM ".prefix."_eshop_products WHERE url = ".db_squote($SQL["url"])." LIMIT 1"
                 )
             )) {
                 $error_text[] = 'Такой altname уже существует.';
@@ -351,26 +349,20 @@ function add_product()
             foreach ($SQL as $k => $v) {
                 $vnames[] = $k.' = '.db_squote($v);
             }
-            $mysql->query('INSERT INTO '.prefix.'_eshop_products SET '.implode(', ', $vnames).' ');
+            $mysql->query('INSERT INTO '.prefix.'_eshop_products SET '.implode(', ', $vnames));
 
             $qid = $mysql->lastid('eshop_products');
 
             if ($images != null) {
 
-                @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/', 0777);
-                @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb', 0777);
+                makeUploadsDirs('/eshop/products/'.$qid.'/');
 
                 foreach ($images as $inx_img => $img) {
                     $timestamp = time();
                     $iname = $timestamp."-".$img;
 
-                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
-                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/'.$iname;
-                    rename($temp_name, $current_name);
-
-                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
-                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb/'.$iname;
-                    rename($temp_name, $current_name);
+                    $productsTempPath = '/eshop/products/';
+                    moveFromTemp($qid, $productsTempPath, $img, $iname);
 
                     $mysql->query(
                         "INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')"
@@ -459,8 +451,7 @@ function add_product()
         $tEntry[$k] = $v;
     }
 
-    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id");
-    $cats = getCats($res);
+    $cats = getCats2();
 
     foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_features ORDER BY position, id") as $frow) {
         $frow['value'] = '';
@@ -514,8 +505,7 @@ function edit_product()
         ).' LIMIT 1'
     );
 
-    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id");
-    $cats = getCats($res);
+    $cats = getCats2();
 
     $options_array = array();
     foreach ($mysql->select(
@@ -682,9 +672,9 @@ function edit_product()
         if ($SQL["url"]) {
             if (is_array(
                 $mysql->record(
-                    "select id from ".prefix."_eshop_products where url = ".db_squote(
+                    "SELECT id FROM ".prefix."_eshop_products WHERE url = ".db_squote(
                         $SQL["url"]
-                    )." and id <> ".$row['id']." limit 1"
+                    )." AND id <> ".$row['id']." LIMIT 1"
                 )
             )) {
                 $error_text[] = 'Такой altname уже существует.';
@@ -729,20 +719,14 @@ function edit_product()
 
             if ($images != null) {
 
-                @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/', 0777);
-                @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb', 0777);
+                makeUploadsDirs('/eshop/products/'.$qid.'/');
 
                 foreach ($images as $inx_img => $img) {
                     $timestamp = time();
                     $iname = $timestamp."-".$img;
 
-                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
-                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/'.$iname;
-                    rename($temp_name, $current_name);
-
-                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
-                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb/'.$iname;
-                    rename($temp_name, $current_name);
+                    $productsTempPath = '/eshop/products/';
+                    moveFromTemp($qid, $productsTempPath, $img, $iname);
 
                     $pos = $max_img_pos + $inx_img;
 
@@ -842,7 +826,7 @@ function edit_product()
     if (isset($_REQUEST['delimg']) && isset($_REQUEST['filepath'])) {
         $imgID = (int)$_REQUEST['delimg'];
         $imgPath = input_filter_com(convert($_REQUEST['filepath']));
-        $mysql->query("delete from ".prefix."_eshop_images where id = ".$imgID."");
+        $mysql->query("DELETE FROM ".prefix."_eshop_images WHERE id = ".$imgID);
         delete_product_image($imgPath, $qid);
 
         $r_pos = 0;
@@ -857,10 +841,6 @@ function edit_product()
             $r_pos += 1;
         }
 
-
-        //echo root . '/uploads/zboard/' . $imgPath;
-        //unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/products/' . $imgPath);
-        //unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/eshop/products/thumb/' . $imgPath);
         redirect_eshop('?mod=extra-config&plugin=eshop&action=edit_product&id='.$qid.'');
     }
 
@@ -1010,30 +990,32 @@ function modify_product()
 
 }
 
-function getCats($res)
+function getCats2()
 {
+    global $mysql;
 
     $levels = array();
     $tree = array();
-    $cur = array();
 
-    while ($rows = mysql_fetch_assoc($res)) {
+    $rows = $mysql->select("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id");
 
-        $cur = &$levels[$rows['id']];
-        $cur['parent_id'] = $rows['parent_id'];
-        $cur['name'] = $rows['name'];
+    foreach ($rows as $row) {
 
-        if ($rows['parent_id'] == 0) {
-            $tree[$rows['id']] = &$cur;
+        $cur = &$levels[$row['id']];
+        $cur['parent_id'] = $row['parent_id'];
+        $cur['name'] = $row['name'];
+
+        if ($row['parent_id'] == 0) {
+            $tree[$row['id']] = &$cur;
         } else {
-            $levels[$rows['parent_id']]['children'][$rows['id']] = &$cur;
+            $levels[$row['parent_id']]['children'][$row['id']] = &$cur;
         }
     }
 
     return $tree;
 }
 
-function getTree($arr, $flg, $l)
+function getTree($arr, $flg = null, $l = 0)
 {
     $flg;
     $out = '';
@@ -1096,8 +1078,9 @@ function upload_cat_image()
         // don't overwrite an existing file
         $i = 0;
         $parts = pathinfo($img_name);
-        $upload_dir = dirname(dirname(dirname(__DIR__))).'/uploads/eshop/categories/';
-        $upload_thumbnail_dir = dirname(dirname(dirname(__DIR__))).'/uploads/eshop/categories/thumb/';
+        $uploadsDir = getUploadsDir();
+        $upload_dir = $uploadsDir.'/eshop/categories/';
+        $upload_thumbnail_dir = $uploadsDir.'/eshop/categories/thumb/';
 
         while (file_exists($upload_dir.$img_name)) {
             $i++;
@@ -1165,9 +1148,9 @@ function upload_cat_image()
 
 function delete_cat_image($img_name)
 {
-
-    $upload_dir = dirname(dirname(dirname(__DIR__))).'/uploads/eshop/categories/';
-    $upload_thumbnail_dir = dirname(dirname(dirname(__DIR__))).'/uploads/eshop/categories/thumb/';
+    $uploadsDir = getUploadsDir();
+    $upload_dir = $uploadsDir.'/eshop/categories/';
+    $upload_thumbnail_dir = $uploadsDir.'/eshop/categories/thumb/';
 
     $imgname = $upload_dir.$img_name;
     $thumbname = $upload_thumbnail_dir.$img_name;
@@ -1183,9 +1166,9 @@ function delete_cat_image($img_name)
 
 function delete_product_image($img_name, $qid)
 {
-
-    $upload_dir = dirname(dirname(dirname(__DIR__))).'/uploads/eshop/products/'.$qid.'/';
-    $upload_thumbnail_dir = dirname(dirname(dirname(__DIR__))).'/uploads/eshop/products/'.$qid.'/thumb/';
+    $uploadsDir = getUploadsDir();
+    $upload_dir = $uploadsDir.'/eshop/products/'.$qid.'/';
+    $upload_thumbnail_dir = $uploadsDir.'/eshop/products/'.$qid.'/thumb/';
 
     $imgname = $upload_dir.$img_name;
     $thumbname = $upload_thumbnail_dir.$img_name;
@@ -1199,7 +1182,7 @@ function delete_product_image($img_name, $qid)
     }
 }
 
-function add_cat($params)
+function add_cat()
 {
     global $mysql, $twig, $parse;
     $tpath = locatePluginTemplates(array('config/main', 'config/add_cat'), 'eshop', 1);
@@ -1220,7 +1203,7 @@ function add_cat($params)
 
         if ($url) {
             if (is_array(
-                $mysql->record("select id from ".prefix."_eshop_categories where url = ".db_squote($url)." limit 1")
+                $mysql->record("SELECT id FROM ".prefix."_eshop_categories WHERE url = ".db_squote($url)." LIMIT 1")
             )) {
                 $error_text[] = 'Такой altname уже существует.';
             }
@@ -1277,8 +1260,7 @@ function add_cat($params)
         }
     }
 
-    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY position, id");
-    $cats = getCats($res);
+    $cats = getCats2();
 
     $tEntry = array(
         'cat_name' => $cat_name,
@@ -1320,7 +1302,7 @@ function add_cat($params)
     print $xg->render($tVars);
 }
 
-function edit_cat($params)
+function edit_cat()
 {
     global $mysql, $twig, $parse;
     $tpath = locatePluginTemplates(array('config/main', 'config/add_cat'), 'eshop', 1);
@@ -1343,9 +1325,9 @@ function edit_cat($params)
         if ($url) {
             if (is_array(
                 $mysql->record(
-                    "select id from ".prefix."_eshop_categories where url = ".db_squote(
+                    "SELECT id FROM ".prefix."_eshop_categories WHERE url = ".db_squote(
                         $url
-                    )." and id <> ".$id." limit 1"
+                    )." AND id <> ".$id." LIMIT 1"
                 )
             )) {
                 $error_text[] = 'Такой altname уже существует.';
@@ -1416,8 +1398,7 @@ function edit_cat($params)
         }
     }
 
-    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
-    $cats = getCats($res);
+    $cats = getCats2();
 
 
     $tEntry = array(
@@ -1460,7 +1441,7 @@ function edit_cat($params)
     print $xg->render($tVars);
 }
 
-function del_cat($params)
+function del_cat()
 {
     global $mysql;
 
@@ -1471,7 +1452,7 @@ function del_cat($params)
     }
 
     $cnt_products_in_cat = $mysql->record(
-        'SELECT COUNT(*) AS cnt FROM '.prefix.'_eshop_products_categories WHERE category_id = '.db_squote($id).''
+        'SELECT COUNT(*) AS cnt FROM '.prefix.'_eshop_products_categories WHERE category_id = '.db_squote($id)
     );
 
     if ($cnt_products_in_cat['cnt'] == 0) {
@@ -1487,7 +1468,7 @@ function del_cat($params)
 
 }
 
-function list_cat($params)
+function list_cat()
 {
     global $mysql, $twig;
 
@@ -1615,7 +1596,7 @@ function get_prefix($CategoryID)
 }
 
 
-function list_feature($params)
+function list_feature()
 {
     global $mysql, $twig;
 
@@ -1658,7 +1639,7 @@ function list_feature($params)
 
 }
 
-function add_feature($params)
+function add_feature()
 {
     global $mysql, $twig;
     $tpath = locatePluginTemplates(array('config/main', 'config/add_feature'), 'eshop', 1);
@@ -1751,8 +1732,7 @@ function add_feature($params)
         }
     }
 
-    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
-    $cats = getCats($res);
+    $cats = getCats2();
 
     foreach ($SQL as $k => $v) {
         $tEntry[$k] = $v;
@@ -1783,7 +1763,7 @@ function add_feature($params)
     print $xg->render($tVars);
 }
 
-function edit_feature($params)
+function edit_feature()
 {
     global $mysql, $twig;
     $tpath = locatePluginTemplates(array('config/main', 'config/add_feature'), 'eshop', 1);
@@ -1880,8 +1860,7 @@ function edit_feature($params)
         }
     }
 
-    $res = mysql_query("SELECT * FROM ".prefix."_eshop_categories ORDER BY id");
-    $cats = getCats($res);
+    $cats = getCats2();
 
     $cat_ids = array();
     foreach ($mysql->select(
@@ -2003,7 +1982,7 @@ function modify_feature()
 }
 
 
-function list_order($params)
+function list_order()
 {
     global $mysql, $twig;
 
@@ -2054,7 +2033,7 @@ function list_order($params)
     }
 
     if ($fCustomerName) {
-        $sqlQCustomer = "SELECT id FROM ".prefix."_users where name = ".db_squote($fCustomerName).";";
+        $sqlQCustomer = "SELECT id FROM ".prefix."_users WHERE name = ".db_squote($fCustomerName).";";
         $customer_id = $mysql->result($sqlQCustomer);
         array_push($conditions, "author_id = ".db_squote($customer_id));
     }
@@ -2089,7 +2068,7 @@ function list_order($params)
             ) : '').$fSort;
     $sqlQ = "SELECT * ".$sqlQPart;
 
-    $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ.") AS T ";
+    $sqlQCount = "SELECT COUNT(*) AS CNT FROM (".$sqlQ.") AS T ";
 
     //$sqlQCount = "SELECT COUNT(p.id) FROM ng_eshop_products p ORDER BY p.id DESC";
     //var_dump($sqlQ);
@@ -2148,14 +2127,14 @@ function list_order($params)
 
 }
 
-function edit_order($params)
+function edit_order()
 {
     global $mysql, $twig;
     $tpath = locatePluginTemplates(array('config/main', 'config/add_order'), 'eshop', 1);
 
     $id = (int)$_REQUEST['id'];
     $row = $mysql->record(
-        'SELECT *, o.id as id, o.ip as ip, o.name as name, u.name as author, o.paid as paid FROM '.prefix.'_eshop_orders o LEFT JOIN '.prefix.'_users u ON o.author_id = u.id WHERE o.id = '.db_squote(
+        'SELECT *, o.id AS id, o.ip AS ip, o.name AS name, u.name AS author, o.paid AS paid FROM '.prefix.'_eshop_orders o LEFT JOIN '.prefix.'_users u ON o.author_id = u.id WHERE o.id = '.db_squote(
             $id
         ).' LIMIT 1'
     );
@@ -2203,7 +2182,7 @@ function edit_order($params)
 
     $basket = array();
     $total = 0;
-    foreach ($mysql->select("select * from ".prefix."_eshop_order_basket where ".join(" or ", $filter), 1) as $rec) {
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_order_basket WHERE ".join(" or ", $filter), 1) as $rec) {
         $total += round($rec['price'] * $rec['count'], 2);
 
         $rec['sum'] = sprintf('%9.2f', round($rec['price'] * $rec['count'], 2));
@@ -2214,7 +2193,7 @@ function edit_order($params)
     }
 
     $purchases = array();
-    foreach ($mysql->select("select * from ".prefix."_eshop_purchases where ".join(" or ", $filter), 1) as $prow) {
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_purchases WHERE ".join(" or ", $filter), 1) as $prow) {
         $prow['info'] = json_decode($prow['info'], true);
         foreach ($prow['info'] as $k_info => $v_info) {
             $prow['info_string'] .= $k_info." => ".iconv("utf-8", "windows-1251", $v_info)."<br/>";
@@ -2284,7 +2263,7 @@ function modify_order()
     }
 }
 
-function list_comment($params)
+function list_comment()
 {
     global $mysql, $twig, $parse, $config, $TemplateCache;
 
@@ -2312,7 +2291,7 @@ function list_comment($params)
         ) ? "where ".implode(" AND ", $conditions) : '').' '.$fSort;
     $sqlQ = "select c.id as cid, u.id as uid, u.name as uname, c.name as name, p.id as product_id, p.url as url, p.name as title, c.mail as mail, c.postdate as postdate, c.author as author, c.author_id as author_id, u.avatar as avatar, c.reg as reg, c.text as text, c.status as status ".$sqlQPart;
 
-    $sqlQCount = "SELECT COUNT(*) as CNT FROM (".$sqlQ.") AS T ";
+    $sqlQCount = "SELECT COUNT(*) AS CNT FROM (".$sqlQ.") AS T ";
 
     $pageNo = (int)$_REQUEST['page'] ? $_REQUEST['page'] : 0;
     if ($pageNo < 1) {
@@ -2449,7 +2428,7 @@ function modify_comment()
             $com_row = $mysql->record(
                 "SELECT * FROM ".prefix."_eshop_products_comments WHERE id=".db_squote($com_id)." "
             );
-            $mysql->query("delete from ".prefix."_eshop_products_comments where id = ".db_squote($com_id)." ");
+            $mysql->query("DELETE FROM ".prefix."_eshop_products_comments WHERE id = ".db_squote($com_id)." ");
             $mysql->query(
                 "update ".prefix."_eshop_products set comments = comments - 1 where id = ".db_squote(
                     $com_row['product_id']
@@ -2477,7 +2456,7 @@ function modify_comment()
 }
 
 
-function add_currency($params)
+function add_currency()
 {
     global $mysql, $twig;
     $tpath = locatePluginTemplates(array('config/main', 'config/add_currencies'), 'eshop', 1);
@@ -2560,7 +2539,7 @@ function add_currency($params)
     print $xg->render($tVars);
 }
 
-function edit_currency($params)
+function edit_currency()
 {
     global $mysql, $twig;
     $tpath = locatePluginTemplates(array('config/main', 'config/add_currencies'), 'eshop', 1);
@@ -2649,7 +2628,7 @@ function edit_currency($params)
     print $xg->render($tVars);
 }
 
-function del_currency($params)
+function del_currency()
 {
     global $mysql;
 
@@ -2669,7 +2648,7 @@ function del_currency($params)
 
 }
 
-function list_currencies($params)
+function list_currencies()
 {
     global $mysql, $twig;
 
@@ -2707,7 +2686,7 @@ function list_currencies($params)
 
 }
 
-function list_payment($params)
+function list_payment()
 {
     global $twig;
 
@@ -2749,7 +2728,7 @@ function list_payment($params)
 
 }
 
-function edit_payment($params)
+function edit_payment()
 {
     $tpath = locatePluginTemplates(array('config/main', 'config/add_currencies'), 'eshop', 1);
 
@@ -3092,9 +3071,9 @@ function automation()
                         if ($url != "") {
                             if (!is_array(
                                 $mysql->record(
-                                    "select id from ".prefix."_eshop_products where url = ".db_squote(
+                                    "SELECT id FROM ".prefix."_eshop_products WHERE url = ".db_squote(
                                         $product_row["url"]
-                                    )." limit 1"
+                                    )." LIMIT 1"
                                 )
                             )
                             ) {
@@ -3134,7 +3113,7 @@ function automation()
                         if ($product_row["url"]) {
                             if (is_array(
                                 $mysql->record(
-                                    "select id from ".prefix."_eshop_products where url = ".db_squote($url)." limit 1"
+                                    "SELECT id FROM ".prefix."_eshop_products WHERE url = ".db_squote($url)." LIMIT 1"
                                 )
                             )) {
                                 $mysql->query(
@@ -3263,7 +3242,7 @@ function automation()
                 if ($qid != "") {
 
                     $prd_row = $mysql->record(
-                        "select * from ".prefix."_eshop_products where id = ".db_squote($qid)." limit 1"
+                        "SELECT * FROM ".prefix."_eshop_products WHERE id = ".db_squote($qid)." LIMIT 1"
                     );
                     if (!is_array($prd_row)) {
                         break;
@@ -3284,19 +3263,13 @@ function automation()
 
                     $inx_img = $max_img_pos;
 
-                    @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/', 0777);
-                    @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb', 0777);
+                    makeUploadsDirs('/eshop/products/'.$qid.'/');
 
                     $timestamp = time();
                     $iname = $timestamp."-".$img;
 
-                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
-                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/'.$iname;
-                    rename($temp_name, $current_name);
-
-                    $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
-                    $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb/'.$iname;
-                    rename($temp_name, $current_name);
+                    $productsTempPath = '/eshop/products/';
+                    moveFromTemp($qid, $productsTempPath, $img, $iname);
 
                     $mysql->query(
                         "INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')"
@@ -3340,7 +3313,7 @@ function automation()
 
 function import_upload_images($qid)
 {
-    global $mysql;
+    global $mysql, $config;
 
     $positions_img = array();
     foreach ($mysql->select(
@@ -3357,7 +3330,7 @@ function import_upload_images($qid)
 
     $inx_img = $max_img_pos;
 
-    $rootpath = $_SERVER['DOCUMENT_ROOT'];
+    $uploadsDir = dirname($config['images_dir']);
     $img_dir = __DIR__."/import/images/".$qid."/";
     $images = array_map('basename', glob($img_dir."*.{jpg,png,gif}", GLOB_BRACE));
 
@@ -3365,7 +3338,7 @@ function import_upload_images($qid)
 
         foreach ($images as $name) {
 
-            $file_path = $rootpath."/uploads/eshop/products/temp/".$name;
+            $file_path = $uploadsDir."/eshop/products/temp/".$name;
             rename($img_dir.$name, $file_path);
             $fileParts = pathinfo($file_path);
             $extension = $fileParts ['extension'];
@@ -3399,7 +3372,7 @@ function import_upload_images($qid)
 
                 imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
 
-                $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
+                $thumbname = $uploadsDir . "/eshop/products/temp/thumb/" . $name;
 
                 if (file_exists($thumbname)) {
                     unlink($thumbname);
@@ -3420,7 +3393,7 @@ function import_upload_images($qid)
                     }
                 }
                 imagejpeg($src, $file_path, ($pre_quality >= 10 && $pre_quality <= 100) ? $pre_quality : 100);
-                $thumbname = $rootpath."/uploads/eshop/products/temp/thumb/$name";
+                $thumbname = $uploadsDir . "/eshop/products/temp/thumb/" . $name;
                 copy($file_path, $thumbname);
 
                 imagedestroy($src);
@@ -3458,16 +3431,10 @@ function import_upload_images($qid)
             $timestamp = time();
             $iname = $timestamp."-".$img;
 
-            @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/', 0777);
-            @mkdir($_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb', 0777);
+            makeUploadsDirs('/eshop/products/'.$qid.'/');
 
-            $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/'.$img;
-            $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/'.$iname;
-            rename($temp_name, $current_name);
-
-            $temp_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/temp/thumb/'.$img;
-            $current_name = $_SERVER['DOCUMENT_ROOT'].'/uploads/eshop/products/'.$qid.'/thumb/'.$iname;
-            rename($temp_name, $current_name);
+            $productsTempPath = '/eshop/products/';
+            moveFromTemp($qid, $productsTempPath, $img, $iname);
 
             $mysql->query(
                 "INSERT INTO ".prefix."_eshop_images (`filepath`, `product_id`, `position`) VALUES ('$iname','$qid','$inx_img')"
