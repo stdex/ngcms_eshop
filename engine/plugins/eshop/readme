@@ -48,37 +48,358 @@ Endpoint для api по-умолчанию: /eshop/api/
 
 Доступные методы:
 
-1) Выгрузка заказов
-GET /eshop/api/?type=get-orders
-Параметры:
-from (дата в формате ГГГГ-ММ-ДД)
-to (дата в формате ГГГГ-ММ-ДД)
+1) Получение заказов
+GET /eshop/api/?type=get-orders[&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
 
-2) Выгрузка товаров заказа
-GET /eshop/api/?type=get-order-products
-Параметры:
-from (дата в формате ГГГГ-ММ-ДД)
-to (дата в формате ГГГГ-ММ-ДД)
+Пример ответа:
+{
+  "data": {
+    "1": {
+      "id": "1",
+      "author_id": "1",
+      "uniqid": "3a5c8edbb6",
+      "dt": "1505070388",
+      "paid": "1",
+      "type": "1",
+      "name": "admin",
+      "address": "5 South Main Street, Polar Express for 52017",
+      "phone": "7324466721",
+      "email": "",
+      "comment": "12344",
+      "ip": "127.0.0.1",
+      "total_price": "21.00",
+      "mail": "",
+      "pass": "",
+      "news": "0",
+      "status": "1",
+      "last": "1505172285",
+      "reg": "1504953353",
+      "site": "",
+      "icq": "",
+      "where_from": "",
+      "info": "",
+      "avatar": "",
+      "photo": "",
+      "activation": "",
+      "newpw": "",
+      "authcookie": ""
+    }
+  },
+  "status": "OK"
+}
 
-3) Выгрузка параметров продукции
+2) Получение товаров заказа
+GET /eshop/api/?type=get-order-products[&order_id=1&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
+
+Пример ответа:
+{
+   "data":{
+      "1":{
+         "positions":[
+            {
+               "id":"1",
+               "order_id":"1",
+               "linked_id":"1",
+               "title":"p1",
+               "count":"1",
+               "price":"21.00",
+               "sum":"    21.00",
+               "xfields":{
+                  "item":{
+                     "id":"1",
+                     "url":"p1",
+                     "code":"p1",
+                     "name":"p1",
+                     "active":"1",
+                     "featured":"0",
+                     "position":"0",
+                     "curl":"test1",
+                     "category":"test1",
+                     "image_filepath":"1505070301-dodo_123.png",
+                     "v_id":"3",
+                     "v_sku":"",
+                     "v_name":"1",
+                     "v_amount":"1",
+                     "price":"21.00",
+                     "compare_price":"0.00",
+                     "stock":"5",
+                     "view_link":"\/p1.html"
+                  }
+               }
+            }
+         ],
+         "purchases":[
+
+         ],
+         "total":23
+      },
+      "2":{
+         "positions":[
+            {
+               "id":"2",
+               "order_id":"2",
+               "linked_id":"3",
+               "title":"ffffffffffffff",
+               "count":"2",
+               "price":"1.00",
+               "sum":"     2.00",
+               "xfields":{
+                  "item":{
+                     "id":"3",
+                     "url":"ffffffffffffff",
+                     "code":"fff",
+                     "name":"ffffffffffffff",
+                     "active":"1",
+                     "featured":"0",
+                     "position":"0",
+                     "curl":"sub2",
+                     "category":"sub2",
+                     "image_filepath":null,
+                     "v_id":"7",
+                     "v_sku":"",
+                     "v_name":"",
+                     "v_amount":"99",
+                     "price":"1.00",
+                     "compare_price":"2.00",
+                     "stock":"5",
+                     "view_link":"\/ffffffffffffff.html"
+                  }
+               }
+            }
+         ],
+         "purchases":[
+
+         ],
+         "total":23
+      }
+   },
+   "status":"OK"
+}
+
+3) Получние параметров продукции
 GET /eshop/api/?type=get-features
 
-4) Выгрузка вариантов продукции
-GET /eshop/api/?type=get-variants
-Параметры:
-product_id (ID продукции)
+Пример ответа:
+{
+  "data": [
+    {
+      "id": "1",
+      "name": "test",
+      "position": "0",
+      "ftype": "0",
+      "fdefault": "123",
+      "foptions": "",
+      "in_filter": "0",
+      "required": "0"
+    },
+    {
+      "id": "2",
+      "name": "test2",
+      "position": "0",
+      "ftype": "2",
+      "fdefault": "2",
+      "foptions": "{\"1\":\"t1\",\"2\":\"t2\"}",
+      "in_filter": "1",
+      "required": "0"
+    }
+  ],
+  "status": "OK"
+}
+
+4) Получение вариантов продукции
+GET /eshop/api/?type=get-variants[&product_id={ID}]
+
+Пример ответа:
+{
+  "data": [
+    {
+      "id": "9",
+      "product_id": "2",
+      "sku": "",
+      "name": "\u0421\u0438\u043d\u0438\u0439",
+      "price": "12.00",
+      "compare_price": "24.00",
+      "stock": "5",
+      "position": "0",
+      "amount": "88",
+      "attachment": ""
+    },
+    {
+      "id": "8",
+      "product_id": "2",
+      "sku": "",
+      "name": "\u041a\u0440\u0430\u0441\u043d\u044b\u0439",
+      "price": "11.00",
+      "compare_price": "22.00",
+      "stock": "5",
+      "position": "0",
+      "amount": "3",
+      "attachment": ""
+    }
+  ],
+  "status": "OK"
+}
 
 5) Обновление статуса заказа
 POST /eshop/api/?type=update-order-statuses
 
-6) Обновление вариантов продукции
+Пример запроса:
+[
+  {
+    "order_id" : "1",
+    "status": "1"
+  },
+  {
+    "order_id" : "2",
+    "status": "0"
+  }
+]
+
+Пример ответа:
+{
+  "data": [
+    {
+      "id": "1",
+      "status": "OK"
+    },
+    {
+      "id": "",
+      "status": "error",
+      "message": "Item with this ID does not exist"
+    }
+  ],
+  "status": "OK"
+}
+
+6) Добавление/обновление вариантов продукции
 POST /eshop/api/?type=update-variants
 
-7) Обновление продукции
+Пример запроса:
+[
+  {
+    "id" : "9",
+    "name": "Зеленый",
+    "count": "44",
+    "price": "1025",
+    "price_old": "2077",
+    "sku": "100012333"
+  },
+  {
+    "product_id" : "2",
+    "name": "Черный",
+    "count": "5",
+    "price": "25",
+    "price_old": "121",
+    "sku": "15112333"
+  }
+]
+
+Пример ответа:
+{
+   "data":[
+      {
+         "id":"9",
+         "status":"OK"
+      },
+      {
+         "id":"11",
+         "status":"OK"
+      }
+   ],
+   "status":"OK"
+}
+
+7) Добавление/обновление продукции
 POST /eshop/api/?type=update-products
+
+Добавление нового продукта:
+    Пример запроса:
+    [
+      {
+        "name": "Название продукта 1",
+        "short_description": "Короткое описание продукта 1",
+        "description": "Полное описание продукта 1",
+        "vendor_code": "100000123"
+      },
+      {
+        "name": "Название продукта 2",
+        "short_description": "Короткое описание продукта 2",
+        "description": "Полное описание продукта 2",
+        "vendor_code": "100000321"
+      }
+    ]
+
+    Пример ответа:
+    {
+      "data": [
+        {
+          "id": 7,
+          "status": "OK"
+        },
+        {
+          "id": 8,
+          "status": "OK"
+        }
+      ],
+      "status": "OK"
+    }
+
+Обновление существующего продукта:
+    Пример запроса:
+    [
+      {
+        "id" : "7",
+        "name": "Название продукта 12",
+        "short_description": "Короткое описание продукта 12",
+        "description": "Полное описание продукта 12",
+        "vendor_code": "100000777"
+      },
+      {
+        "id" : "8",
+        "name": "Название продукта 22",
+        "short_description": "Короткое описание продукта 22",
+        "description": "Полное описание продукта 22",
+        "vendor_code": "100000555"
+      }
+    ]
+
+    Пример ответа:
+    {
+      "data": [
+        {
+          "id": "7",
+          "status": "OK"
+        },
+        {
+          "id": "8",
+          "status": "OK"
+        }
+      ],
+      "status": "OK"
+    }
 
 8) Обновление параметров продукции
 POST /eshop/api/?type=update-features
+
+Пример запроса:
+[
+  {
+    "id" : "1",
+    "product_id": "2",
+    "value": "Текст1"
+  }
+]
+
+Пример ответа:
+{
+   "data":[
+      {
+         "id":"",
+         "status":"OK"
+      }
+   ],
+   "status":"OK"
+}
 
 # =========================================================================== #
 
