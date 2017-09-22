@@ -27,7 +27,7 @@ class ApiEshop
         ];
 
         $method = str_replace('-', '_', $this->type);
-        if (method_exists($this, $method) && in_array($method, $allowMethods)) {
+        if (method_exists($this, $method) && in_array($method, $allowMethods) && $this->checkToken($this->control['token'])) {
             $this->$method();
         } else {
             $results = ['data' => [], 'status' => 'ERROR'];
@@ -655,6 +655,23 @@ class ApiEshop
         $params = json_decode($data, 1);
 
         return $params;
+    }
+
+    public function checkToken($token)
+    {
+        global $mysql;
+
+        if ($token) {
+            if (is_array(
+                $mysql->record(
+                    "SELECT id FROM ".prefix."_eshop_api WHERE token = ".db_squote($token)." LIMIT 1"
+                )
+            )) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function renderResults($data)

@@ -87,6 +87,20 @@ switch ($_REQUEST['action']) {
         list_currencies();
         break;
 
+    case 'list_api':
+        list_api();
+        break;
+    case 'add_api':
+        add_api();
+        break;
+    case 'edit_api':
+        edit_api();
+        break;
+    case 'del_api':
+        del_api();
+        list_api();
+        break;
+
     case 'options':
         options();
         break;
@@ -2684,6 +2698,180 @@ function list_currencies()
 
     print $xg->render($tVars);
 
+}
+
+function list_api()
+{
+    global $mysql, $twig;
+
+    $tpath = locatePluginTemplates(array('config/main', 'config/list_api'), 'eshop', 1);
+
+    $tVars = array();
+
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_api") as $row) {
+
+        $row['edit_link'] = "?mod=extra-config&plugin=eshop&action=edit_api&id=".$row['id']."";
+        $row['del_link'] = "?mod=extra-config&plugin=eshop&action=del_api&id=".$row['id']."";
+        $tEntry[] = $row;
+
+    }
+
+    $xt = $twig->loadTemplate($tpath['config/list_api'].'config/'.'list_api.tpl');
+
+    $tVars = array(
+        'entries' => isset($tEntry) ? $tEntry : '',
+    );
+
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries' => $xt->render($tVars),
+        'php_self' => $_SERVER['PHP_SELF'],
+        'plugin_url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url' => skins_url,
+        'admin_url' => admin_url,
+        'home' => home,
+        'current_title' => 'API',
+    );
+
+    print $xg->render($tVars);
+}
+
+function add_api()
+{
+    global $mysql, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_api'), 'eshop', 1);
+
+    if (isset($_REQUEST['submit'])) {
+
+        $SQL['token'] = input_filter_com(convert($_REQUEST['token']));
+        if (empty($SQL['token'])) {
+            $error_text[] = 'Токен не задан';
+        }
+
+        if (empty($error_text)) {
+            $vnames = array();
+            foreach ($SQL as $k => $v) {
+                $vnames[] = $k.' = '.db_squote($v);
+            }
+            $mysql->query('INSERT INTO '.prefix.'_eshop_api SET '.implode(', ', $vnames));
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_api');
+        }
+
+    }
+
+    $error_input = '';
+    if (!empty($error_text)) {
+        foreach ($error_text as $error) {
+            $error_input .= msg(array("type" => "error", "text" => $error));
+        }
+    }
+
+    foreach ($SQL as $k => $v) {
+        $tEntry[$k] = $v;
+    }
+
+    $tEntry['error'] = $error_input;
+    $tEntry['mode'] = "add";
+
+    $xt = $twig->loadTemplate($tpath['config/add_api'].'config/'.'add_api.tpl');
+
+    $tVars = array(
+        'entries' => isset($tEntry) ? $tEntry : '',
+    );
+
+
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries' => $xt->render($tVars),
+        'php_self' => $_SERVER['PHP_SELF'],
+        'plugin_url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url' => skins_url,
+        'admin_url' => admin_url,
+        'home' => home,
+        'current_title' => 'API: Добавление токена',
+    );
+
+    print $xg->render($tVars);
+}
+
+function edit_api()
+{
+    global $mysql, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_api'), 'eshop', 1);
+
+    $id = (int)$_REQUEST['id'];
+    $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_api WHERE id = '.db_squote($id).' LIMIT 1');
+
+    if (isset($_REQUEST['submit'])) {
+
+        $SQL['token'] = input_filter_com(convert($_REQUEST['token']));
+        if (empty($SQL['token'])) {
+            $error_text[] = 'Токен не задан';
+        }
+
+        if (empty($error_text)) {
+            $vnames = array();
+            foreach ($SQL as $k => $v) {
+                $vnames[] = $k.' = '.db_squote($v);
+            }
+            $mysql->query(
+                'UPDATE '.prefix.'_eshop_api SET '.implode(', ', $vnames).' WHERE id = \''.(int)$id.'\' '
+            );
+
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_api');
+        }
+
+    }
+
+    $error_input = '';
+    if (!empty($error_text)) {
+        foreach ($error_text as $error) {
+            $error_input .= msg(array("type" => "error", "text" => $error));
+        }
+    }
+
+    foreach ($row as $k => $v) {
+        $tEntry[$k] = $v;
+    }
+
+    $tEntry['error'] = $error_input;
+    $tEntry['mode'] = "edit";
+
+    $xt = $twig->loadTemplate($tpath['config/add_api'].'config/'.'add_api.tpl');
+
+    $tVars = array(
+        'entries' => isset($tEntry) ? $tEntry : '',
+    );
+
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries' => $xt->render($tVars),
+        'php_self' => $_SERVER['PHP_SELF'],
+        'plugin_url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url' => skins_url,
+        'admin_url' => admin_url,
+        'home' => home,
+        'current_title' => 'API: Редактирование токена',
+    );
+
+    print $xg->render($tVars);
+}
+
+function del_api()
+{
+    global $mysql;
+
+    $id = (int)$_REQUEST['id'];
+
+    if (empty($id)) {
+        return msg(array("type" => "error", "text" => "Ошибка"));
+    }
+
+    $mysql->query("DELETE FROM ".prefix."_eshop_api WHERE id = {$id}");
+    msg(array("type" => "info", "info" => "Токен удален"));
 }
 
 function list_payment()

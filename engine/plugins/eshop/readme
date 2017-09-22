@@ -49,7 +49,7 @@ Endpoint для api по-умолчанию: /eshop/api/
 Доступные методы:
 
 1) Получение заказов
-GET /eshop/api/?type=get-orders[&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
+GET /eshop/api/?type=get-orders&token={token}[&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
 
 Пример ответа:
 {
@@ -89,7 +89,7 @@ GET /eshop/api/?type=get-orders[&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
 }
 
 2) Получение товаров заказа
-GET /eshop/api/?type=get-order-products[&order_id=1&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
+GET /eshop/api/?type=get-order-products&token={token}[&order_id=1&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
 
 Пример ответа:
 {
@@ -177,7 +177,7 @@ GET /eshop/api/?type=get-order-products[&order_id=1&from={ГГГГ-ММ-ДД}&to={ГГГГ-М
 }
 
 3) Получние параметров продукции
-GET /eshop/api/?type=get-features
+GET /eshop/api/?type=get-features&token={token}
 
 Пример ответа:
 {
@@ -207,7 +207,7 @@ GET /eshop/api/?type=get-features
 }
 
 4) Получение вариантов продукции
-GET /eshop/api/?type=get-variants[&product_id={ID}]
+GET /eshop/api/?type=get-variants&token={token}[&product_id={ID}]
 
 Пример ответа:
 {
@@ -241,7 +241,7 @@ GET /eshop/api/?type=get-variants[&product_id={ID}]
 }
 
 5) Обновление статуса заказа
-POST /eshop/api/?type=update-order-statuses
+POST /eshop/api/?type=update-order-statuses&token={token}
 
 Пример запроса:
 [
@@ -272,7 +272,7 @@ POST /eshop/api/?type=update-order-statuses
 }
 
 6) Добавление/обновление вариантов продукции
-POST /eshop/api/?type=update-variants
+POST /eshop/api/?type=update-variants&token={token}
 
 Пример запроса:
 [
@@ -310,7 +310,7 @@ POST /eshop/api/?type=update-variants
 }
 
 7) Добавление/обновление продукции
-POST /eshop/api/?type=update-products
+POST /eshop/api/?type=update-products&token={token}
 
 Добавление нового продукта:
     Пример запроса:
@@ -379,7 +379,7 @@ POST /eshop/api/?type=update-products
     }
 
 8) Обновление параметров продукции
-POST /eshop/api/?type=update-features
+POST /eshop/api/?type=update-features&token={token}
 
 Пример запроса:
 [

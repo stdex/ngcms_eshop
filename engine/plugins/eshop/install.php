@@ -920,6 +920,22 @@ function plugin_eshop_install($action)
             ),
         ),
 
+        array(
+            'table' => 'eshop_api',
+            'action' => 'cmodify',
+            'engine' => 'MyISAM',
+            'key' => 'primary key(`id`)',
+            'fields' => array(
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'id',
+                    'type' => 'int(11)',
+                    'params' => 'NOT NULL AUTO_INCREMENT',
+                ),
+                array('action' => 'cmodify', 'name' => 'token', 'type' => 'text', 'params' => 'NOT NULL default \'\''),
+            ),
+        ),
+
     );
 
     switch ($action) {
