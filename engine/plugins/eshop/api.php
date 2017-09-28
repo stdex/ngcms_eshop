@@ -636,8 +636,7 @@ class ApiEshop
     public function generateURLbyName($name)
     {
         global $parse;
-
-        return strtolower($parse->translit($name, 1, 1));
+        return strtolower($parse->translit(iconv("utf-8", "windows-1251", $name), 1, 0));
     }
 
     public function encodeUtf8Array(&$items)
