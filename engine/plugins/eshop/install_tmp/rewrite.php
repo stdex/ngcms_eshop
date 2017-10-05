@@ -845,12 +845,15 @@ $handlerList = array(
             'flagPrimary' => true,
             'flagFailContinue' => false,
             'flagDisabled' => false,
+
             'rstyle' =>
                 array(
-                    'rcmd' => '/eshop/api/',
-                    'regex' => '#^/eshop/api/$#',
+                    'rcmd' => '/eshop/api/[v{v}/]',
+                    'regex' => '#^/eshop/api/(?:v(\\d{1,4})/){0,1}$#',
                     'regexMap' =>
-                        array(),
+                        array(
+                            1 => 'v',
+                        ),
                     'reqCheck' =>
                         array(),
                     'setVars' =>
@@ -862,6 +865,18 @@ $handlerList = array(
                                     0 => 0,
                                     1 => '/eshop/api/',
                                     2 => 0,
+                                ),
+                            1 =>
+                                array(
+                                    0 => 2,
+                                    1 => 'v',
+                                    2 => 1,
+                                ),
+                            2 =>
+                                array(
+                                    0 => 0,
+                                    1 => '/',
+                                    2 => 1,
                                 ),
                         ),
                 ),

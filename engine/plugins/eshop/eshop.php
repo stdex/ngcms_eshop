@@ -24,7 +24,6 @@ register_plugin_page('eshop', 'payment', 'payment_eshop');
 register_plugin_page('eshop', 'api', 'api_eshop');
 
 include_once(__DIR__.'/cache.php');
-include_once(__DIR__.'/api.php');
 
 function eshop_header_show()
 {
@@ -36,7 +35,7 @@ function eshop_header_show()
         $page = $_REQUEST['page'];
     }
 
-    $pageNo = isset($page) ? str_replace('%count%', (int)$page, '/ Страница %count%') : '';
+    $pageNo = isset($page) ? str_replace('%count%', (int)$page, '/ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ %count%') : '';
 
     switch ($CurrentHandler['handlerName']) {
         case '':
@@ -335,14 +334,14 @@ function eshop($params)
 
     $errors = array();
     if ($count == 0) {
-        $errors[] = array("type" => "error", "text" => "В данной категории пока что нету продукции");
+        $errors[] = array("type" => "error", "text" => "пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
         goto prepere_vars;
     }
 
     $countPages = ceil($count / $limitCount);
 
     if ($countPages < $pageNo) {
-        $errors[] = array("type" => "error", "text" => "Подстраницы не существует");
+        $errors[] = array("type" => "error", "text" => "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
         goto prepere_vars;
     }
 
@@ -577,7 +576,7 @@ function search_eshop($params)
         $keywords = filter_var($_REQUEST['keywords'], FILTER_SANITIZE_STRING);
         $search = substr($keywords, 0, 64);
         if (strlen($search) < 3) {
-            $output = msg(array("type" => "error", "text" => "Слишком короткое слово"), 1, 2);
+            $output = msg(array("type" => "error", "text" => "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ"), 1, 2);
         }
 
         $keywords = array();
@@ -888,7 +887,7 @@ function stocks_eshop($params)
     $countPages = ceil($count / $limitCount);
 
     if ($countPages < $pageNo) {
-        return msg(array("type" => "error", "text" => "Подстраницы не существует"));
+        return msg(array("type" => "error", "text" => "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ"));
     }
 
 
@@ -1689,7 +1688,7 @@ function yml_export_eshop($params)
     print ($xt->render($tVars));
 }
 
-// Показать содержимое корзины
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 function plugin_ebasket_list()
 {
     global $mysql, $twig, $userROW, $template, $ip, $SYSTEM_FLAGS, $lang, $config;
@@ -1723,22 +1722,22 @@ function plugin_ebasket_list()
     if (!empty($_POST)) {
         $SQL['name'] = filter_var($_REQUEST['userInfo']['fullName'], FILTER_SANITIZE_STRING);
         if (empty($SQL['name'])) {
-            $error_text[] = 'Имя не задано';
+            $error_text[] = 'пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ';
         }
 
         $SQL['email'] = filter_var($_REQUEST['userInfo']['email'], FILTER_SANITIZE_STRING);
         if (empty($SQL['email'])) {
-            $error_text[] = 'Email не задан';
+            $error_text[] = 'Email пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ';
         }
 
         $SQL['phone'] = filter_var($_REQUEST['userInfo']['phone'], FILTER_SANITIZE_STRING);
         if (empty($SQL['phone'])) {
-            $error_text[] = 'Телефон не задан';
+            $error_text[] = 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ';
         }
 
         $SQL['address'] = filter_var($_REQUEST['userInfo']['deliverTo'], FILTER_SANITIZE_STRING);
         if (empty($SQL['address'])) {
-            $error_text[] = 'Адрес доставки не задан';
+            $error_text[] = 'пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ';
         }
 
         $SQL['comment'] = filter_var($_REQUEST['userInfo']['commentText'], FILTER_SANITIZE_STRING);
@@ -1783,7 +1782,7 @@ function plugin_ebasket_list()
 
             if ($item_rec['v_amount'] != null) {
                 if ($r_count > $item_rec['v_amount']) {
-                    $error_text[] = 'Невозможно купить продукт: '.$item_rec["name"].'. Максимальное количество доступное для заказа: '.$item_rec['v_amount'];
+                    $error_text[] = 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: '.$item_rec["name"].'. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ: '.$item_rec['v_amount'];
                 }
             }
         }
@@ -1839,7 +1838,7 @@ function plugin_ebasket_list()
                     }
                 }
 
-                // Определяем условия выборки
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 $filter = array();
                 if ($qid) {
                     $filter [] = '(order_id = '.db_squote($qid).')';
@@ -1873,7 +1872,7 @@ function plugin_ebasket_list()
                 );
 
                 $mailBody = $notify_xt->render($pVars);
-                $mailSubject = "Новый заказ с сайта";
+                $mailSubject = "пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ";
                 $mailTo = pluginGetVariable('eshop', 'email_notify_orders');
                 $mail_from = pluginGetVariable('eshop', 'email_notify_back');
 
@@ -1892,7 +1891,7 @@ function plugin_ebasket_list()
                     );
                 }
 
-                $notify_text[] = 'Заказ добавлен.';
+                $notify_text[] = 'пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.';
 
                 $order_link = checkLinkAvailable('eshop', 'order') ?
                     generateLink('eshop', 'order', array(), array('id' => $qid, 'uniqid' => $SQL['uniqid'])) :
@@ -1971,14 +1970,14 @@ function order_eshop()
 
     $SQL['id'] = filter_var($_REQUEST['id'], FILTER_SANITIZE_STRING);
     if (empty($SQL['id'])) {
-        $error_text[] = 'ID не задано';
+        $error_text[] = 'ID пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ';
     } else {
         $filter [] = '(id = '.db_squote($SQL['id']).')';
     }
 
     $SQL['uniqid'] = filter_var($_REQUEST['uniqid'], FILTER_SANITIZE_STRING);
     if (empty($SQL['uniqid'])) {
-        $error_text[] = 'Uniqid не задан';
+        $error_text[] = 'Uniqid пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ';
     } else {
         $filter [] = '(uniqid = '.db_squote($SQL['uniqid']).')';
     }
@@ -2011,7 +2010,7 @@ function order_eshop()
                 $basket [] = $rec;
             }
         } else {
-            $error_text[] = 'Неврные парметры заказа';
+            $error_text[] = 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ';
         }
 
     }
@@ -2087,7 +2086,7 @@ function payment_eshop()
 
     $SQL['payment_id'] = filter_var($_REQUEST['payment_id'], FILTER_SANITIZE_STRING);
     if (empty($SQL['payment_id'])) {
-        $error_text[] = 'ID платежной системы не задано';
+        $error_text[] = 'ID пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ';
     } else {
         $filter [] = '(name = '.db_squote($SQL['payment_id']).')';
         $sqlQ = "SELECT * FROM ".prefix."_eshop_payment ".(count($filter) ? "WHERE ".implode(
@@ -2096,7 +2095,7 @@ function payment_eshop()
                 ) : '')." LIMIT 1";
         $row = $mysql->record($sqlQ);
         if (empty($row)) {
-            $error_text[] = 'Платежной системы с таким ID не существует или не заданы настройки';
+            $error_text[] = 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ ID пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ';
         } else {
             $payment_name = $row['name'];
             $payment_options = json_decode($row['options'], true);
@@ -2110,7 +2109,7 @@ function payment_eshop()
             include_once($payment_filename);
             payment_action($payment_name, $payment_options, $_REQUEST);
         } else {
-            $error_text[] = "Файл $payment_filename не существует";
+            $error_text[] = "пїЅпїЅпїЅпїЅ $payment_filename пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
         }
 
     }
@@ -2139,11 +2138,19 @@ function payment_eshop()
     $SYSTEM_FLAGS['meta']['keywords'] = "";
 }
 
-function api_eshop()
+function api_eshop($params)
 {
-    $type = $_REQUEST['type'];
-    $api = new ApiEshop($type);
-    $api->run();
+    include_once(__DIR__.'/api/api.php');
+
+    $version = (int)$params['v'];
+
+    $api_filename = __DIR__.'/api/version/v'.$version.'/api.php';
+
+    if (file_exists($api_filename)) {
+        include_once($api_filename);
+    	$api = new ApiEshopController($version);
+    	$api->run();
+    }
 }
 
 function recursiveCategory($arr, $flg)
@@ -2277,15 +2284,15 @@ class Lingua_Stem_Ru
     public $VERSION = "0.02";
     public $Stem_Caching = 0;
     public $Stem_Cache = array();
-    public $VOWEL = '/аеиоуыэюя/';
-    public $PERFECTIVEGROUND = '/((ив|ивши|ившись|ыв|ывши|ывшись)|((?<=[ая])(в|вши|вшись)))$/';
-    public $REFLEXIVE = '/(с[яь])$/';
-    public $ADJECTIVE = '/(ее|ие|ые|ое|ими|ыми|ей|ий|ый|ой|ем|им|ым|ом|его|ого|ему|ому|их|ых|ую|юю|ая|яя|ою|ею)$/';
-    public $PARTICIPLE = '/((ивш|ывш|ующ)|((?<=[ая])(ем|нн|вш|ющ|щ)))$/';
-    public $VERB = '/((ила|ыла|ена|ейте|уйте|ите|или|ыли|ей|уй|ил|ыл|им|ым|ен|ило|ыло|ено|ят|ует|уют|ит|ыт|ены|ить|ыть|ишь|ую|ю)|((?<=[ая])(ла|на|ете|йте|ли|й|л|ем|н|ло|но|ет|ют|ны|ть|ешь|нно)))$/';
-    public $NOUN = '/(а|ев|ов|ие|ье|е|иями|ями|ами|еи|ии|и|ией|ей|ой|ий|й|иям|ям|ием|ем|ам|ом|о|у|ах|иях|ях|ы|ь|ию|ью|ю|ия|ья|я)$/';
-    public $RVRE = '/^(.*?[аеиоуыэюя])(.*)$/';
-    public $DERIVATIONAL = '/[^аеиоуыэюя][аеиоуыэюя]+[^аеиоуыэюя]+[аеиоуыэюя].*(?<=о)сть?$/';
+    public $VOWEL = '/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ/';
+    public $PERFECTIVEGROUND = '/((пїЅпїЅ|пїЅпїЅпїЅпїЅ|пїЅпїЅпїЅпїЅпїЅпїЅ|пїЅпїЅ|пїЅпїЅпїЅпїЅ|пїЅпїЅпїЅпїЅпїЅпїЅ)|((?<=[пїЅпїЅ])(пїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅпїЅпїЅ)))$/';
+    public $REFLEXIVE = '/(пїЅ[пїЅпїЅ])$/';
+    public $ADJECTIVE = '/(пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ)$/';
+    public $PARTICIPLE = '/((пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ)|((?<=[пїЅпїЅ])(пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅ)))$/';
+    public $VERB = '/((пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅпїЅ|пїЅпїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅ|пїЅ)|((?<=[пїЅпїЅ])(пїЅпїЅ|пїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅ|пїЅ|пїЅ|пїЅпїЅ|пїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ)))$/';
+    public $NOUN = '/(пїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅ|пїЅпїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅ|пїЅпїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅ|пїЅпїЅпїЅ|пїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅпїЅ|пїЅ|пїЅ|пїЅпїЅ|пїЅпїЅпїЅ|пїЅпїЅ|пїЅ|пїЅ|пїЅпїЅ|пїЅпїЅ|пїЅ|пїЅпїЅ|пїЅпїЅ|пїЅ)$/';
+    public $RVRE = '/^(.*?[пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ])(.*)$/';
+    public $DERIVATIONAL = '/[^пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ][пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ]+[^пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ]+[пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ].*(?<=пїЅ)пїЅпїЅпїЅ?$/';
 
     public function s(&$s, $re, $to)
     {
@@ -2303,7 +2310,7 @@ class Lingua_Stem_Ru
     public function stem_word($word)
     {
         $word = strtolower($word);
-        $word = strtr($word, 'ё', 'е');
+        $word = strtr($word, 'пїЅ', 'пїЅ');
 
         if ($this->Stem_Caching && isset($this->Stem_Cache[$word])) {
             return $this->Stem_Cache[$word];
@@ -2331,16 +2338,16 @@ class Lingua_Stem_Ru
                 }
             }
 
-            $this->s($RV, '/и$/', '');
+            $this->s($RV, '/пїЅ$/', '');
 
 
             if ($this->m($RV, $this->DERIVATIONAL)) {
-                $this->s($RV, '/ость?$/', '');
+                $this->s($RV, '/пїЅпїЅпїЅпїЅ?$/', '');
             }
 
-            if (!$this->s($RV, '/ь$/', '')) {
-                $this->s($RV, '/ейше?/', '');
-                $this->s($RV, '/нн$/', 'н');
+            if (!$this->s($RV, '/пїЅ$/', '')) {
+                $this->s($RV, '/пїЅпїЅпїЅпїЅ?/', '');
+                $this->s($RV, '/пїЅпїЅ$/', 'пїЅ');
             }
 
             $stem = $start.$RV;

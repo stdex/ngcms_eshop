@@ -209,6 +209,12 @@ function plugin_eshop_install($action)
                     'type' => 'INT(11)',
                     'params' => 'NOT NULL DEFAULT \'0\'',
                 ),
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'external_id',
+                    'type' => 'INT(11)',
+                    'params' => 'NOT NULL DEFAULT \'0\'',
+                ),
             ),
         ),
 

@@ -763,6 +763,17 @@ $urlLibrary = array(
                 ),
             'api' =>
                 array(
+                    'vars' =>
+                        array(
+                            'v' =>
+                                array(
+                                    'matchRegex' => '\\d{1,4}',
+                                    'descr' =>
+                                        array(
+                                            'russian' => 'Версия',
+                                        ),
+                                ),
+                        ),
                     'descr' =>
                         array(
                             'russian' => 'API',

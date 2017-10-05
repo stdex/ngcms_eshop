@@ -2,37 +2,35 @@
 
 class ApiEshop
 {
+    const STATUS_OK = 'OK';
+    const STATUS_ERROR = 'ERROR';
+
+    private $version;
     private $type;
     private $control;
 
-    public function __construct($type)
+    public function __construct($version)
     {
-        $this->type = $type;
+        $this->version = $version;
+        $this->type = $_REQUEST['type'];
         $this->control = $_GET;
     }
 
     public function run()
     {
 
-        $allowMethods = [
-            'get_orders',
-            'get_order_products',
-            'get_features',
-            'get_variants',
-
-            'update_order_statuses',
-            'update_variants',
-            'update_products',
-            'update_features',
-        ];
-
         $method = str_replace('-', '_', $this->type);
-        if (method_exists($this, $method) && in_array($method, $allowMethods) && $this->checkToken($this->control['token'])) {
-            $this->$method();
-        } else {
-            $results = ['data' => [], 'status' => 'ERROR'];
+        if (!$this->checkApiMethod($method)) {
+            $results = ['data' => [], 'status' => self::STATUS_ERROR, 'message' => 'Method does not exist'];
             $this->renderResults($results);
         }
+
+        if (!$this->checkToken($this->control['token'])) {
+            $results = ['data' => [], 'status' => self::STATUS_ERROR, 'message' => 'Incorrect token'];
+            $this->renderResults($results);
+        }
+
+        $this->$method();
     }
 
     public function get_orders()
@@ -43,7 +41,7 @@ class ApiEshop
         $orders = $this->getOrders($conditions);
 
         $this->encodeUtf8Array($orders);
-        $results = ['data' => $orders, 'status' => 'OK'];
+        $results = ['data' => $orders, 'status' => self::STATUS_OK];
         $this->renderResults($results);
     }
 
@@ -53,12 +51,12 @@ class ApiEshop
         $this->addDateTimeCondition($conditions);
         $conditions = [];
         if (!empty($this->control['order_id'])) {
-            $conditions[] = 'o.id = ' . (int)$this->control['order_id'];
+            $conditions[] = 'o.id = '.(int)$this->control['order_id'];
         }
         $orders = array_keys($this->getOrders($conditions));
         $positions = $this->getProducts($orders);
 
-        $results = ['data' => $positions, 'status' => 'OK'];
+        $results = ['data' => $positions, 'status' => self::STATUS_OK];
         $this->renderResults($results);
     }
 
@@ -71,7 +69,7 @@ class ApiEshop
         }
 
         $this->encodeUtf8Array($options);
-        $results = ['data' => $options, 'status' => 'OK'];
+        $results = ['data' => $options, 'status' => self::STATUS_OK];
         $this->renderResults($results);
     }
 
@@ -80,13 +78,13 @@ class ApiEshop
 
         $conditions = [];
         if (!empty($this->control['product_id'])) {
-            $conditions[] = 'product_id = ' . (int)$this->control['product_id'];
+            $conditions[] = 'product_id = '.(int)$this->control['product_id'];
         }
 
         $variants = $this->getVariants($conditions);
         $this->encodeUtf8Array($variants);
 
-        $results = ['data' => $variants, 'status' => 'OK'];
+        $results = ['data' => $variants, 'status' => self::STATUS_OK];
         $this->renderResults($results);
     }
 
@@ -101,7 +99,11 @@ class ApiEshop
 
             $checked = $this->checkRequiredParams($item, ['order_id', 'status']);
             if (!$checked) {
-                $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Please fill out all required fields'];
+                $output[$id] = [
+                    'id' => null,
+                    'status' => self::STATUS_ERROR,
+                    'message' => 'Please fill out all required fields',
+                ];
                 continue;
             }
 
@@ -110,24 +112,28 @@ class ApiEshop
 
             $checked = $this->checkOrderID($order_id);
             if (!$checked) {
-                $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Item with this ID does not exist'];
+                $output[$id] = [
+                    'id' => null,
+                    'status' => self::STATUS_ERROR,
+                    'message' => 'Item with this ID does not exist',
+                ];
                 continue;
             }
 
             if (!in_array($status, ["0", "1"])) {
-                $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Incorrect status'];
+                $output[$id] = ['id' => null, 'status' => self::STATUS_ERROR, 'message' => 'Incorrect status'];
                 continue;
             }
 
             $mysql->query(
                 "UPDATE ".prefix."_eshop_orders SET paid = ".(int)$status." WHERE id = ".(int)$order_id
             );
-            $output[$id] = ['id' => $order_id, 'status' => 'OK'];
+            $output[$id] = ['id' => $order_id, 'status' => self::STATUS_OK];
 
         }
 
         $this->encodeUtf8Array($output);
-        $results = ['data' => $output, 'status' => 'OK'];
+        $results = ['data' => $output, 'status' => self::STATUS_OK];
         $this->renderResults($results);
     }
 
@@ -154,12 +160,20 @@ class ApiEshop
             if (!empty($item['id'])) {
                 $checked = $this->checkRequiredParams($item, $required['update']);
                 if (!$checked) {
-                    $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Please fill out all required fields'];
+                    $output[$id] = [
+                        'id' => null,
+                        'status' => self::STATUS_ERROR,
+                        'message' => 'Please fill out all required fields',
+                    ];
                     continue;
                 }
                 $checked = $this->checkVariantID($item['id']);
                 if (!$checked) {
-                    $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Item with this ID does not exist'];
+                    $output[$id] = [
+                        'id' => null,
+                        'status' => self::STATUS_ERROR,
+                        'message' => 'Item with this ID does not exist',
+                    ];
                     continue;
                 }
                 unset($item['product_id']);
@@ -173,17 +187,25 @@ class ApiEshop
                             $vnames
                         ).' WHERE id = \''.(int)$item['id'].'\' '
                     );
-                    $output[$id] = ['id' => $item['id'], 'status' => 'OK'];
+                    $output[$id] = ['id' => $item['id'], 'status' => self::STATUS_OK];
                 }
             } else {
                 $checked = $this->checkRequiredParams($item, $required['insert']);
                 if (!$checked) {
-                    $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Please fill out all required fields'];
+                    $output[$id] = [
+                        'id' => null,
+                        'status' => self::STATUS_ERROR,
+                        'message' => 'Please fill out all required fields',
+                    ];
                     continue;
                 }
                 $checked = $this->checkProductID($item['product_id']);
                 if (!$checked) {
-                    $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Item with this ID does not exist'];
+                    $output[$id] = [
+                        'id' => null,
+                        'status' => self::STATUS_ERROR,
+                        'message' => 'Item with this ID does not exist',
+                    ];
                     continue;
                 }
 
@@ -191,19 +213,22 @@ class ApiEshop
                 $vnames = $this->generateInsertArray($params);
                 if (!empty($vnames)) {
                     $mysql->query(
-                        "INSERT INTO ".prefix."_eshop_variants (".implode(",", array_keys($vnames)).") values (".implode(
+                        "INSERT INTO ".prefix."_eshop_variants (".implode(
+                            ",",
+                            array_keys($vnames)
+                        ).") VALUES (".implode(
                             ",",
                             array_values($vnames)
                         ).")"
                     );
                     $qid = $mysql->lastid('eshop_variants');
-                    $output[$id] = ['id' => $qid, 'status' => 'OK'];
+                    $output[$id] = ['id' => $qid, 'status' => self::STATUS_OK];
                 }
             }
         }
 
         $this->encodeUtf8Array($output);
-        $results = ['data' => $output, 'status' => 'OK'];
+        $results = ['data' => $output, 'status' => self::STATUS_OK];
         $this->renderResults($results);
     }
 
@@ -229,12 +254,20 @@ class ApiEshop
             if (!empty($item['id'])) {
                 $checked = $this->checkRequiredParams($item, $required['update']);
                 if (!$checked) {
-                    $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Please fill out all required fields'];
+                    $output[$id] = [
+                        'id' => null,
+                        'status' => self::STATUS_ERROR,
+                        'message' => 'Please fill out all required fields',
+                    ];
                     continue;
                 }
                 $checked = $this->checkProductID($item['id']);
                 if (!$checked) {
-                    $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Item with this ID does not exist'];
+                    $output[$id] = [
+                        'id' => null,
+                        'status' => self::STATUS_ERROR,
+                        'message' => 'Item with this ID does not exist',
+                    ];
                     continue;
                 }
                 $params = $this->getParamsArray($item, $mapParams);
@@ -246,17 +279,25 @@ class ApiEshop
                             $vnames
                         ).' WHERE id = \''.(int)$item['id'].'\' '
                     );
-                    $output[$id] = ['id' => $item['id'], 'status' => 'OK'];
+                    $output[$id] = ['id' => $item['id'], 'status' => self::STATUS_OK];
                 }
             } else {
                 $checked = $this->checkRequiredParams($item, $required['insert']);
                 if (!$checked) {
-                    $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Please fill out all required fields'];
+                    $output[$id] = [
+                        'id' => null,
+                        'status' => self::STATUS_ERROR,
+                        'message' => 'Please fill out all required fields',
+                    ];
                     continue;
                 }
                 $checked = $this->checkProductURL(['name' => $item['name']]);
                 if ($checked) {
-                    $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Item with the same URL already exist'];
+                    $output[$id] = [
+                        'id' => null,
+                        'status' => self::STATUS_ERROR,
+                        'message' => 'Item with the same URL already exist',
+                    ];
                     continue;
                 }
                 $item['url'] = $this->generateURLbyName($item['name']);
@@ -265,23 +306,27 @@ class ApiEshop
                 $vnames = $this->generateInsertArray($params);
                 if (!empty($vnames)) {
                     $mysql->query(
-                        "INSERT INTO ".prefix."_eshop_products (".implode(",", array_keys($vnames)).") values (".implode(
+                        "INSERT INTO ".prefix."_eshop_products (".implode(
+                            ",",
+                            array_keys($vnames)
+                        ).") VALUES (".implode(
                             ",",
                             array_values($vnames)
                         ).")"
                     );
                     $qid = $mysql->lastid('eshop_products');
-                    $output[$id] = ['id' => $qid, 'status' => 'OK'];
+                    $output[$id] = ['id' => $qid, 'status' => self::STATUS_OK];
                 }
             }
         }
 
         $this->encodeUtf8Array($output);
-        $results = ['data' => $output, 'status' => 'OK'];
+        $results = ['data' => $output, 'status' => self::STATUS_OK];
         $this->renderResults($results);
     }
 
-    public function update_features() {
+    public function update_features()
+    {
 
         global $mysql;
 
@@ -291,7 +336,7 @@ class ApiEshop
         $mapParams = [
             'id' => 'feature_id',
             'product_id' => 'product_id',
-            'value' => 'value'
+            'value' => 'value',
         ];
 
         $required = ['update' => ['id', 'product_id', 'value'], 'insert' => ['id', 'product_id', 'value']];
@@ -301,18 +346,30 @@ class ApiEshop
 
                 $checked = $this->checkRequiredParams($item, $required['update']);
                 if (!$checked) {
-                    $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Please fill out all required fields'];
+                    $output[$id] = [
+                        'id' => null,
+                        'status' => self::STATUS_ERROR,
+                        'message' => 'Please fill out all required fields',
+                    ];
                     continue;
                 }
                 $checked = $this->checkFeatureID($item['id']);
                 if (!$checked) {
-                    $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Item with this ID does not exist'];
+                    $output[$id] = [
+                        'id' => null,
+                        'status' => self::STATUS_ERROR,
+                        'message' => 'Item with this ID does not exist',
+                    ];
                     continue;
                 }
 
                 $checked = $this->checkProductID($item['product_id']);
                 if (!$checked) {
-                    $output[$id] = ['id' => NULL, 'status' => 'error', 'message' => 'Item with this ID does not exist'];
+                    $output[$id] = [
+                        'id' => null,
+                        'status' => self::STATUS_ERROR,
+                        'message' => 'Item with this ID does not exist',
+                    ];
                     continue;
                 }
 
@@ -330,26 +387,29 @@ class ApiEshop
                                 $vnames
                             ).' WHERE '.$mapParams["id"].' = \''.(int)$feature_id.'\' AND '.$mapParams["product_id"].' = \''.(int)$product_id.'\''
                         );
-                        $output[$id] = ['id' => NULL, 'status' => 'OK'];
+                        $output[$id] = ['id' => null, 'status' => self::STATUS_OK];
                     }
                 } else {
                     $params = $this->getParamsArray($item, $mapParams, true);
                     $vnames = $this->generateInsertArray($params);
                     if (!empty($vnames)) {
                         $mysql->query(
-                            "INSERT INTO ".prefix."_eshop_options (".implode(",", array_keys($vnames)).") values (".implode(
+                            "INSERT INTO ".prefix."_eshop_options (".implode(
+                                ",",
+                                array_keys($vnames)
+                            ).") VALUES (".implode(
                                 ",",
                                 array_values($vnames)
                             ).")"
                         );
-                        $output[$id] = ['id' => NULL, 'status' => 'OK'];
+                        $output[$id] = ['id' => null, 'status' => self::STATUS_OK];
                     }
                 }
             }
         }
 
         $this->encodeUtf8Array($output);
-        $results = ['data' => $output, 'status' => 'OK'];
+        $results = ['data' => $output, 'status' => self::STATUS_OK];
         $this->renderResults($results);
     }
 
@@ -414,7 +474,7 @@ class ApiEshop
         $orders = [];
         $fSort = " ORDER BY o.id";
         $sqlQ = "
-        SELECT * , o.id as order_id
+        SELECT * , o.id AS order_id
         FROM ".prefix."_eshop_orders o 
         LEFT JOIN ".prefix."_users u ON o.author_id = u.id ".(count($conditions) ? "WHERE ".implode(
                     " AND ",
@@ -565,6 +625,95 @@ class ApiEshop
         return false;
     }
 
+    public function checkProductExternalID($external_id)
+    {
+        if ($external_id) {
+            if (is_array(
+                $this->getProductByExternalID($external_id)
+            )) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getProductByExternalID($external_id)
+    {
+        global $mysql;
+        $row = $mysql->record(
+            "SELECT * FROM ".prefix."_eshop_products WHERE external_id = ".(int)$external_id." LIMIT 1"
+        );
+
+        return $row;
+    }
+
+    public function removeVariantsByProductID($product_id)
+    {
+        global $mysql;
+        $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id = ".(int)$product_id);
+    }
+
+    public function updateProductByExternalID($external_id, $vnames)
+    {
+        global $mysql;
+        if (!empty($vnames)) {
+            $mysql->query(
+                'UPDATE '.prefix.'_eshop_products SET '.implode(
+                    ', ',
+                    $vnames
+                ).' WHERE external_id = \''.(int)$external_id.'\' '
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function addVariant($vnames)
+    {
+        global $mysql;
+        if (!empty($vnames)) {
+            $mysql->query(
+                "INSERT INTO ".prefix."_eshop_variants (".implode(
+                    ",",
+                    array_keys($vnames)
+                ).") VALUES (".implode(
+                    ",",
+                    array_values($vnames)
+                ).")"
+            );
+            $qid = $mysql->lastid('eshop_variants');
+
+            return $qid;
+        }
+
+        return false;
+    }
+
+    public function addProduct($pnames)
+    {
+        global $mysql;
+        if (!empty($pnames)) {
+            $mysql->query(
+                "INSERT INTO ".prefix."_eshop_products (".implode(
+                    ",",
+                    array_keys($pnames)
+                ).") VALUES (".implode(
+                    ",",
+                    array_values($pnames)
+                ).")"
+            );
+            $qid = $mysql->lastid('eshop_products');
+
+            return $qid;
+        }
+
+        return false;
+    }
+
+
     public function checkVariantID($id)
     {
         global $mysql;
@@ -636,6 +785,7 @@ class ApiEshop
     public function generateURLbyName($name)
     {
         global $parse;
+
         return strtolower($parse->translit(iconv("utf-8", "windows-1251", $name), 1, 0));
     }
 
@@ -652,6 +802,11 @@ class ApiEshop
     {
         $data = file_get_contents("php://input");
         $params = json_decode($data, 1);
+
+        if (empty($params)) {
+            $results = ['data' => [], 'status' => self::STATUS_ERROR, 'message' => 'Empty request'];
+            $this->renderResults($results);
+        }
 
         return $params;
     }
@@ -671,6 +826,29 @@ class ApiEshop
         }
 
         return false;
+    }
+
+    public function checkApiMethod($method)
+    {
+
+        $allowMethods = [
+            'get_orders',
+            'get_order_products',
+            'get_features',
+            'get_variants',
+
+            'update_order_statuses',
+            'update_variants',
+            'update_products',
+            'update_features',
+        ];
+
+        if (method_exists($this, $method) && in_array($method, $allowMethods)) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
     public function renderResults($data)

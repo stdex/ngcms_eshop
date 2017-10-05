@@ -44,12 +44,12 @@ cat_name, images - не учитывается.
 # =========================================================================== #
 
 API:
-Endpoint для api по-умолчанию: /eshop/api/
+Endpoint для API по-умолчанию: /eshop/api/v{version}/
 
-Доступные методы:
+Доступные методы [v1]:
 
 1) Получение заказов
-GET /eshop/api/?type=get-orders&token={token}[&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
+GET /eshop/api/v1/?type=get-orders&token={token}[&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
 
 Пример ответа:
 {
@@ -89,7 +89,7 @@ GET /eshop/api/?type=get-orders&token={token}[&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}
 }
 
 2) Получение товаров заказа
-GET /eshop/api/?type=get-order-products&token={token}[&order_id=1&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
+GET /eshop/api/v1/?type=get-order-products&token={token}[&order_id=1&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
 
 Пример ответа:
 {
@@ -177,7 +177,7 @@ GET /eshop/api/?type=get-order-products&token={token}[&order_id=1&from={ГГГГ-ММ-
 }
 
 3) Получние параметров продукции
-GET /eshop/api/?type=get-features&token={token}
+GET /eshop/api/v1/?type=get-features&token={token}
 
 Пример ответа:
 {
@@ -207,7 +207,7 @@ GET /eshop/api/?type=get-features&token={token}
 }
 
 4) Получение вариантов продукции
-GET /eshop/api/?type=get-variants&token={token}[&product_id={ID}]
+GET /eshop/api/v1/?type=get-variants&token={token}[&product_id={ID}]
 
 Пример ответа:
 {
@@ -241,7 +241,7 @@ GET /eshop/api/?type=get-variants&token={token}[&product_id={ID}]
 }
 
 5) Обновление статуса заказа
-POST /eshop/api/?type=update-order-statuses&token={token}
+POST /eshop/api/v1/?type=update-order-statuses&token={token}
 
 Пример запроса:
 [
@@ -272,7 +272,7 @@ POST /eshop/api/?type=update-order-statuses&token={token}
 }
 
 6) Добавление/обновление вариантов продукции
-POST /eshop/api/?type=update-variants&token={token}
+POST /eshop/api/v1/?type=update-variants&token={token}
 
 Пример запроса:
 [
@@ -310,7 +310,7 @@ POST /eshop/api/?type=update-variants&token={token}
 }
 
 7) Добавление/обновление продукции
-POST /eshop/api/?type=update-products&token={token}
+POST /eshop/api/v1/?type=update-products&token={token}
 
 Добавление нового продукта:
     Пример запроса:
@@ -379,7 +379,7 @@ POST /eshop/api/?type=update-products&token={token}
     }
 
 8) Обновление параметров продукции
-POST /eshop/api/?type=update-features&token={token}
+POST /eshop/api/v1/?type=update-features&token={token}
 
 Пример запроса:
 [
@@ -400,6 +400,88 @@ POST /eshop/api/?type=update-features&token={token}
    ],
    "status":"OK"
 }
+
+
+Доступные методы [v2]:
+
+7) Добавление/обновление продукции
+POST /eshop/api/v2/?type=update-products&token={token}
+
+Добавление нового продукта:
+    Пример запроса:
+    {
+      "products": [
+        {
+          "id": 19604,
+          "vendor_code": "120825AG",
+          "name": "120825AG Каблучка123",
+          "short_description": "120825AG Каблучка",
+          "description": "120825AG Каблучка",
+          "price": null,
+          "price_old": 123,
+          "count": 1
+        },
+        {
+          "id": 19605,
+          "vendor_code": "120680AG",
+          "name": "120680AG Каблучка",
+          "short_description": "120680AG Каблучка",
+          "description": "120680AG Каблучка",
+          "price": null,
+          "price_old": null,
+          "count": 1
+        }
+      ]
+    }
+
+    Пример ответа:
+    {
+      "data": [
+        {
+          "id": "19604",
+          "status": "OK"
+        },
+        {
+          "id": "19605",
+          "status": "OK"
+        }
+      ],
+      "status": "OK"
+    }
+
+Обновление существующего продукта:
+    Пример запроса:
+    [
+      {
+        "id" : "7",
+        "name": "Название продукта 12",
+        "short_description": "Короткое описание продукта 12",
+        "description": "Полное описание продукта 12",
+        "vendor_code": "100000777"
+      },
+      {
+        "id" : "8",
+        "name": "Название продукта 22",
+        "short_description": "Короткое описание продукта 22",
+        "description": "Полное описание продукта 22",
+        "vendor_code": "100000555"
+      }
+    ]
+
+    Пример ответа:
+    {
+      "data": [
+        {
+          "id": "7",
+          "status": "OK"
+        },
+        {
+          "id": "8",
+          "status": "OK"
+        }
+      ],
+      "status": "OK"
+    }
 
 # =========================================================================== #
 
