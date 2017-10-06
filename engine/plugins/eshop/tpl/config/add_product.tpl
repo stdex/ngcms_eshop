@@ -81,6 +81,13 @@
                                                          value="{{ entries.meta_description }}"/></td>
         </tr>
 
+        <tr>
+            <td width="50%" class="contentEntry1">Внешний ID<br/>
+                <small></small>
+            </td>
+            <td width="50%" class="contentEntry2"><input type="text" size="80" name="external_id"
+                                                         value="{{ entries.external_id }}"/></td>
+        </tr>
 
         <tr>
             <td width="50%" class="contentEntry1">Категория<br/>

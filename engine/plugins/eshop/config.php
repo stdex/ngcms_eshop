@@ -329,6 +329,8 @@ function add_product()
         $SQL['meta_keywords'] = input_filter_com(convert($_REQUEST['meta_keywords']));
         $SQL['meta_description'] = input_filter_com(convert($_REQUEST['meta_description']));
 
+        $SQL['external_id'] = $_REQUEST['external_id'];
+
         $SQL['annotation'] = $_REQUEST['annotation'];
         $SQL['body'] = $_REQUEST['body'];
 
@@ -698,6 +700,8 @@ function edit_product()
         $SQL['meta_title'] = input_filter_com(convert($_REQUEST['meta_title']));
         $SQL['meta_keywords'] = input_filter_com(convert($_REQUEST['meta_keywords']));
         $SQL['meta_description'] = input_filter_com(convert($_REQUEST['meta_description']));
+
+        $SQL['external_id'] = $_REQUEST['external_id'];
 
         $SQL['annotation'] = $_REQUEST['annotation'];
         $SQL['body'] = $_REQUEST['body'];

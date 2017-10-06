@@ -49,7 +49,7 @@ Endpoint для API по-умолчанию: /eshop/api/v{version}/
 Доступные методы [v1]:
 
 1) Получение заказов
-GET /eshop/api/v1/?type=get-orders&token={token}[&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
+GET /eshop/api/v1/?type=get-orders&token={token}[&order_id={order_id}&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
 
 Пример ответа:
 {
@@ -403,6 +403,69 @@ POST /eshop/api/v1/?type=update-features&token={token}
 
 
 Доступные методы [v2]:
+
+1) Получение заказов
+GET /eshop/api/v2/?type=get-orders&token={token}[&order_id={order_id}&from={ГГГГ-ММ-ДД}&to={ГГГГ-ММ-ДД}]
+
+Пример ответа:
+{
+  "data": {
+    "5": {
+      "dt": "1507254545",
+      "paid": "0",
+      "name": "fsdfs",
+      "address": "dsfsdf",
+      "phone": "fsdfsdf",
+      "email": "admin@test003.loc",
+      "comment": "",
+      "total_price": "70.00",
+      "order_id": "5",
+      "positions": [
+        {
+          "linked_id": "20",
+          "count": "3",
+          "price": "22.00",
+          "sum": "    66.00",
+          "code": "120825AG",
+          "name": "120825AG \u041a\u0430\u0431\u043b\u0443\u0447\u043a\u0430",
+          "product_id": "19604"
+        },
+        {
+          "linked_id": "21",
+          "count": "4",
+          "price": "1.00",
+          "sum": "     4.00",
+          "code": "120680AG",
+          "name": "120680AG \u041a\u0430\u0431\u043b\u0443\u0447\u043a\u0430",
+          "product_id": "19605"
+        }
+      ]
+    },
+    "6": {
+      "dt": "1507255305",
+      "paid": "0",
+      "name": "re",
+      "address": "dfgdfgdf",
+      "phone": "gfdg",
+      "email": "admin@test003.loc",
+      "comment": "",
+      "total_price": "154.00",
+      "order_id": "6",
+      "positions": [
+        {
+          "linked_id": "20",
+          "count": "7",
+          "price": "22.00",
+          "sum": "   154.00",
+          "code": "120825AG",
+          "name": "120825AG \u041a\u0430\u0431\u043b\u0443\u0447\u043a\u0430",
+          "product_id": "19604"
+        }
+      ]
+    }
+  },
+  "status": "OK"
+}
 
 7) Добавление/обновление продукции
 POST /eshop/api/v2/?type=update-products&token={token}

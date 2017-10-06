@@ -1086,7 +1086,7 @@ function ebasket_rpc_manage($params)
                     $sqlQPart = "FROM ".prefix."_eshop_products p LEFT JOIN ".prefix."_eshop_products_categories pc ON p.id = pc.product_id LEFT JOIN ".prefix."_eshop_categories c ON pc.category_id = c.id LEFT JOIN (SELECT * FROM ".prefix."_eshop_images ORDER BY position, id) i ON i.product_id = p.id LEFT JOIN ".prefix."_eshop_variants v ON p.id = v.product_id ".(count(
                             $conditions
                         ) ? "WHERE ".implode(" AND ", $conditions) : '').$fSort;
-                    $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.id AS v_id, v.sku AS v_sku, v.name AS v_name, v.amount AS v_amount, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
+                    $sqlQ = "SELECT p.id AS id, p.url as url, p.code AS code, p.name AS name, p.active AS active, p.featured AS featured, p.position AS position, p.position AS position, p.external_id as external_id, c.url as curl, c.name AS category, i.filepath AS image_filepath, v.id AS v_id, v.sku AS v_sku, v.name AS v_name, v.amount AS v_amount, v.price AS price, v.compare_price AS compare_price, v.stock AS stock ".$sqlQPart;
 
                     // Retrieve news record
                     $rec = $mysql->record($sqlQ);

@@ -30,11 +30,11 @@ class ApiEshopController extends ApiEshop
             if ($update) {
                 $checked = $this->checkRequiredParams($item, $required['update']);
                 if (!$checked) {
-                    $output[$id] = [
-                        'id' => null,
-                        'status' => self::STATUS_ERROR,
-                        'message' => 'Please fill out all required fields',
-                    ];
+                    $output[$id] = $this->setError(
+                        $item['id'],
+                        self::STATUS_ERROR,
+                        'Please fill out all required fields'
+                    );
                     continue;
                 }
 
@@ -57,17 +57,23 @@ class ApiEshopController extends ApiEshop
                 $r2 = $this->updateVariant($item['product_id'], $vnames);
 
                 if ($r1 && $r2) {
-                    $output[$id] = ['id' => $item['id'], 'status' => self::STATUS_OK];
+                    $output[$id] = $this->setResult($item['id'], self::STATUS_OK);
+                } else {
+                    $output[$id] = $this->setError(
+                        $item['id'],
+                        self::STATUS_ERROR,
+                        'Update error'
+                    );
                 }
 
             } else {
                 $checked = $this->checkRequiredParams($item, $required['insert']);
                 if (!$checked) {
-                    $output[$id] = [
-                        'id' => null,
-                        'status' => self::STATUS_ERROR,
-                        'message' => 'Please fill out all required fields',
-                    ];
+                    $output[$id] = $this->setError(
+                        $item['id'],
+                        self::STATUS_ERROR,
+                        'Please fill out all required fields'
+                    );
                     continue;
                 }
 
@@ -95,7 +101,13 @@ class ApiEshopController extends ApiEshop
                 $r2 = $this->updateVariant($item['product_id'], $vnames);
 
                 if ($r1 && $r2) {
-                    $output[$id] = ['id' => $item['id'], 'status' => self::STATUS_OK];
+                    $output[$id] = $this->setResult($item['id'], self::STATUS_OK);
+                } else {
+                    $output[$id] = $this->setError(
+                        $item['id'],
+                        self::STATUS_ERROR,
+                        'Insert error'
+                    );
                 }
             }
         }
@@ -105,34 +117,60 @@ class ApiEshopController extends ApiEshop
         $this->renderResults($results);
     }
 
-    public function prepareItemArray($item, $itemKeys)
+
+    public function get_orders()
     {
-        $newItem = [];
-        foreach ($item as $key => $value) {
-            if (in_array($key, $itemKeys)) {
-                $newItem[$key] = $value;
-            }
+        $conditions = [];
+        $this->addDateTimeCondition($conditions);
+        if (!empty($this->control['order_id'])) {
+            $conditions[] = 'o.id = '.(int)$this->control['order_id'];
         }
 
-        return $newItem;
-    }
-
-    public function updateVariant($product_id, $vnames)
-    {
-        $this->removeVariantsByProductID($product_id);
-
-        return $this->addVariant($vnames);
-    }
-
-    public function setStock(&$item)
-    {
-        if (empty($item['stock'])) {
-            if ($item['count'] > 0) {
-                $item['stock'] = 5;
-            } else {
-                $item['stock'] = 0;
-            }
+        $orders = $this->getOrders($conditions);
+        $ordersInfo = [];
+        if (!empty($orders)) {
+            $ordersInfo = $this->prepareOrdersItemArray($orders);
         }
+
+        $this->encodeUtf8Array($ordersInfo);
+        $results = ['data' => $ordersInfo, 'status' => self::STATUS_OK];
+        $this->renderResults($results);
+    }
+
+    public function prepareOrdersItemArray($orders)
+    {
+        foreach ($orders as $order) {
+            $order_id = $order['order_id'];
+            $ordersInfo[$order_id] = $this->prepareItemArray(
+                $order,
+                ['order_id', 'dt', 'paid', 'name', 'address', 'phone', 'email', 'comment', 'total_price']
+            );
+        }
+
+        $positions = $this->getPos(array_keys($ordersInfo));
+
+        foreach ($orders as $order) {
+            $order_id = $order['order_id'];
+            $sPosInfo = [];
+            $posInfo = $positions[$order_id]['positions'];
+            foreach ($posInfo as $pid => $pos) {
+                $sPosInfo[$pid] = $this->prepareItemArray(
+                    $pos,
+                    ['count', 'price', 'sum', 'linked_id', 'xfields']
+                );
+                $itemInfo = $this->prepareItemArray(
+                    $sPosInfo[$pid]['xfields']['item'],
+                    ['code', 'name', 'external_id']
+                );
+                $itemInfo['product_id'] = $itemInfo['external_id'];
+                unset($itemInfo['external_id']);
+                unset($sPosInfo[$pid]['xfields']);
+                $sPosInfo[$pid] = array_merge($sPosInfo[$pid], $itemInfo);
+            }
+            $ordersInfo[$order_id]['positions'] = $sPosInfo;
+        }
+
+        return $ordersInfo;
     }
 
 }

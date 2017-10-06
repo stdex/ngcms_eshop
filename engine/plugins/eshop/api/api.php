@@ -5,9 +5,9 @@ class ApiEshop
     const STATUS_OK = 'OK';
     const STATUS_ERROR = 'ERROR';
 
-    private $version;
-    private $type;
-    private $control;
+    public $version;
+    public $type;
+    public $control;
 
     public function __construct($version)
     {
@@ -37,6 +37,9 @@ class ApiEshop
     {
         $conditions = [];
         $this->addDateTimeCondition($conditions);
+        if (!empty($this->control['order_id'])) {
+            $conditions[] = 'o.id = '.(int)$this->control['order_id'];
+        }
 
         $orders = $this->getOrders($conditions);
 
@@ -49,12 +52,12 @@ class ApiEshop
     {
         $conditions = [];
         $this->addDateTimeCondition($conditions);
-        $conditions = [];
         if (!empty($this->control['order_id'])) {
             $conditions[] = 'o.id = '.(int)$this->control['order_id'];
         }
+
         $orders = array_keys($this->getOrders($conditions));
-        $positions = $this->getProducts($orders);
+        $positions = $this->getPos($orders);
 
         $results = ['data' => $positions, 'status' => self::STATUS_OK];
         $this->renderResults($results);
@@ -413,7 +416,7 @@ class ApiEshop
         $this->renderResults($results);
     }
 
-    public function getProducts($orders)
+    public function getPos($orders)
     {
         global $mysql;
 
@@ -474,7 +477,7 @@ class ApiEshop
         $orders = [];
         $fSort = " ORDER BY o.id";
         $sqlQ = "
-        SELECT * , o.id AS order_id
+        SELECT * , o.id AS order_id , o.name AS name
         FROM ".prefix."_eshop_orders o 
         LEFT JOIN ".prefix."_users u ON o.author_id = u.id ".(count($conditions) ? "WHERE ".implode(
                     " AND ",
@@ -791,11 +794,12 @@ class ApiEshop
 
     public function encodeUtf8Array(&$items)
     {
-        foreach ($items as $itemID => $item) {
-            foreach ($item as $id => $param) {
-                $items[$itemID][$id] = iconv("windows-1251", "utf-8", $param);
+        array_walk_recursive(
+            $items,
+            function (&$value, $key) {
+                $value = iconv("windows-1251", "utf-8", $value);
             }
-        }
+        );
     }
 
     public function getParams()
@@ -826,6 +830,54 @@ class ApiEshop
         }
 
         return false;
+    }
+
+    public function prepareItemArray($item, $itemKeys)
+    {
+        $newItem = [];
+
+        foreach ($item as $key => $value) {
+            if (in_array($key, $itemKeys)) {
+                $newItem[$key] = $value;
+            }
+        }
+
+        return $newItem;
+    }
+
+    public function updateVariant($product_id, $vnames)
+    {
+        $this->removeVariantsByProductID($product_id);
+
+        return $this->addVariant($vnames);
+    }
+
+    public function setStock(&$item)
+    {
+        if (empty($item['stock'])) {
+            if ($item['count'] > 0) {
+                $item['stock'] = 5;
+            } else {
+                $item['stock'] = 0;
+            }
+        }
+    }
+
+    public function setError($id, $status, $message)
+    {
+        return [
+            'id' => $id,
+            'status' => $status,
+            'message' => $message,
+        ];
+    }
+
+    public function setResult($id, $status)
+    {
+        return [
+            'id' => $id,
+            'status' => $status,
+        ];
     }
 
     public function checkApiMethod($method)
