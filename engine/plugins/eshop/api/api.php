@@ -912,7 +912,7 @@ class ApiEshop
     {
         $variants = [];
         if ($external_id) {
-            $conditions[] = 'external_id = '.(int)$external_id;
+            $conditions[] = "external_id = '".$external_id."'";
             $variants = $this->getVariants($conditions);
         }
 

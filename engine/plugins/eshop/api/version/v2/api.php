@@ -137,7 +137,8 @@ class ApiEshopController extends ApiEshop
             'id' => 'external_id',
             'product_id' => 'product_id',
             'name' => 'name',
-            'count' => 'amount'
+            'count' => 'amount',
+            'stock' => 'stock'
         ];
 
         $required = ['update' => ['id'], 'insert' => ['id']];
@@ -160,13 +161,14 @@ class ApiEshopController extends ApiEshop
 
                 if (!empty($variants)) {
                     $item['product_id'] = $product['id'];
-                    $variant = $this->prepareItemArray($item, ['product_id', 'name', 'count']);
+                    $this->setStock($item);
+                    $variant = $this->prepareItemArray($item, ['stock', 'product_id', 'name', 'count']);
                     $v = $this->getParamsArray($variant, $mapParams);
                     $vnames = $this->generateUpdateArray($v);
                     $this->updateVariants($variants, $vnames);
                 } else {
 
-                    $pA = ['id', 'product_id', 'name', 'count'];
+                    $pA = ['stock', 'id', 'product_id', 'name', 'count'];
                     $sVariants = $this->getVariantsByProductId($product['id']);
                     if(!empty($sVariants)) {
                         $sVariant = current($sVariants);
@@ -178,6 +180,7 @@ class ApiEshopController extends ApiEshop
                     }
 
                     $item['product_id'] = $product['id'];
+                    $this->setStock($item);
                     $variant = $this->prepareItemArray($item, $pA);
                     $v = $this->getParamsArray($variant, $mapParams, true);
                     $vnames = $this->generateInsertArray($v);
