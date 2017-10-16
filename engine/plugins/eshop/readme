@@ -547,7 +547,7 @@ POST /eshop/api/v2/?type=update-products&token={token}
     }
 
 3) Обновление опции продукции
-POST /eshop/api/v1/?type=update-options&token={token}
+POST /eshop/api/v2/?type=update-options&token={token}
 
 Пример запроса:
 {
