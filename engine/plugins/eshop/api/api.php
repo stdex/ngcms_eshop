@@ -9,6 +9,18 @@ class ApiEshop
     public $type;
     public $control;
 
+    public $allowMethods = [
+        'get_orders',
+        'get_order_products',
+        'get_features',
+        'get_variants',
+
+        'update_order_statuses',
+        'update_variants',
+        'update_products',
+        'update_features',
+    ];
+
     public function __construct($version)
     {
         $this->version = $version;
@@ -657,6 +669,12 @@ class ApiEshop
         $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE product_id = ".(int)$product_id);
     }
 
+    public function removeVariantsWithoutExteranalID($product_id)
+    {
+        global $mysql;
+        $mysql->query("DELETE FROM ".prefix."_eshop_variants WHERE external_id = '' AND product_id = ".(int)$product_id);
+    }
+
     public function updateProductByExternalID($external_id, $vnames)
     {
         global $mysql;
@@ -845,11 +863,60 @@ class ApiEshop
         return $newItem;
     }
 
-    public function updateVariant($product_id, $vnames)
+    public function updateVariantV1($product_id, $vnames)
     {
+
         $this->removeVariantsByProductID($product_id);
 
         return $this->addVariant($vnames);
+    }
+
+    public function updateVariant($product_id, $vnames)
+    {
+        $variants = $this->getVariantsByProductId($product_id);
+
+        return $this->updateVariants($variants, $vnames);
+    }
+
+    public function updateVariants($variants, $vnames)
+    {
+        global $mysql;
+        if (!empty($variants)) {
+            foreach ($variants as $variant) {
+                $mysql->query(
+                    'UPDATE '.prefix.'_eshop_variants SET '.implode(
+                        ', ',
+                        $vnames
+                    ).' WHERE id = \''.(int)$variant['id'].'\' '
+                );
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getVariantsByProductId($product_id)
+    {
+        $variants = [];
+        if ($product_id) {
+            $conditions[] = 'product_id = '.(int)$product_id;
+            $variants = $this->getVariants($conditions);
+        }
+
+        return $variants;
+    }
+
+    public function getVariantsByExternalId($external_id)
+    {
+        $variants = [];
+        if ($external_id) {
+            $conditions[] = 'external_id = '.(int)$external_id;
+            $variants = $this->getVariants($conditions);
+        }
+
+        return $variants;
     }
 
     public function setStock(&$item)
@@ -883,19 +950,7 @@ class ApiEshop
     public function checkApiMethod($method)
     {
 
-        $allowMethods = [
-            'get_orders',
-            'get_order_products',
-            'get_features',
-            'get_variants',
-
-            'update_order_statuses',
-            'update_variants',
-            'update_products',
-            'update_features',
-        ];
-
-        if (method_exists($this, $method) && in_array($method, $allowMethods)) {
+        if (method_exists($this, $method) && in_array($method, $this->allowMethods)) {
             return true;
         } else {
             return false;

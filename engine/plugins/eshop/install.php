@@ -746,7 +746,7 @@ function plugin_eshop_install($action)
             'table' => 'eshop_variants',
             'action' => 'cmodify',
             'engine' => 'MyISAM',
-            'key' => 'primary key(id), KEY `product_id` (`product_id`), KEY `position` (`position`)',
+            'key' => 'primary key(id), KEY `product_id` (`product_id`), KEY `position` (`position`), KEY `external_id` (`external_id`)',
             'fields' => array(
                 array(
                     'action' => 'cmodify',
@@ -803,7 +803,7 @@ function plugin_eshop_install($action)
                 array('action' => 'cmodify', 'name' => 'amount', 'type' => 'int(11)', 'params' => 'DEFAULT NULL'),
                 array(
                     'action' => 'cmodify',
-                    'name' => 'attachment',
+                    'name' => 'external_id',
                     'type' => 'varchar(255)',
                     'params' => 'NOT NULL default \'\'',
                 ),

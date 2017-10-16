@@ -467,7 +467,7 @@ GET /eshop/api/v2/?type=get-orders&token={token}[&order_id={order_id}&from={ГГГГ
   "status": "OK"
 }
 
-7) Добавление/обновление продукции
+2) Добавление/обновление продукции
 POST /eshop/api/v2/?type=update-products&token={token}
 
 Добавление нового продукта:
@@ -545,6 +545,33 @@ POST /eshop/api/v2/?type=update-products&token={token}
       ],
       "status": "OK"
     }
+
+3) Обновление опции продукции
+POST /eshop/api/v1/?type=update-options&token={token}
+
+Пример запроса:
+{
+    "params": [
+        {
+            "id": "9052ffd1-4767-11e6-b348-00155d02ac06",
+            "product_id": 19605,
+            "name": "17,5",
+            "count": 2
+        }
+    ]
+}
+
+Пример ответа:
+{
+  "data": [
+    {
+      "id": "9052ffd1-4767-11e6-b348-00155d02ac06",
+      "status": "OK"
+    }
+  ],
+  "status": "OK"
+}
+
 
 # =========================================================================== #
 

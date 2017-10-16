@@ -3,6 +3,13 @@
 class ApiEshopController extends ApiEshop
 {
 
+    public $allowMethods = [
+        'get_orders',
+
+        'update_products',
+        'update_options',
+    ];
+
     public function update_products()
     {
 
@@ -52,7 +59,7 @@ class ApiEshopController extends ApiEshop
 
                 $variant = $this->prepareItemArray($item, ['product_id', 'price', 'price_old', 'count', 'stock']);
                 $v = $this->getParamsArray($variant, $mapParams);
-                $vnames = $this->generateInsertArray($v);
+                $vnames = $this->generateUpdateArray($v);
 
                 $r2 = $this->updateVariant($item['product_id'], $vnames);
 
@@ -98,7 +105,7 @@ class ApiEshopController extends ApiEshop
                 $v = $this->getParamsArray($variant, $mapParams);
                 $vnames = $this->generateInsertArray($v);
 
-                $r2 = $this->updateVariant($item['product_id'], $vnames);
+                $r2 = $this->addVariant($vnames);
 
                 if ($r1 && $r2) {
                     $output[$id] = $this->setResult($item['id'], self::STATUS_OK);
@@ -109,6 +116,84 @@ class ApiEshopController extends ApiEshop
                         'Insert error'
                     );
                 }
+            }
+        }
+
+        $this->encodeUtf8Array($output);
+        $results = ['data' => $output, 'status' => self::STATUS_OK];
+        $this->renderResults($results);
+    }
+
+
+    public function update_options()
+    {
+
+        $output = [];
+        $data = $this->getParams();
+
+        $params = $data['params'];
+
+        $mapParams = [
+            'id' => 'external_id',
+            'product_id' => 'product_id',
+            'name' => 'name',
+            'count' => 'amount'
+        ];
+
+        $required = ['update' => ['id'], 'insert' => ['id']];
+
+        foreach ($params as $id => $item) {
+            $update = $this->checkProductExternalID($item['product_id']);
+            if ($update) {
+                $product = $this->getProductByExternalID($item['product_id']);
+                $checked = $this->checkRequiredParams($item, $required['update']);
+                if (!$checked) {
+                    $output[$id] = $this->setError(
+                        $item['id'],
+                        self::STATUS_ERROR,
+                        'Please fill out all required fields'
+                    );
+                    continue;
+                }
+
+                $variants = $this->getVariantsByExternalId($item['id']);
+
+                if (!empty($variants)) {
+                    $item['product_id'] = $product['id'];
+                    $variant = $this->prepareItemArray($item, ['product_id', 'name', 'count']);
+                    $v = $this->getParamsArray($variant, $mapParams);
+                    $vnames = $this->generateUpdateArray($v);
+                    $this->updateVariants($variants, $vnames);
+                } else {
+
+                    $pA = ['id', 'product_id', 'name', 'count'];
+                    $sVariants = $this->getVariantsByProductId($product['id']);
+                    if(!empty($sVariants)) {
+                        $sVariant = current($sVariants);
+                        $item['price'] = $sVariant['price'];
+                        $item['compare_price'] = $sVariant['compare_price'];
+                        $pA = array_merge(['price', 'compare_price'], $pA);
+                        $mapParams['price'] = 'price';
+                        $mapParams['compare_price'] = 'compare_price';
+                    }
+
+                    $item['product_id'] = $product['id'];
+                    $variant = $this->prepareItemArray($item, $pA);
+                    $v = $this->getParamsArray($variant, $mapParams, true);
+                    $vnames = $this->generateInsertArray($v);
+                    $this->addVariant($vnames);
+                    $this->removeVariantsWithoutExteranalID($item['product_id']);
+                }
+
+                $output[$id] = ['id' => $item['id'], 'status' => self::STATUS_OK];
+
+            } else {
+
+                $output[$id] = $this->setError(
+                    $item['id'],
+                    self::STATUS_ERROR,
+                    'Update error'
+                );
             }
         }
 
@@ -136,6 +221,7 @@ class ApiEshopController extends ApiEshop
         $results = ['data' => $ordersInfo, 'status' => self::STATUS_OK];
         $this->renderResults($results);
     }
+
 
     public function prepareOrdersItemArray($orders)
     {
