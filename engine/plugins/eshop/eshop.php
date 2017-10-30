@@ -24,6 +24,7 @@ register_plugin_page('eshop', 'payment', 'payment_eshop');
 register_plugin_page('eshop', 'api', 'api_eshop');
 
 include_once(__DIR__.'/cache.php');
+include_once(__DIR__.'/functions.php');
 
 function eshop_header_show()
 {
@@ -1736,9 +1737,6 @@ function plugin_ebasket_list()
         }
 
         $SQL['address'] = filter_var($_REQUEST['userInfo']['deliverTo'], FILTER_SANITIZE_STRING);
-        if (empty($SQL['address'])) {
-            $error_text[] = 'Адрес доставки не задан';
-        }
 
         $SQL['comment'] = filter_var($_REQUEST['userInfo']['commentText'], FILTER_SANITIZE_STRING);
 
@@ -1750,12 +1748,14 @@ function plugin_ebasket_list()
         $SQL['paid'] = 0;
         $SQL['total_price'] = $total;
 
+        $SQL['payment_type_id'] = filter_var($_REQUEST['payment_type'], FILTER_SANITIZE_STRING);
+        $SQL['delivery_type_id'] = filter_var($_REQUEST['delivery_type'], FILTER_SANITIZE_STRING);
+
         if (isset($userROW)) {
             $SQL['author_id'] = $userROW['id'];
         }
 
         $SQL['uniqid'] = substr(str_shuffle(MD5(microtime())), 0, 10);
-
 
         foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_ebasket WHERE ".join(" or ", $filter), 1) as $rec) {
             $r_count = $rec['count'];
@@ -1946,6 +1946,8 @@ function plugin_ebasket_list()
         'entries' => $recs,
         'total' => sprintf('%9.2f', $total),
         'basket_link' => $basket_link,
+        'entriesDeliveryTypes' => getDeliveryTypes(),
+        'entriesPaymentTypes' => getPaymentTypes(),
     );
 
     $tpath = locatePluginTemplates(array('ebasket/list'), 'eshop', pluginGetVariable('eshop', 'localsource'));
@@ -1960,7 +1962,6 @@ function plugin_ebasket_list()
     $SYSTEM_FLAGS['meta']['keywords'] = "";
 
 }
-
 
 function order_eshop()
 {
@@ -2009,6 +2010,10 @@ function order_eshop()
                 unset($rec['linked_fld']);
                 $basket [] = $rec;
             }
+
+            $row['delivery_type'] = getEntityRow(prefix."_eshop_delivery_type", $SQL['id']);
+            $row['payment_type'] = getEntityRow(prefix."_eshop_payment_type", $SQL['id']);
+
         } else {
             $error_text[] = 'Неврные парметры заказа';
         }

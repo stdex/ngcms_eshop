@@ -16,6 +16,8 @@ class ApiEshopController extends ApiEshop
         $output = [];
         $data = $this->getParams();
 
+        $this->setActiveProducts(0);
+
         $params = $data['products'];
 
         $mapParams = [
@@ -28,6 +30,7 @@ class ApiEshopController extends ApiEshop
             'price_old' => 'compare_price',
             'count' => 'amount',
             'stock' => 'stock',
+            'active' => 'active',
         ];
 
         $required = ['update' => ['id'], 'insert' => ['id']];
@@ -45,7 +48,8 @@ class ApiEshopController extends ApiEshop
                     continue;
                 }
 
-                $product = $this->prepareItemArray($item, ['vendor_code', 'name', 'short_description', 'description']);
+                $this->setActive($item);
+                $product = $this->prepareItemArray($item, ['vendor_code', 'name', 'short_description', 'description', 'active']);
                 $p = $this->getParamsArray($product, $mapParams);
                 $pnames = $this->generateUpdateArray($p);
 
@@ -87,9 +91,10 @@ class ApiEshopController extends ApiEshop
                 $item['url'] = $this->generateURLbyName($item['name']);
                 $mapParams['url'] = 'url';
 
+                $this->setActive($item);
                 $product = $this->prepareItemArray(
                     $item,
-                    ['url', 'vendor_code', 'name', 'short_description', 'description', 'id']
+                    ['url', 'vendor_code', 'name', 'short_description', 'description', 'id', 'active']
                 );
                 $p = $this->getParamsArray($product, $mapParams, true);
                 $pnames = $this->generateInsertArray($p);
@@ -230,9 +235,18 @@ class ApiEshopController extends ApiEshop
     {
         foreach ($orders as $order) {
             $order_id = $order['order_id'];
+
+            $paymentType = $this->getEntityRow(prefix."_eshop_payment_type", $order_id);
+            $deliveryType = $this->getEntityRow(prefix."_eshop_delivery_type", $order_id);
+
+            $order['paymentType'] = $paymentType['name'];
+            $order['deliveryType'] = $deliveryType['name'];
+
+            $order['dt'] = $this->formatDate('Y-m-d H:i:s', $order['dt']);
+
             $ordersInfo[$order_id] = $this->prepareItemArray(
                 $order,
-                ['order_id', 'dt', 'paid', 'name', 'address', 'phone', 'email', 'comment', 'total_price']
+                ['order_id', 'dt', 'paid', 'name', 'address', 'phone', 'email', 'comment', 'total_price', 'paymentType', 'deliveryType']
             );
         }
 
@@ -260,6 +274,10 @@ class ApiEshopController extends ApiEshop
         }
 
         return $ordersInfo;
+    }
+
+    public function formatDate($format, $dt) {
+        return date($format, $dt);
     }
 
 }

@@ -874,3 +874,40 @@ function getPaymentDir($id)
 
     return $eshop_dir.'/payment/'.$id.'/';
 }
+
+function getEntityRow($table, $id)
+{
+    global $mysql;
+
+    $row = $mysql->record('SELECT * FROM '.$table.' WHERE id = '.(int)$id);
+
+    return $row;
+}
+
+function getDeliveryTypes()
+{
+    global $mysql;
+
+    $deliveryTypes = [];
+    foreach ($mysql->select(
+        'SELECT * FROM '.prefix.'_eshop_delivery_type WHERE active = 1 ORDER BY position, id'
+    ) as $row) {
+        $deliveryTypes[] = $row;
+    }
+
+    return $deliveryTypes;
+}
+
+function getPaymentTypes()
+{
+    global $mysql;
+
+    $paymentTypes = [];
+    foreach ($mysql->select(
+        'SELECT * FROM '.prefix.'_eshop_payment_type WHERE active = 1 ORDER BY position, id'
+    ) as $row) {
+        $paymentTypes[] = $row;
+    }
+
+    return $paymentTypes;
+}

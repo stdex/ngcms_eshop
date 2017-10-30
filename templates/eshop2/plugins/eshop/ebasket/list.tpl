@@ -1,3 +1,6 @@
+<script src="{{ tpl_url }}/js/cusel-min-2.5.js"></script>
+<script src="{{ tpl_url }}/js/_product.js"></script>
+
 <div class="frame-inside page-cart pageCart">
     <div class="container">
         <div class="js-empty empty ">
@@ -78,65 +81,131 @@
 
                     </div>
                     <div class="groups-form">
+
+                        <div class="frame-label">
+                            <span class="title">Способ оплаты</span>
+                            <div class="frame-form-field check-variant-delivery">
+
+                                <div class="check-variant-product">
+                                    <div class="lineForm">
+                                        <select name="payment_type" id="payment_type">
+                                            {% for variant in entriesPaymentTypes %}
+                                                <option value="{{ variant.id }}">
+                                                    {{ variant.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <!--
+                                <div class="frame-radio">
+                                    <div class="frame-label">
+                                        <span class="niceRadio b_n">
+                                            <input type="radio"
+                                            name="paymentMethodId"
+                                            value="5"
+                                            />
+                                        </span>
+                                        <div class="name-count">
+                                            <span class="text-el">Наложенным платежем</span>
+                                         </div>
+                                    </div>
+
+                                    <div class="frame-label">
+                                        <span class="niceRadio b_n">
+                                            <input type="radio"
+                                            name="paymentMethodId"
+                                            value="5"
+                                            />
+                                        </span>
+                                        <div class="name-count">
+                                            <span class="text-el">Visa/Mastercard</span>
+                                         </div>
+                                    </div>
+                                </div>
+                                -->
+                            </div>
+                        </div>
+
+                        <div class="frame-label" id="frameDelivery">
+                            <span class="title">Способ доставки</span>
+                            <div class="frame-form-field check-variant-delivery">
+
+                                <div class="check-variant-product">
+                                    <div class="lineForm">
+                                        <select name="delivery_type" id="delivery_type">
+                                            {% for variant in entriesDeliveryTypes %}
+                                                <option value="{{ variant.id }}">
+                                                    {{ variant.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <!--
+                                <div class="frame-radio">
+                                    <div class="frame-label">
+                                        <span class="niceRadio b_n">
+                                            <input type="radio"
+                                            name="deliveryMethodId"
+                                            value="5"
+                                            />
+                                        </span>
+                                        <div class="name-count">
+                                            <span class="text-el">Адресная доставка курьером</span>
+                                                                            <span class="icon_ask" data-rel="tooltip" data-title="<p>Сроки доставки: 1-2 дня</p>"></span>
+                                                                        </div>
+                                        <div class="help-block">
+                                             <div>Бесплатно при заказе от: 2.000 $</div>
+                                                                        </div>
+                                    </div>
+
+                                    <div class="frame-label">
+                                        <span class="niceRadio b_n">
+                                            <input type="radio"
+                                            name="deliveryMethodId"
+                                            value="6"
+                                            />
+                                        </span>
+                                        <div class="name-count">
+                                            <span class="text-el">Доставка экспресс службой</span>
+                                                                            <span class="icon_ask" data-rel="tooltip" data-title="<p>Сроки доставки 2-3 дня</p>"></span>
+                                                                        </div>
+                                        <div class="help-block">
+                                                                        согласно тарифам перевозчиков                                                            </div>
+                                    </div>
+                                </div>
+                                -->
+                            </div>
+                        </div>
+
                        <!-- Start. Delivery  address block and comment-->
                        <label>
                         <span class="title">
                             <span class="p_r">
-                                Адрес доставки <span class="must">*</span></span>
+                                Адрес доставки
+                            </span>
                         </span>
                         <span class="frame-form-field">
                             <input name="userInfo[deliverTo]" type="text" value="{% if (formEntry.error) %}{{ formEntry.address }}{% else %}{{ global.user.xfields_address }}{% endif %}">
                         </span>
                     </label>
+
                     <!-- End. Delivery  address block and comment-->
-                <!--
-                    <div class="frame-label" id="frameDelivery">
-                        <span class="title">Способ доставки</span>
-                        <div class="frame-form-field check-variant-delivery">
-                            <div class="frame-radio">
-                                <div class="frame-label">
-                                    <span class="niceRadio b_n">
-                                        <input type="radio"
-                                        name="deliveryMethodId"
-                                        value="5"
-                                        />
-                                    </span>
-                                    <div class="name-count">
-                                        <span class="text-el">Адресная доставка курьером</span>
-                                                                        <span class="icon_ask" data-rel="tooltip" data-title="<p>Сроки доставки: 1-2 дня</p>"></span>
-                                                                    </div>
-                                    <div class="help-block">
-                                         <div>Бесплатно при заказе от: 2.000 $</div> 
-                                                                    </div>
-                                </div>
-                                
-                                <div class="frame-label">
-                                    <span class="niceRadio b_n">
-                                        <input type="radio"
-                                        name="deliveryMethodId"
-                                        value="6"
-                                        />
-                                    </span>
-                                    <div class="name-count">
-                                        <span class="text-el">Доставка экспресс службой</span>
-                                                                        <span class="icon_ask" data-rel="tooltip" data-title="<p>Сроки доставки 2-3 дня</p>"></span>
-                                                                    </div>
-                                    <div class="help-block">
-                                                                    согласно тарифам перевозчиков                                                            </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    -->
+
+
                 </div>
+
+
         <div class="groups-form">
 
-<!--            
+            <!--
             <div class="frame-payment p_r f-s_0" style="margin-bottom: 0;">
                 <div id="framePaymentMethod">
                     <div class="frame-label">
                         <span class="title">Способ оплаты</span>
                         <div class="frame-form-field check-variant-delivery">
+
                             <div class="frame-radio">
                                 <div class="frame-label">
                                     <span class="niceRadio b_n">
@@ -149,7 +218,7 @@
                                         <span class="text-el">Наложенным платежем</span>
                                      </div>
                                 </div>
-                                
+
                                 <div class="frame-label">
                                     <span class="niceRadio b_n">
                                         <input type="radio"
@@ -161,15 +230,14 @@
                                         <span class="text-el">Visa/Mastercard</span>
                                      </div>
                                 </div>
-                                
-                                
                             </div>
+
                         </div>
                     </div>
                 </div>
                 <div class="preloader d_n_"></div>
             </div>
--->
+             -->
 
             <div class="frame-label">
                 <div class="frame-form-field">

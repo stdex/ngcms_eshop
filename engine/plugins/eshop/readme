@@ -29,6 +29,23 @@ Fail URL: http://sitename.ru/eshop/payment/?result=1&payment_id={payment_id}
 Result URL: http://sitename.ru/eshop/payment/?result=2&payment_id={payment_id}
 Success URL: http://sitename.ru/eshop/payment/?result=3&payment_id={payment_id}
 
+Переход на платежную страницу может быть реализован, например, через форму в шаблоне order_eshop.tpl (страница заказа).
+Пример формы:
+<form method="get" action="{{ payment.link }}" target="_blank">
+    <input type="hidden" value="{{ formEntry.id }}" name="order_id">
+    <input type="hidden" value="{{ formEntry.uniqid }}" name="order_uniqid">
+    <input type="hidden" value="{{ payment.systems[2].name }}" name="payment_id">
+    <div>
+        <button type="submit">Оплатить</button>
+    </div>
+</form>
+
+Переменные в форме:
+- payment.link - URL обработчика формы (по-умолчанию /eshop/payment/)
+- formEntry - массив с данными заказа (обязательными для передачи являются 2 параметра: id и uniqid)
+- payment.systems - массив с доступными системами оплаты (обязательным для передачи являются параметр name, который является payment_id)
+
+
 # =========================================================================== #
 
 Экспорт:
@@ -411,7 +428,7 @@ GET /eshop/api/v2/?type=get-orders&token={token}[&order_id={order_id}&from={ГГГГ
 {
   "data": {
     "5": {
-      "dt": "1507254545",
+      "dt": "2017-10-30 03:42:04",
       "paid": "0",
       "name": "fsdfs",
       "address": "dsfsdf",
@@ -420,6 +437,8 @@ GET /eshop/api/v2/?type=get-orders&token={token}[&order_id={order_id}&from={ГГГГ
       "comment": "",
       "total_price": "70.00",
       "order_id": "5",
+      "paymentType": "Наличными при получении",
+      "deliveryType": "Самовывоз",
       "positions": [
         {
           "linked_id": "20",
@@ -442,8 +461,8 @@ GET /eshop/api/v2/?type=get-orders&token={token}[&order_id={order_id}&from={ГГГГ
       ]
     },
     "6": {
-      "dt": "1507255305",
-      "paid": "0",
+      "dt": "2017-10-30 03:38:01",
+      "paid": "1",
       "name": "re",
       "address": "dfgdfgdf",
       "phone": "gfdg",
@@ -451,6 +470,8 @@ GET /eshop/api/v2/?type=get-orders&token={token}[&order_id={order_id}&from={ГГГГ
       "comment": "",
       "total_price": "154.00",
       "order_id": "6",
+      "paymentType": "Банковской картой",
+      "deliveryType": "Адресная доставка курьером",
       "positions": [
         {
           "linked_id": "20",

@@ -294,11 +294,6 @@ function initPhotoTrEv() {
 $(document).ready(function() {
     initPhoto();
     cuselInit(body, '#variantSwitcher');
-    //Product.changeVariant();
-});
-
-$(document).on('scriptDefer', function () {
-    initPhoto();
-    cuselInit(body, '#variantSwitcher');
-    //Product.changeVariant();
+    cuselInit(body, '#delivery_type');
+    cuselInit(body, '#payment_type');
 });

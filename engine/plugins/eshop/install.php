@@ -694,6 +694,18 @@ function plugin_eshop_install($action)
                     'type' => 'decimal(14,2)',
                     'params' => 'NOT NULL default \'0.00\'',
                 ),
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'payment_type_id',
+                    'type' => 'int(11)',
+                    'params' => 'NOT NULL default \'0\'',
+                ),
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'delivery_type_id',
+                    'type' => 'int(11)',
+                    'params' => 'NOT NULL default \'0\'',
+                ),
             ),
         ),
 
@@ -942,6 +954,75 @@ function plugin_eshop_install($action)
             ),
         ),
 
+        array(
+            'table' => 'eshop_payment_type',
+            'action' => 'cmodify',
+            'engine' => 'MyISAM',
+            'key' => 'primary key(`id`)',
+            'fields' => array(
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'id',
+                    'type' => 'int(11)',
+                    'params' => 'NOT NULL AUTO_INCREMENT',
+                ),
+                array('action' => 'cmodify', 'name' => 'name', 'type' => 'text', 'params' => 'NOT NULL default \'\''),
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'description',
+                    'type' => 'text',
+                    'params' => 'NOT NULL default \'\'',
+                ),
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'position',
+                    'type' => 'INT(11)',
+                    'params' => 'NOT NULL DEFAULT \'0\'',
+                ),
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'active',
+                    'type' => 'tinyint(1)',
+                    'params' => 'NOT NULL default \'1\'',
+                ),
+            ),
+        ),
+
+        array(
+            'table' => 'eshop_delivery_type',
+            'action' => 'cmodify',
+            'engine' => 'MyISAM',
+            'key' => 'primary key(`id`)',
+            'fields' => array(
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'id',
+                    'type' => 'int(11)',
+                    'params' => 'NOT NULL AUTO_INCREMENT',
+                ),
+                array('action' => 'cmodify', 'name' => 'name', 'type' => 'text', 'params' => 'NOT NULL default \'\''),
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'description',
+                    'type' => 'text',
+                    'params' => 'NOT NULL default \'\'',
+                ),
+                array('action' => 'cmodify', 'name' => 'price', 'type' => 'decimal(12,2)', 'params' => 'default 0'),
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'position',
+                    'type' => 'INT(11)',
+                    'params' => 'NOT NULL DEFAULT \'0\'',
+                ),
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'active',
+                    'type' => 'tinyint(1)',
+                    'params' => 'NOT NULL default \'1\'',
+                ),
+            ),
+        ),
+
     );
 
     switch ($action) {
@@ -953,6 +1034,14 @@ function plugin_eshop_install($action)
             if (fixdb_plugin_install('eshop', $db_update, 'install', ($action == 'autoapply') ? true : false)) {
                 $mysql->query(
                     "INSERT INTO ".prefix."_eshop_currencies VALUES (1,'доллары','$','USD','1.0000','1.0000',1,0,1), (2,'рубли','руб','RUB','0.0133','1.0000',1,1,1), (3,'гривна','грн','UAH','0.0428','1.0000',1,2,1)"
+                );
+
+                $mysql->query(
+                    "INSERT INTO ".prefix."_eshop_payment_type VALUES (1,'Наличными при получении','',0,1), (2,'Банковской картой','',0,1)"
+                );
+
+                $mysql->query(
+                    "INSERT INTO ".prefix."_eshop_delivery_type VALUES (1,'Самовывоз','',0,0,1), (2,'Адресная доставка курьером','',0,0,1), (3,'Доставка почтой','',0,0,1)"
                 );
 
                 if (!$mysql->record('SHOW INDEX FROM '.prefix.'_eshop_products WHERE Key_name = \'name\'')) {

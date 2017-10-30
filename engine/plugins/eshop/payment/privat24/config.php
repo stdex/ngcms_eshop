@@ -32,7 +32,7 @@ function payment_config($id)
     }
 
     $tEntry = array();
-    $tEntry['name'] = $row['name'];
+    $tEntry['name'] = !empty($row['name']) ? $row['name'] : $id;
     $tEntry['options'] = json_decode($row['options'], true);
 
     $payment_config_tpl = __DIR__.'/tpl/config.tpl';

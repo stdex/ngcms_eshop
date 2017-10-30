@@ -14,9 +14,9 @@ function payment_config($id)
 
         $PARAMS['name'] = $id;
         $PARAMS['merchant_id'] = $_REQUEST['merchant_id'];
-        $PARAMS['secret_key'] = $_REQUEST['secret_key'];
-        $PARAMS['hidden_key'] = $_REQUEST['hidden_key'];
-        $PARAMS['test_mode'] = $_REQUEST['test_mode'];
+        $PARAMS['public_key'] = $_REQUEST['public_key'];
+        $PARAMS['private_key'] = $_REQUEST['private_key'];
+        $PARAMS['sandbox'] = $_REQUEST['sandbox'];
 
         $SQL['name'] = $id;
         $SQL['options'] = json_encode($PARAMS);

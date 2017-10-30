@@ -32,15 +32,21 @@
                     </td>
                 </tr>
                 <!-- Start. Delivery Method name -->
-                <!--
+                <tr>
+                    <th>Способ оплаты:</th>
+                    <td>
+                        {{ formEntry.payment_type.name }}
+                    </td>
+                </tr>
+
                 <tr>
                     <th>Способ доставки:</th>
                     <td>
-                        Адресная доставка курьером
+                        {{ formEntry.delivery_type.name }}
                     </td>
                 </tr>
-                -->
-                
+
+
                 <tr>
                     <th>Адрес доставки:</th>
                     <td>
@@ -52,7 +58,7 @@
                     <th>Комментарий:</th>
                     <td>{{ formEntry.comment }}</td>
                 </tr>
-                
+
                                 <!--                End. User info block-->
                 <tr>
                     <td colspan="2">
@@ -84,7 +90,7 @@
                         <form method="get" action="{{ payment.link }}" target="_blank">
                             <input type="hidden" value="{{ formEntry.id }}" name="order_id">
                             <input type="hidden" value="{{ formEntry.uniqid }}" name="order_uniqid">
-                            <input type="hidden" value="{{ payment.systems[0].name }}" name="payment_id">
+                            <input type="hidden" value="{{ payment.systems[2].name }}" name="payment_id">
                             <div class="btn-cart btn-cart-p">
                                 <button type="submit"><span class="text-el">Оплатить</span></button>
                             </div>
@@ -155,7 +161,7 @@
                                     <span class="plus-minus">
                                         <div class="input-group quantity-control" unselectable="on" style="-webkit-user-select: none;">
                                             <a rel="nofollow" class="input-group-addon cart_quantity_down" title="Уменьшить">-</a>
-                                            <input size="2" type="text" autocomplete="off" class="cart_quantity_input" name="count_{{ entry.id }}" value="{{ entry.count }}" data-id="{{ entry.id }}" data-linked_ds="{{ entry.linked_ds }}" data-linked_id="{{ entry.linked_id }}" data-price="{{ entry.price }}"">     
+                                            <input size="2" type="text" autocomplete="off" class="cart_quantity_input" name="count_{{ entry.id }}" value="{{ entry.count }}" data-id="{{ entry.id }}" data-linked_ds="{{ entry.linked_ds }}" data-linked_id="{{ entry.linked_id }}" data-price="{{ entry.price }}"">
                                             <a rel="nofollow" class="input-group-addon cart_quantity_up" title="Добавить">+</a>
                                         </div>
                                     </span>
@@ -176,7 +182,7 @@
                     </tr>
                     {% endfor %}
                 </tbody>
-                
+
                 <tfoot class="gen-info-price">
                     <tr>
                         <td colspan="3">
@@ -196,7 +202,7 @@
                     </tr>
                 </tfoot>
             </table>
-                    
+
             <div class="gen-sum-order footer-bask">
                 <div class="inside-padd clearfix">
                     <span class="title f_l">К оплате:</span>

@@ -108,10 +108,10 @@
                 <input type="button"
                        onmousedown="javascript:window.location.href='{{ plugin_url }}&action=list_currencies'"
                        value="Валюты" class="navbutton"/>
-<!--
-<input type="button" onmousedown="javascript:window.location.href='{{ plugin_url }}&action=list_delivery'" value="Доставка" class="navbutton" />
-<input type="button" onmousedown="javascript:window.location.href='{{ plugin_url }}&action=list_promocode'" value="Купоны" class="navbutton" />
--->
+                <!--
+                <input type="button" onmousedown="javascript:window.location.href='{{ plugin_url }}&action=list_delivery'" value="Доставка" class="navbutton" />
+                <input type="button" onmousedown="javascript:window.location.href='{{ plugin_url }}&action=list_promocode'" value="Купоны" class="navbutton" />
+                -->
                 <input type="button"
                        onmousedown="javascript:window.location.href='{{ plugin_url }}&action=list_comment'"
                        value="Комментарии" class="navbutton"/>
@@ -120,6 +120,10 @@
                 <input type="button"
                        onmousedown="javascript:window.location.href='{{ plugin_url }}&action=list_payment'"
                        value="Системы оплаты" class="navbutton"/>
+                <input type="button" onmousedown="javascript:window.location.href='{{ plugin_url }}&action=list_payment_type'"
+                       value="Способы оплаты" class="navbutton"/>
+                <input type="button" onmousedown="javascript:window.location.href='{{ plugin_url }}&action=list_delivery_type'"
+                       value="Способы доставки" class="navbutton"/>
                 <input type="button" onmousedown="javascript:window.location.href='{{ plugin_url }}&action=urls'"
                        value="ЧПУ" class="navbutton"/>
                 <input type="button" onmousedown="javascript:window.location.href='{{ plugin_url }}&action=list_api'"

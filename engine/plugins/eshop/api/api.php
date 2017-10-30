@@ -919,6 +919,29 @@ class ApiEshop
         return $variants;
     }
 
+
+    public function getEntityRow($table, $id)
+    {
+        global $mysql;
+
+        $row = $mysql->record('SELECT * FROM '.$table.' WHERE id = '.(int)$id);
+
+        return $row;
+    }
+
+
+    public function setActiveProducts($value)
+    {
+        global $mysql;
+
+        $mysql->query('UPDATE '.prefix.'_eshop_products SET active = '. (int)$value);
+    }
+
+    public function setActive(&$item)
+    {
+        $item['active'] = 1;
+    }
+
     public function setStock(&$item)
     {
         if (empty($item['stock'])) {

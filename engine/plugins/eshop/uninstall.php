@@ -98,6 +98,14 @@ $db_update = array(
         'table' => 'eshop_api',
         'action' => 'drop',
     ),
+    array(
+        'table' => 'eshop_payment_type',
+        'action' => 'drop',
+    ),
+    array(
+        'table' => 'eshop_delivery_type',
+        'action' => 'drop',
+    ),
 );
 
 if ($_REQUEST['action'] == 'commit') {

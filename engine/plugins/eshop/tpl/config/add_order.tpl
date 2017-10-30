@@ -69,6 +69,32 @@
         </tr>
 
         <tr>
+            <td width="50%" class="contentEntry1">Способ оплаты<br/>
+                <small></small>
+            </td>
+            <td width="50%" class="contentEntry2">
+                <select name="payment_type_id" style="font: 12px Verdana, Courier, Arial; width: 230px;">
+                    {% for v in entries.entriesPaymentTypes %}
+                        <option value="{{ v.id }}" {% if (entries.payment_type_id == v.id) %}selected{% endif %}>{{ v.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+
+        <tr>
+            <td width="50%" class="contentEntry1">Способ доставки<br/>
+                <small></small>
+            </td>
+            <td width="50%" class="contentEntry2">
+                <select name="delivery_type_id" style="font: 12px Verdana, Courier, Arial; width: 230px;">
+                    {% for v in entries.entriesDeliveryTypes %}
+                        <option value="{{ v.id }}" {% if (entries.delivery_type_id == v.id) %}selected{% endif %}>{{ v.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+
+        <tr>
             <td width="50%" class="contentEntry1">Адрес<br/>
                 <small></small>
             </td>

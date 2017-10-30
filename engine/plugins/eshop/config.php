@@ -87,6 +87,34 @@ switch ($_REQUEST['action']) {
         list_currencies();
         break;
 
+    case 'list_payment_type':
+        list_payment_type();
+        break;
+    case 'add_payment_type':
+        add_payment_type();
+        break;
+    case 'edit_payment_type':
+        edit_payment_type();
+        break;
+    case 'del_payment_type':
+        del_payment_type();
+        list_payment_type();
+        break;
+
+    case 'list_delivery_type':
+        list_delivery_type();
+        break;
+    case 'add_delivery_type':
+        add_delivery_type();
+        break;
+    case 'edit_delivery_type':
+        edit_delivery_type();
+        break;
+    case 'del_delivery_type':
+        del_delivery_type();
+        list_delivery_type();
+        break;
+
     case 'list_api':
         list_api();
         break;
@@ -2167,6 +2195,9 @@ function edit_order()
         $comment = input_filter_com(convert($_REQUEST['comment']));
         $paid = input_filter_com(convert($_REQUEST['paid']));
 
+        $payment_type_id = filter_var($_REQUEST['payment_type_id'], FILTER_SANITIZE_STRING);
+        $delivery_type_id = filter_var($_REQUEST['delivery_type_id'], FILTER_SANITIZE_STRING);
+
         if (empty($error_text)) {
 
             $mysql->query(
@@ -2176,7 +2207,9 @@ function edit_order()
                 phone = '.db_squote($phone).',
                 address = '.db_squote($address).',
                 comment = '.db_squote($comment).',
-                paid = '.db_squote($paid).'
+                paid = '.db_squote($paid).',
+                payment_type_id = '.db_squote($payment_type_id).',
+                delivery_type_id = '.db_squote($delivery_type_id).'
                 WHERE id = '.$id.'
             '
             );
@@ -2233,6 +2266,8 @@ function edit_order()
     $tEntry['basket'] = $basket;
     $tEntry['purchases'] = $purchases;
     $tEntry['basket_total'] = $total;
+    $tEntry['entriesDeliveryTypes'] = getDeliveryTypes();
+    $tEntry['entriesPaymentTypes'] = getPaymentTypes();
 
     $xt = $twig->loadTemplate($tpath['config/add_order'].'config/'.'add_order.tpl');
 
@@ -2683,6 +2718,398 @@ function list_currencies()
     }
 
     $xt = $twig->loadTemplate($tpath['config/list_currencies'].'config/'.'list_currencies.tpl');
+
+    $tVars = array(
+        'entries' => isset($tEntry) ? $tEntry : '',
+    );
+
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries' => $xt->render($tVars),
+        'php_self' => $_SERVER['PHP_SELF'],
+        'plugin_url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url' => skins_url,
+        'admin_url' => admin_url,
+        'home' => home,
+        'current_title' => 'Валюты',
+    );
+
+    print $xg->render($tVars);
+
+}
+
+function add_payment_type()
+{
+    global $mysql, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_payment_type'), 'eshop', 1);
+
+    if (isset($_REQUEST['submit'])) {
+
+        $SQL['name'] = input_filter_com(convert($_REQUEST['name']));
+        if (empty($SQL['name'])) {
+            $error_text[] = 'Название не задано';
+        }
+
+        $SQL['description'] = input_filter_com(convert($_REQUEST['description']));
+
+        $SQL['position'] = input_filter_com(convert($_REQUEST['position']));
+        if ($SQL['position'] == "") {
+            $SQL['position'] = 0;
+        }
+        $SQL['active'] = input_filter_com(convert($_REQUEST['active']));
+
+        if (empty($error_text)) {
+            $vnames = array();
+            foreach ($SQL as $k => $v) {
+                $vnames[] = $k.' = '.db_squote($v);
+            }
+            $mysql->query('INSERT INTO '.prefix.'_eshop_payment_type SET '.implode(', ', $vnames).' ');
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_payment_type');
+        }
+
+    }
+
+    $error_input = '';
+    if (!empty($error_text)) {
+        foreach ($error_text as $error) {
+            $error_input .= msg(array("type" => "error", "text" => $error));
+        }
+    }
+
+    foreach ($SQL as $k => $v) {
+        $tEntry[$k] = $v;
+    }
+
+    $tEntry['error'] = $error_input;
+    $tEntry['mode'] = "add";
+
+    $xt = $twig->loadTemplate($tpath['config/add_payment_type'].'config/'.'add_payment_type.tpl');
+
+    $tVars = array(
+        'entries' => isset($tEntry) ? $tEntry : '',
+    );
+
+
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries' => $xt->render($tVars),
+        'php_self' => $_SERVER['PHP_SELF'],
+        'plugin_url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url' => skins_url,
+        'admin_url' => admin_url,
+        'home' => home,
+        'current_title' => 'Валюты: Добавление способа оплаты',
+    );
+
+    print $xg->render($tVars);
+}
+
+function edit_payment_type()
+{
+    global $mysql, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_payment_type'), 'eshop', 1);
+
+    $id = (int)$_REQUEST['id'];
+    $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_payment_type WHERE id = '.db_squote($id).' LIMIT 1');
+
+    if (isset($_REQUEST['submit'])) {
+
+        $SQL['name'] = input_filter_com(convert($_REQUEST['name']));
+        if (empty($SQL['name'])) {
+            $error_text[] = 'Название не задано';
+        }
+
+        $SQL['description'] = input_filter_com(convert($_REQUEST['description']));
+
+        $SQL['position'] = input_filter_com(convert($_REQUEST['position']));
+        if ($SQL['position'] == "") {
+            $SQL['position'] = 0;
+        }
+        $SQL['active'] = input_filter_com(convert($_REQUEST['active']));
+
+        if (empty($error_text)) {
+            $vnames = array();
+            foreach ($SQL as $k => $v) {
+                $vnames[] = $k.' = '.db_squote($v);
+            }
+            $mysql->query(
+                'UPDATE '.prefix.'_eshop_payment_type SET '.implode(', ', $vnames).' WHERE id = \''.(int)$id.'\' '
+            );
+
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_payment_type');
+        }
+
+    }
+
+    $error_input = '';
+    if (!empty($error_text)) {
+        foreach ($error_text as $error) {
+            $error_input .= msg(array("type" => "error", "text" => $error));
+        }
+    }
+
+    foreach ($row as $k => $v) {
+        $tEntry[$k] = $v;
+    }
+
+    $tEntry['error'] = $error_input;
+    $tEntry['mode'] = "edit";
+
+    $xt = $twig->loadTemplate($tpath['config/add_payment_type'].'config/'.'add_payment_type.tpl');
+
+    $tVars = array(
+        'entries' => isset($tEntry) ? $tEntry : '',
+    );
+
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries' => $xt->render($tVars),
+        'php_self' => $_SERVER['PHP_SELF'],
+        'plugin_url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url' => skins_url,
+        'admin_url' => admin_url,
+        'home' => home,
+        'current_title' => 'Валюты: Редактирование способа оплаты',
+    );
+
+    print $xg->render($tVars);
+}
+
+function del_payment_type()
+{
+    global $mysql;
+
+    $id = (int)$_REQUEST['id'];
+
+    if (empty($id)) {
+        return msg(array("type" => "error", "text" => "Ошибка, вы не выбрали что хотите удалить"));
+    }
+
+    if ($id == "1") {
+        return msg(array("type" => "error", "text" => "Ошибка, вы не можете уалить основную валюту"));
+    }
+
+    $mysql->query("DELETE FROM ".prefix."_eshop_payment_type WHERE id = {$id}");
+    msg(array("type" => "info", "info" => "Способ оплаты удален"));
+
+}
+
+function list_payment_type()
+{
+    global $mysql, $twig;
+
+    $tpath = locatePluginTemplates(array('config/main', 'config/list_payment_type'), 'eshop', 1);
+
+    $tVars = array();
+
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_payment_type ORDER BY position, id") as $row) {
+
+        $row['edit_link'] = "?mod=extra-config&plugin=eshop&action=edit_payment_type&id=".$row['id']."";
+        $row['del_link'] = "?mod=extra-config&plugin=eshop&action=del_payment_type&id=".$row['id']."";
+        $tEntry[] = $row;
+
+    }
+
+    $xt = $twig->loadTemplate($tpath['config/list_payment_type'].'config/'.'list_payment_type.tpl');
+
+    $tVars = array(
+        'entries' => isset($tEntry) ? $tEntry : '',
+    );
+
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries' => $xt->render($tVars),
+        'php_self' => $_SERVER['PHP_SELF'],
+        'plugin_url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url' => skins_url,
+        'admin_url' => admin_url,
+        'home' => home,
+        'current_title' => 'Валюты',
+    );
+
+    print $xg->render($tVars);
+
+}
+
+function add_delivery_type()
+{
+    global $mysql, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_delivery_type'), 'eshop', 1);
+
+    if (isset($_REQUEST['submit'])) {
+
+        $SQL['name'] = input_filter_com(convert($_REQUEST['name']));
+        if (empty($SQL['name'])) {
+            $error_text[] = 'Название не задано';
+        }
+
+        $SQL['description'] = input_filter_com(convert($_REQUEST['description']));
+
+        $SQL['position'] = input_filter_com(convert($_REQUEST['position']));
+        if ($SQL['position'] == "") {
+            $SQL['position'] = 0;
+        }
+        $SQL['active'] = input_filter_com(convert($_REQUEST['active']));
+
+        if (empty($error_text)) {
+            $vnames = array();
+            foreach ($SQL as $k => $v) {
+                $vnames[] = $k.' = '.db_squote($v);
+            }
+            $mysql->query('INSERT INTO '.prefix.'_eshop_delivery_type SET '.implode(', ', $vnames).' ');
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_delivery_type');
+        }
+
+    }
+
+    $error_input = '';
+    if (!empty($error_text)) {
+        foreach ($error_text as $error) {
+            $error_input .= msg(array("type" => "error", "text" => $error));
+        }
+    }
+
+    foreach ($SQL as $k => $v) {
+        $tEntry[$k] = $v;
+    }
+
+    $tEntry['error'] = $error_input;
+    $tEntry['mode'] = "add";
+
+    $xt = $twig->loadTemplate($tpath['config/add_delivery_type'].'config/'.'add_delivery_type.tpl');
+
+    $tVars = array(
+        'entries' => isset($tEntry) ? $tEntry : '',
+    );
+
+
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries' => $xt->render($tVars),
+        'php_self' => $_SERVER['PHP_SELF'],
+        'plugin_url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url' => skins_url,
+        'admin_url' => admin_url,
+        'home' => home,
+        'current_title' => 'Валюты: Добавление способа оплаты',
+    );
+
+    print $xg->render($tVars);
+}
+
+function edit_delivery_type()
+{
+    global $mysql, $twig;
+    $tpath = locatePluginTemplates(array('config/main', 'config/add_delivery_type'), 'eshop', 1);
+
+    $id = (int)$_REQUEST['id'];
+    $row = $mysql->record('SELECT * FROM '.prefix.'_eshop_delivery_type WHERE id = '.db_squote($id).' LIMIT 1');
+
+    if (isset($_REQUEST['submit'])) {
+
+        $SQL['name'] = input_filter_com(convert($_REQUEST['name']));
+        if (empty($SQL['name'])) {
+            $error_text[] = 'Название не задано';
+        }
+
+        $SQL['description'] = input_filter_com(convert($_REQUEST['description']));
+
+        $SQL['position'] = input_filter_com(convert($_REQUEST['position']));
+        if ($SQL['position'] == "") {
+            $SQL['position'] = 0;
+        }
+        $SQL['active'] = input_filter_com(convert($_REQUEST['active']));
+
+        if (empty($error_text)) {
+            $vnames = array();
+            foreach ($SQL as $k => $v) {
+                $vnames[] = $k.' = '.db_squote($v);
+            }
+            $mysql->query(
+                'UPDATE '.prefix.'_eshop_delivery_type SET '.implode(', ', $vnames).' WHERE id = \''.(int)$id.'\' '
+            );
+
+            redirect_eshop('?mod=extra-config&plugin=eshop&action=list_delivery_type');
+        }
+
+    }
+
+    $error_input = '';
+    if (!empty($error_text)) {
+        foreach ($error_text as $error) {
+            $error_input .= msg(array("type" => "error", "text" => $error));
+        }
+    }
+
+    foreach ($row as $k => $v) {
+        $tEntry[$k] = $v;
+    }
+
+    $tEntry['error'] = $error_input;
+    $tEntry['mode'] = "edit";
+
+    $xt = $twig->loadTemplate($tpath['config/add_delivery_type'].'config/'.'add_delivery_type.tpl');
+
+    $tVars = array(
+        'entries' => isset($tEntry) ? $tEntry : '',
+    );
+
+    $xg = $twig->loadTemplate($tpath['config/main'].'config/'.'main.tpl');
+
+    $tVars = array(
+        'entries' => $xt->render($tVars),
+        'php_self' => $_SERVER['PHP_SELF'],
+        'plugin_url' => admin_url.'/admin.php?mod=extra-config&plugin=eshop',
+        'skins_url' => skins_url,
+        'admin_url' => admin_url,
+        'home' => home,
+        'current_title' => 'Валюты: Редактирование способа оплаты',
+    );
+
+    print $xg->render($tVars);
+}
+
+function del_delivery_type()
+{
+    global $mysql;
+
+    $id = (int)$_REQUEST['id'];
+
+    if (empty($id)) {
+        return msg(array("type" => "error", "text" => "Ошибка, вы не выбрали что хотите удалить"));
+    }
+
+    if ($id == "1") {
+        return msg(array("type" => "error", "text" => "Ошибка, вы не можете уалить основную валюту"));
+    }
+
+    $mysql->query("DELETE FROM ".prefix."_eshop_delivery_type WHERE id = {$id}");
+    msg(array("type" => "info", "info" => "Способ оплаты удален"));
+
+}
+
+function list_delivery_type()
+{
+    global $mysql, $twig;
+
+    $tpath = locatePluginTemplates(array('config/main', 'config/list_delivery_type'), 'eshop', 1);
+
+    $tVars = array();
+
+    foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_delivery_type ORDER BY position, id") as $row) {
+
+        $row['edit_link'] = "?mod=extra-config&plugin=eshop&action=edit_delivery_type&id=".$row['id']."";
+        $row['del_link'] = "?mod=extra-config&plugin=eshop&action=del_delivery_type&id=".$row['id']."";
+        $tEntry[] = $row;
+
+    }
+
+    $xt = $twig->loadTemplate($tpath['config/list_delivery_type'].'config/'.'list_delivery_type.tpl');
 
     $tVars = array(
         'entries' => isset($tEntry) ? $tEntry : '',
