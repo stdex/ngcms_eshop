@@ -803,6 +803,185 @@ class ApiEshop
         return false;
     }
 
+
+    public function checkCategoryExternalID($external_id) {
+        if ($external_id) {
+            if (is_array(
+                $this->getCategoryByExternalID($external_id)
+            )) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getCategoryByExternalID($external_id)
+    {
+        global $mysql;
+        $row = $mysql->record(
+            "SELECT * FROM ".prefix."_eshop_categories WHERE external_id = ".db_squote($external_id)." LIMIT 1"
+        );
+
+        return $row;
+    }
+
+    public function checkParamsName($external_id, $name) {
+        if ($external_id) {
+            if (is_array(
+                $this->getParamsByName($external_id, $name)
+            )) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getParamsByName($external_id, $name)
+    {
+        global $mysql;
+        $row = $mysql->record(
+            "SELECT * FROM ".prefix."_eshop_features WHERE categories_external_id = ".db_squote($external_id)." AND name = ".db_squote($name)." LIMIT 1"
+        );
+
+        return $row;
+    }
+
+    public function addCategory($vnames)
+    {
+        global $mysql;
+        if (!empty($vnames)) {
+            $mysql->query(
+                "INSERT INTO ".prefix."_eshop_categories (".implode(
+                    ",",
+                    array_keys($vnames)
+                ).") VALUES (".implode(
+                    ",",
+                    array_values($vnames)
+                ).")"
+            );
+            $qid = $mysql->lastid('eshop_categories');
+
+            return $qid;
+        }
+
+        return false;
+    }
+
+    public function addParamFeature($vnames)
+    {
+        global $mysql;
+        if (!empty($vnames)) {
+            $mysql->query(
+                "INSERT INTO ".prefix."_eshop_features (".implode(
+                    ",",
+                    array_keys($vnames)
+                ).") VALUES (".implode(
+                    ",",
+                    array_values($vnames)
+                ).")"
+            );
+            $qid = $mysql->lastid('eshop_features');
+
+            return $qid;
+        }
+
+
+        return false;
+    }
+
+    public function addParamOption($vnames)
+    {
+        global $mysql;
+
+        if (!empty($vnames)) {
+            $mysql->query(
+                "INSERT INTO ".prefix."_eshop_options (".implode(
+                    ",",
+                    array_keys($vnames)
+                ).") VALUES (".implode(
+                    ",",
+                    array_values($vnames)
+                ).")"
+            );
+            $qid = $mysql->lastid('eshop_options');
+
+            return $qid;
+        }
+
+        return false;
+    }
+
+    public function updateParamFeature($id, $vnames)
+    {
+        global $mysql;
+        if (!empty($vnames)) {
+            $mysql->query(
+                'UPDATE '.prefix.'_eshop_features SET '.implode(
+                    ', ',
+                    $vnames
+                ).' WHERE id = \''.(int)$id.'\' '
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function updateParamOption($product_id, $feature_id, $vnames)
+    {
+        global $mysql;
+        if (!empty($vnames)) {
+            $mysql->query(
+                'UPDATE '.prefix.'_eshop_options SET '.implode(
+                    ', ',
+                    $vnames
+                ).' WHERE product_id = \''.(int)$product_id.'\' AND feature_id = \''.(int)$feature_id.'\' '
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function replaceCategoryFeature($vnames)
+    {
+        global $mysql;
+        if (!empty($vnames)) {
+            $mysql->query(
+                'REPLACE INTO '.prefix.'_eshop_categories_features SET '.implode(
+                    ', ',
+                    $vnames
+                ).''
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function replaceCategoryProduct($vnames)
+    {
+        global $mysql;
+        if (!empty($vnames)) {
+            $mysql->query(
+                'REPLACE INTO '.prefix.'_eshop_products_categories SET '.implode(
+                    ', ',
+                    $vnames
+                ).''
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
+
     public function generateURLbyName($name)
     {
         global $parse;

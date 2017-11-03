@@ -339,6 +339,12 @@ function plugin_eshop_install($action)
                     'type' => 'int(1)',
                     'params' => 'NOT NULL default \'0\'',
                 ),
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'categories_external_id',
+                    'type' => 'varchar(255)',
+                    'params' => 'NOT NULL default \'\'',
+                ),
             ),
         ),
 
@@ -466,6 +472,13 @@ function plugin_eshop_install($action)
                     'name' => 'active',
                     'type' => 'tinyint(1)',
                     'params' => 'NOT NULL default \'1\'',
+                ),
+
+                array(
+                    'action' => 'cmodify',
+                    'name' => 'external_id',
+                    'type' => 'varchar(255)',
+                    'params' => 'NOT NULL default \'\'',
                 ),
             ),
         ),

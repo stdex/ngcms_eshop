@@ -8,6 +8,7 @@ class ApiEshopController extends ApiEshop
 
         'update_products',
         'update_options',
+        'update_params',
     ];
 
     public function update_products()
@@ -49,7 +50,10 @@ class ApiEshopController extends ApiEshop
                 }
 
                 $this->setActive($item);
-                $product = $this->prepareItemArray($item, ['vendor_code', 'name', 'short_description', 'description', 'active']);
+                $product = $this->prepareItemArray(
+                    $item,
+                    ['vendor_code', 'name', 'short_description', 'description', 'active']
+                );
                 $p = $this->getParamsArray($product, $mapParams);
                 $pnames = $this->generateUpdateArray($p);
 
@@ -143,7 +147,7 @@ class ApiEshopController extends ApiEshop
             'product_id' => 'product_id',
             'name' => 'name',
             'count' => 'amount',
-            'stock' => 'stock'
+            'stock' => 'stock',
         ];
 
         $required = ['update' => ['id'], 'insert' => ['id']];
@@ -175,7 +179,7 @@ class ApiEshopController extends ApiEshop
 
                     $pA = ['stock', 'id', 'product_id', 'name', 'count'];
                     $sVariants = $this->getVariantsByProductId($product['id']);
-                    if(!empty($sVariants)) {
+                    if (!empty($sVariants)) {
                         $sVariant = current($sVariants);
                         $item['price'] = $sVariant['price'];
                         $item['compare_price'] = $sVariant['compare_price'];
@@ -195,6 +199,49 @@ class ApiEshopController extends ApiEshop
 
                 $output[$id] = ['id' => $item['id'], 'status' => self::STATUS_OK];
 
+            } else {
+
+                $output[$id] = $this->setError(
+                    $item['id'],
+                    self::STATUS_ERROR,
+                    'Update error'
+                );
+            }
+        }
+
+        $this->encodeUtf8Array($output);
+        $results = ['data' => $output, 'status' => self::STATUS_OK];
+        $this->renderResults($results);
+    }
+
+    public function update_params()
+    {
+
+        $output = [];
+        $data = $this->getParams();
+
+        $params = $data['options'];
+
+        $mapParams = [
+            'id' => 'external_id',
+            'product_id' => 'product_id',
+            'name' => 'name',
+            'value' => 'value',
+        ];
+
+        $required = ['update' => ['id'], 'insert' => ['id']];
+
+        foreach ($params as $id => $item) {
+            $update = $this->checkProductExternalID($item['product_id']);
+            if ($update) {
+                $product = $this->getProductByExternalID($item['product_id']);
+                $update2 = $this->checkCategoryExternalID($item['id']);
+                if ($update2) {
+                    $this->prepareUpdateParams($id, $item, $mapParams, $product, $output);
+                } else {
+                    $this->prepareAddCategory($item, $mapParams);
+                    $this->prepareUpdateParams($id, $item, $mapParams, $product, $output);
+                }
             } else {
 
                 $output[$id] = $this->setError(
@@ -230,6 +277,131 @@ class ApiEshopController extends ApiEshop
         $this->renderResults($results);
     }
 
+    public function prepareAddCategory($item, $mapParams)
+    {
+        $pA = ['name', 'url', 'external_id'];
+        $item['name'] = $item['id'];
+        $mapParams['url'] = 'url';
+        $item['url'] = $item['id'];
+        $mapParams['external_id'] = 'external_id';
+        $item['external_id'] = $item['id'];
+        $cat = $this->prepareItemArray($item, $pA);
+        $c = $this->getParamsArray($cat, $mapParams);
+        $vnames = $this->generateInsertArray($c);
+        $c_id = $this->addCategory($vnames);
+
+        return $c_id;
+    }
+
+    public function prepareAddParamFeature($item, $mapParams)
+    {
+        $pA = ['ftype', 'name', 'categories_external_id'];
+        $mapParams['ftype'] = 'ftype';
+        $item['ftype'] = 0;
+        $mapParams['categories_external_id'] = 'categories_external_id';
+        $item['categories_external_id'] = $item['id'];
+        $param = $this->prepareItemArray($item, $pA);
+        $p = $this->getParamsArray($param, $mapParams);
+        $vnames = $this->generateInsertArray($p);
+        $f_id = $this->addParamFeature($vnames);
+
+        return $f_id;
+    }
+
+    public function prepareAddParamOption($item, $mapParams, $f_id, $product)
+    {
+        $pB = ['product_id', 'feature_id', 'value'];
+        $mapParams['feature_id'] = 'feature_id';
+        $item['feature_id'] = $f_id;
+        $item['product_id'] = $product['id'];
+        $param = $this->prepareItemArray($item, $pB);
+        $p = $this->getParamsArray($param, $mapParams);
+        $vnames = $this->generateInsertArray($p);
+        $o_id = $this->addParamOption($vnames);
+
+        return $o_id;
+    }
+
+
+    public function prepareEditParamFeature($item, $mapParams, $pm)
+    {
+        $pA = ['name'];
+        $param = $this->prepareItemArray($item, $pA);
+        $p = $this->getParamsArray($param, $mapParams);
+        $vnames = $this->generateUpdateArray($p);
+        $f_id = $this->updateParamFeature($pm['id'], $vnames);
+
+        return $f_id;
+    }
+
+    public function prepareEditParamOption($item, $mapParams, $f_id, $product)
+    {
+        $pB = ['value'];
+        $param = $this->prepareItemArray($item, $pB);
+        $p = $this->getParamsArray($param, $mapParams);
+        $vnames = $this->generateUpdateArray($p);
+        $o_id = $this->updateParamOption($product['id'], $f_id, $vnames);
+
+        return $o_id;
+    }
+
+    public function prepareReplaceCategoryFeature($item, $mapParams, $category_id, $feature_id)
+    {
+        $pB = ['category_id', 'feature_id'];
+
+        $mapParams['category_id'] = 'category_id';
+        $item['category_id'] = $category_id;
+
+        $mapParams['feature_id'] = 'feature_id';
+        $item['feature_id'] = $feature_id;
+
+        $param = $this->prepareItemArray($item, $pB);
+        $p = $this->getParamsArray($param, $mapParams);
+        $vnames = $this->generateUpdateArray($p);
+        $cf_id = $this->replaceCategoryFeature($vnames);
+
+        return $cf_id;
+    }
+
+    public function prepareReplaceCategoryProduct($item, $mapParams, $category_id, $product_id)
+    {
+        $pB = ['category_id', 'product_id'];
+
+        $mapParams['category_id'] = 'category_id';
+        $item['category_id'] = $category_id;
+
+        $mapParams['product_id'] = 'product_id';
+        $item['product_id'] = $product_id;
+
+        $param = $this->prepareItemArray($item, $pB);
+        $p = $this->getParamsArray($param, $mapParams);
+        $vnames = $this->generateUpdateArray($p);
+        $cf_id = $this->replaceCategoryProduct($vnames);
+
+        return $cf_id;
+    }
+
+    public function prepareUpdateParams($id, $item, $mapParams, $product, &$output)
+    {
+        $category = $this->getCategoryByExternalID($item['id']);
+        $update3 = $this->checkParamsName($item['id'], $item['name']);
+        if ($update3) {
+            $param = $this->getParamsByName($item['id'], $item['name']);
+            $f_id = $this->prepareEditParamFeature($item, $mapParams, $param);
+            $o_id = $this->prepareEditParamOption($item, $mapParams, $f_id, $product);
+            $this->prepareReplaceCategoryFeature($item, $mapParams, $category['id'], $f_id);
+            $this->prepareReplaceCategoryProduct($item, $mapParams, $category['id'], $product['id']);
+
+            $output[$id] = ['id' => $item['id'], 'status' => self::STATUS_OK];
+        } else {
+            $f_id = $this->prepareAddParamFeature($item, $mapParams);
+            $o_id = $this->prepareAddParamOption($item, $mapParams, $f_id, $product);
+            $this->prepareReplaceCategoryFeature($item, $mapParams, $category['id'], $f_id);
+            $this->prepareReplaceCategoryProduct($item, $mapParams, $category['id'], $product['id']);
+
+            $output[$id] = ['id' => $item['id'], 'status' => self::STATUS_OK];
+        }
+    }
 
     public function prepareOrdersItemArray($orders)
     {
@@ -246,7 +418,19 @@ class ApiEshopController extends ApiEshop
 
             $ordersInfo[$order_id] = $this->prepareItemArray(
                 $order,
-                ['order_id', 'dt', 'paid', 'name', 'address', 'phone', 'email', 'comment', 'total_price', 'paymentType', 'deliveryType']
+                [
+                    'order_id',
+                    'dt',
+                    'paid',
+                    'name',
+                    'address',
+                    'phone',
+                    'email',
+                    'comment',
+                    'total_price',
+                    'paymentType',
+                    'deliveryType',
+                ]
             );
         }
 
@@ -276,7 +460,8 @@ class ApiEshopController extends ApiEshop
         return $ordersInfo;
     }
 
-    public function formatDate($format, $dt) {
+    public function formatDate($format, $dt)
+    {
         return date($format, $dt);
     }
 

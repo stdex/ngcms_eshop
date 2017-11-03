@@ -593,6 +593,40 @@ POST /eshop/api/v2/?type=update-options&token={token}
   "status": "OK"
 }
 
+4) Обновление свойств продукции
+POST /eshop/api/v2/?type=update-params&token={token}
+Пример запроса:
+{
+  "options": [
+    {
+      "id": 7,
+      "name": "Вставка камня №1",
+      "product_id": 19604,
+      "value": "Без вставки"
+    },
+    {
+      "id": 55,
+      "name": "Высота иконы (см)",
+      "product_id": 19604,
+      "value": "21.00"
+    }
+  ]
+}
+
+Пример ответа:
+{
+  "data": [
+    {
+      "id": "7",
+      "status": "OK"
+    },
+    {
+      "id": "55",
+      "status": "OK"
+    }
+  ],
+  "status": "OK"
+}
 
 # =========================================================================== #
 
