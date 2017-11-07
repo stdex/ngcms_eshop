@@ -252,6 +252,10 @@ class ApiEshopController extends ApiEshop
             }
         }
 
+        generate_catz_cache(true);
+        generate_features_cache(true);
+        generate_categories_features_cache(true);
+
         $this->encodeUtf8Array($output);
         $results = ['data' => $output, 'status' => self::STATUS_OK];
         $this->renderResults($results);
