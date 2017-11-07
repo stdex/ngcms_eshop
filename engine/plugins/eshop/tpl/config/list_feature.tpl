@@ -44,6 +44,10 @@
                     Действие: <select name="subaction" style="font: 12px Verdana, Courier, Arial; width: 230px;">
                         <option value="">-- Действие --</option>
                         <option value="mass_delete">Удалить</option>
+                        <option value="" style="background-color: #E0E0E0;" disabled="disabled">===================
+                        </option>
+                        <option value="mass_filter_add">Добавить в фильтр</option>
+                        <option value="mass_filter_remove">Убрать из фильтра</option>
                     </select>
                     <input type="submit" value="Выполнить.." class="button"/>
 

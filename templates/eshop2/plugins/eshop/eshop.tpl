@@ -78,6 +78,10 @@ $(document).ready(function() {
 
     {% if (system_flags.eshop.features) and (cnt_in_filter) %}
     {% for ftr in system_flags.eshop.features %}
+        <!--
+        {{ debugValue(getAllOptionsByFeature(ftr.id, 1)) }}
+        -->
+
         {% if ftr.in_filter == 1 and IsCatFeatures(cat_info.id, ftr.id, system_flags.eshop.categories_features) %}
             {% if ftr.ftype == 0 %}
             <div class="frame-group-checks">
@@ -131,7 +135,7 @@ $(document).ready(function() {
                     </div>
             </div>
             {% endif %}
-        {% endif %} 
+        {% endif %}
 
     {% endfor %}
         <div class="frame-group-checks">

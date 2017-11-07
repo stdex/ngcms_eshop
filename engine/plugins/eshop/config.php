@@ -2015,6 +2015,12 @@ function modify_feature()
         case 'mass_delete'       :
             $del = true;
             break;
+        case 'mass_filter_add'       :
+            $filter_add = true;
+            break;
+        case 'mass_filter_remove'    :
+            $filter_remove = true;
+            break;
     }
 
     if (isset($del)) {
@@ -2022,6 +2028,18 @@ function modify_feature()
         $mysql->query("delete from ".prefix."_eshop_categories_features where feature_id in ({$id})");
         $mysql->query("delete from ".prefix."_eshop_options where feature_id in ({$id})");
         msg(array("type" => "info", "info" => "Записи с ID${id} удалены!"));
+    }
+
+    if (isset($filter_add)) {
+        $mysql->query("UPDATE ".prefix."_eshop_features SET in_filter = 1 WHERE id IN ({$id})");
+
+        msg(array("type" => "info", "info" => "Записи с ID ${id} обновлены!"));
+    }
+
+    if (isset($filter_remove)) {
+        $mysql->query("UPDATE ".prefix."_eshop_features SET in_filter = 0 WHERE id IN ({$id})");
+
+        msg(array("type" => "info", "info" => "Записи с ID ${id} обновлены!"));
     }
 
     generate_features_cache(true);

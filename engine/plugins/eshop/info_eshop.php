@@ -90,6 +90,7 @@ function eshop_infovars_show()
     $SYSTEM_FLAGS["eshop"]["categories_features"] = $categories_features_tEntry;
 
     $twig->addFunction('IsCatFeatures', new Twig_Function_Function('IsCatFeatures'));
+    $twig->addFunction('getAllOptionsByFeature', new Twig_Function_Function('getAllOptionsByFeature'));
 
     $filter = array();
     if (is_array($userROW)) {
@@ -312,4 +313,18 @@ function IsCatFeatures($category_id, $feature_id, $array)
     } else {
         return false;
     }
+}
+
+function getAllOptionsByFeature($feature_id, $only_unique)
+{
+    global $mysql;
+    $options = [];
+    if (!empty($feature_id)) {
+        $unique = ($only_unique ? "GROUP BY value" : "");
+        foreach ($mysql->select("SELECT * FROM ".prefix."_eshop_options WHERE feature_id = ".(int)$feature_id." " . $unique . " ORDER BY `value`") as $row) {
+            $options[] = $row;
+        }
+    }
+
+    return $options;
 }
