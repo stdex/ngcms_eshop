@@ -841,8 +841,11 @@ class ApiEshop
     public function getParamsByName($external_id, $name)
     {
         global $mysql;
+
+        $name = iconv("utf-8", "windows-1251", $name);
+
         $row = $mysql->record(
-            "SELECT * FROM ".prefix."_eshop_features WHERE categories_external_id = ".db_squote($external_id)." AND name = ".db_squote($name)." LIMIT 1"
+            "SELECT * FROM ".prefix."_eshop_features WHERE `categories_external_id` = ".db_squote($external_id)." AND `name` = ".db_squote($name)." LIMIT 1"
         );
 
         return $row;

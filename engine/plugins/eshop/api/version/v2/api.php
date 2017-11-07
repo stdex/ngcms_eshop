@@ -331,7 +331,7 @@ class ApiEshopController extends ApiEshop
         $vnames = $this->generateUpdateArray($p);
         $f_id = $this->updateParamFeature($pm['id'], $vnames);
 
-        return $f_id;
+        return $pm['id'];
     }
 
     public function prepareEditParamOption($item, $mapParams, $f_id, $product)
