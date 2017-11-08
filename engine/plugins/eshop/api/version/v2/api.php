@@ -392,19 +392,21 @@ class ApiEshopController extends ApiEshop
         if ($update3) {
             $param = $this->getParamsByName($item['id'], $item['name']);
             $f_id = $this->prepareEditParamFeature($item, $mapParams, $param);
-            $o_id = $this->prepareEditParamOption($item, $mapParams, $f_id, $product);
-            $this->prepareReplaceCategoryFeature($item, $mapParams, $category['id'], $f_id);
-            $this->prepareReplaceCategoryProduct($item, $mapParams, $category['id'], $product['id']);
-
-            $output[$id] = ['id' => $item['id'], 'status' => self::STATUS_OK];
+            $update4 = $this->checkOptionID($f_id, $product['id']);
+            if ($update4) {
+                $o_id = $this->prepareEditParamOption($item, $mapParams, $f_id, $product);
+            } else {
+                $o_id = $this->prepareAddParamOption($item, $mapParams, $f_id, $product);
+            }
         } else {
             $f_id = $this->prepareAddParamFeature($item, $mapParams);
             $o_id = $this->prepareAddParamOption($item, $mapParams, $f_id, $product);
-            $this->prepareReplaceCategoryFeature($item, $mapParams, $category['id'], $f_id);
-            $this->prepareReplaceCategoryProduct($item, $mapParams, $category['id'], $product['id']);
-
-            $output[$id] = ['id' => $item['id'], 'status' => self::STATUS_OK];
         }
+
+        $this->prepareReplaceCategoryFeature($item, $mapParams, $category['id'], $f_id);
+        $this->prepareReplaceCategoryProduct($item, $mapParams, $category['id'], $product['id']);
+
+        $output[$id] = ['id' => $item['id'], 'status' => self::STATUS_OK];
     }
 
     public function prepareOrdersItemArray($orders)
